@@ -3,21 +3,14 @@ from . import mcla
 from . import fixtures
 
 class TestMcla(unittest.TestCase):
-  def test_ncaa_urls(self):
-    n = mcla.Mcla()
-    self.assertEqual(
-      list(n.get_team_list_urls('2020')), [
-        {
-          'url':'https://mcla.us/teams/2020'
-        }
-      ])
+  def test_mcla_urls(self):
+    m = mcla.Mcla()
+    self.assertEqual(next(m.get_team_list_urls('2020'))['url'], 'https://mcla.us/teams/2020')
 
-  def test_ncaa_team_list_html(self):
+  def test_mcla_team_list_html(self):
     html = fixtures.mcla_team_list()
-    n = mcla.Mcla()
-    team_list = list(n.convert_team_list_html(html, {
-      'url':'https://mcla.us/teams/2020'
-    }))
+    m = mcla.Mcla()
+    team_list = list(m.convert_team_list_html(html, next(m.get_team_list_urls('2020'))))
     self.assertEqual(len(team_list), 163)
     self.assertEqual(
       team_list[0],
@@ -26,6 +19,26 @@ class TestMcla(unittest.TestCase):
         'location': {
           'id': 'alabama'
         },
-        'div':'1'
+        'year': '2020',
+        'div':'1',
+        'id': 'ml-mcla-alabama',
+        'sport': 'ml'
       })
-    print(team_list)
+
+  def test_mcla_converts_slugs_correctly(self):
+    html = fixtures.mcla_team_list()
+    m = mcla.Mcla()
+    team_list = list(m.convert_team_list_html(html, next(m.get_team_list_urls('2020'))))
+    self.assertEqual(
+      team_list[2],
+      {
+        'name': 'Arizona State',
+        'location': {
+          'id': 'arizona_state'
+        },
+        'year': '2020',
+        'div': '1',
+        'id': 'ml-mcla-arizona-state',
+        'sport': 'ml'
+      }
+    )
