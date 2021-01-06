@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-class NCAA():
+class Ncaa():
   def __init__(self, sports = ['MLA', 'WLA'], divs = ['1','2','3']):
     self.sports = sports
     self.divs = divs

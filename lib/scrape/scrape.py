@@ -1,4 +1,4 @@
-from . import ncaa
+from . import ncaa, mcla
 import requests
 import requests_cache
 from datetime import datetime, timedelta
@@ -10,9 +10,12 @@ USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (
 
 def scrape(args):
   if args.source == 'ncaa':
-    scraper = ncaa.NCAA()
+    scraper = ncaa.Ncaa()
+  elif args.source == 'mcla':
+    scraper = mcla.Mcla()
   else:
     raise Exception(f'Unimplemented source {source}')
+  source = args.source
 
   if args.year:
     year = str(args.year)
@@ -25,13 +28,13 @@ def scrape(args):
 
   teams = scrape_teams(scraper, year, out_dir)
 
-  with open(os.path.join(out_dir, f'{year}-teams.json'), 'w') as f:
+  with open(os.path.join(out_dir, f'{source}-{year}-teams.json'), 'w') as f:
     json.dump(list(teams), f)
 
 
 def scrape_teams(scraper, year, out_dir):
   for url in scraper.get_team_list_urls(year):
-    html = requests.get(url['url'],params=url['params'],headers={'user-agent': USER_AGENT}).text
+    html = requests.get(url['url'],params=url.get('params'),headers={'user-agent': USER_AGENT}).text
     try:
       yield from scraper.convert_team_list_html(html, url)
     except Exception as e:
