@@ -1,6 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
 
+
+SPORT_MAP = {
+  'MLA': 'ml',
+  'WLA': 'wl'
+}
+
 class Ncaa():
   def __init__(self, sports = ['MLA', 'WLA'], divs = ['1','2','3']):
     self.sports = sports
@@ -27,18 +33,15 @@ class Ncaa():
       yield {
         'name': link.string,
         'location': {
-          'id': link_parts[2],
-          'game_sport_year_ctl_id': link_parts[3]
+          'url': 'https://stats.ncaa.org/player/game_by_game',
+          'params': {
+            'game_sport_year_ctl_id': link_parts[3],
+            'org_id': link_parts[2],
+            'stats_player_seq': -100
+          }
         },
         'id': f'{sport}-ncaa-{link_parts[2]}',
         'div': location['params']['division'],
         'sport': sport,
         'year': location['params']['academic_year']
       }
-
-SPORT_MAP = {
-  'MLA': 'ml',
-  'WLA': 'wl'
-}
-
-

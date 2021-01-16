@@ -14,7 +14,7 @@ def scrape(args):
   elif args.source == 'mcla':
     scraper = mcla.Mcla()
   else:
-    raise Exception(f'Unimplemented source {source}')
+    raise Exception(f'Unimplemented source {args.source}')
   source = args.source
 
   if args.year:

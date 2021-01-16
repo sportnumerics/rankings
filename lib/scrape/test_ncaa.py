@@ -21,8 +21,12 @@ class TestScrape(unittest.TestCase):
       {
         'name': 'Air Force',
         'location': {
-          'game_sport_year_ctl_id': '15203',
-          'id': '721'
+          'url': 'https://stats.ncaa.org/player/game_by_game',
+          'params': {
+            'game_sport_year_ctl_id': '15203',
+            'org_id': '721',
+            'stats_player_seq': -100
+          }
         },
         'year': '2020',
         'id': 'ml-ncaa-721',

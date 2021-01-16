@@ -18,10 +18,11 @@ class Mcla():
         link = row.find('a')
         link_parts = link['href'].split('/')
         slug = link_parts[2]
+        year = location['year']
         yield {
           'name': next(link.stripped_strings),
           'location': {
-            'id': slug
+            'url': f'https://mcla.us/team/{slug}/{year}/schedule.html'
           },
           'year': location['year'],
           'id': f'ml-mcla-{self.normalize_slug(slug)}',
