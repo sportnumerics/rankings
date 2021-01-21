@@ -21,7 +21,7 @@ class Mcla():
         year = location['year']
         yield {
           'name': next(link.stripped_strings),
-          'location': {
+          'schedule_location': {
             'url': f'https://mcla.us/team/{slug}/{year}/schedule.html'
           },
           'year': location['year'],

@@ -16,7 +16,7 @@ class TestMcla(unittest.TestCase):
       team_list[0],
       {
         'name': 'Alabama',
-        'location': {
+        'schedule_location': {
           'url': 'https://mcla.us/team/alabama/2020/schedule.html'
         },
         'year': '2020',
@@ -33,7 +33,7 @@ class TestMcla(unittest.TestCase):
       team_list[2],
       {
         'name': 'Arizona State',
-        'location': {
+        'schedule_location': {
           'url': 'https://mcla.us/team/arizona_state/2020/schedule.html'
         },
         'year': '2020',

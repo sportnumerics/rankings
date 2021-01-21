@@ -1,4 +1,5 @@
 import unittest
+import datetime
 from . import ncaa
 from . import fixtures
 
@@ -20,7 +21,7 @@ class TestScrape(unittest.TestCase):
       team_list[0],
       {
         'name': 'Air Force',
-        'location': {
+        'schedule_location': {
           'url': 'https://stats.ncaa.org/player/game_by_game',
           'params': {
             'game_sport_year_ctl_id': '15203',
@@ -32,4 +33,26 @@ class TestScrape(unittest.TestCase):
         'id': 'ml-ncaa-721',
         'div':'1',
         'sport': 'ml'
+      })
+
+  def test_ncaa_team_scheduled_html(self):
+    html = fixtures.ncaa_game_by_game()
+    n = ncaa.Ncaa()
+    team = {
+      'name': 'Air Force'
+    }
+    schedule = n.convert_schedule_html(html, team)
+    self.assertEqual(schedule['team'], team)
+    self.assertEqual(
+      schedule['games'][0],
+      {
+        'date': datetime.date(2020, 2, 1),
+        'opponent': {
+          'name': 'Duke'
+        },
+        'home': False,
+        'result': {
+          'points_for': 14,
+          'points_against': 13
+        }
       })
