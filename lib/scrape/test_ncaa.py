@@ -46,7 +46,7 @@ class TestScrape(unittest.TestCase):
     self.assertEqual(
       schedule['games'][0],
       {
-        'date': datetime.date(2020, 2, 1),
+        'date': '2020-02-01',
         'opponent': {
           'name': 'Duke'
         },

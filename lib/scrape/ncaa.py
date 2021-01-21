@@ -59,9 +59,9 @@ class Ncaa():
       strings = list(row.stripped_strings)
 
       date = datetime.datetime.strptime(strings[0], '%m/%d/%Y').date()
-      game['date'] = date
+      game['date'] = date.isoformat()
 
-      opp_match = re.match(r'(?P<away>\@ )?(?P<opponent_name>\S+)', strings[1])
+      opp_match = re.match(r'(?P<away>\@)?\s+(?P<opponent_name>.*)', strings[1])
       if not opp_match:
         continue
       game['opponent'] = { 'name': opp_match.group('opponent_name') }
