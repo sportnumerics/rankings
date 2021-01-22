@@ -35,7 +35,7 @@ class TestScrape(unittest.TestCase):
         'sport': 'ml'
       })
 
-  def test_ncaa_team_scheduled_html(self):
+  def test_ncaa_team_schedule_html(self):
     html = fixtures.ncaa_game_by_game()
     n = ncaa.Ncaa()
     team = {

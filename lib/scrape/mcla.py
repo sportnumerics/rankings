@@ -1,6 +1,7 @@
 import requests
 import re
 from bs4 import BeautifulSoup
+import datetime
 
 class Mcla():
   def get_team_list_urls(self, year):
@@ -25,12 +26,51 @@ class Mcla():
             'url': f'https://mcla.us/team/{slug}/{year}/schedule.html'
           },
           'year': location['year'],
-          'id': f'ml-mcla-{self.normalize_slug(slug)}',
+          'id': f'ml-mcla-{self._normalize_slug(slug)}',
           'div': DIVISON_MAP[divison_text],
           'sport': 'ml'
         }
 
-  def normalize_slug(self, slug):
+  def convert_schedule_html(self, html, team):
+    soup = BeautifulSoup(html, 'html.parser')
+    rows = soup.find('table', class_='team-schedule').tbody.find_all('tr')
+    games = []
+    for row in rows:
+      game = {}
+      cols = list(row.find_all('td'))
+      opponent_col = cols[0]
+      date_col = cols[2]
+      score_col = cols[3]
+
+      opponent_parts = list(opponent_col.stripped_strings)
+      if len(opponent_parts) == 1:
+        game['opponent'] = { 'name': opponent_parts[0] }
+        game['home'] = True
+      else:
+        game['opponent'] = { 'name': opponent_parts[1] }
+        game['home'] = False
+
+      date = ' '.join([team['year']] + list(date_col.stripped_strings))
+      game['date'] = datetime.datetime.strptime(date, '%Y %a %b %d %I:%M%p').isoformat()
+
+      score = score_col.string
+      score_match = re.match(r'(?P<result>Won|Lost)?\s+\((?P<points_for>\d+)-(?P<points_against>\d+)\)', score)
+
+      if score_match:
+        game['result'] = {
+          'points_for': int(score_match.group('points_for')),
+          'points_against': int(score_match.group('points_against'))
+        }
+
+      games.append(game)
+
+    return {
+      'team': team,
+      'games': games
+    }
+
+
+  def _normalize_slug(self, slug):
     return re.sub(r'\_', '-', slug)
 
 DIVISON_MAP = {

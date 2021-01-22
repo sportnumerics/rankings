@@ -81,7 +81,7 @@ class ScrapeRunner():
       print(f'Unable to convert schedule html from {location}: {e}')
 
   def fetch(self, location):
-    return self.cache.get(location['url'],params=location['params'],headers={'user-agent': USER_AGENT}).text
+    return self.cache.get(location['url'],params=location.get('params'),headers={'user-agent': USER_AGENT}).text
 
   def get_team_list_filename(self):
     return os.path.join(self.out_dir, f'{self.source}-{self.year}-teams.json')

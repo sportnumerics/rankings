@@ -42,3 +42,24 @@ class TestMcla(unittest.TestCase):
         'sport': 'ml'
       }
     )
+
+  def test_mcla_team_schedule_html(self):
+    html = fixtures.mcla_schedule()
+    m = mcla.Mcla()
+    team = {
+      'name': 'Arizona State',
+      'year': '2020'
+    }
+    schedule = m.convert_schedule_html(html, team)
+    self.assertEqual(schedule['team'], team)
+    self.assertEqual(schedule['games'][0], {
+      'date': '2020-02-09',
+      'opponent': {
+        'name': 'Dominican'
+      },
+      'home': True,
+      'result': {
+        'points_for': 11,
+        'points_against': 16
+      }
+    })
