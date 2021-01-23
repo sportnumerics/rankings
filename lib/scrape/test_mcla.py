@@ -22,7 +22,8 @@ class TestMcla(unittest.TestCase):
         'year': '2020',
         'div':'1',
         'id': 'ml-mcla-alabama',
-        'sport': 'ml'
+        'sport': 'ml',
+        'source': 'mcla'
       })
 
   def test_mcla_converts_slugs_correctly(self):
@@ -39,7 +40,8 @@ class TestMcla(unittest.TestCase):
         'year': '2020',
         'div': '1',
         'id': 'ml-mcla-arizona-state',
-        'sport': 'ml'
+        'sport': 'ml',
+        'source': 'mcla'
       }
     )
 
@@ -48,14 +50,17 @@ class TestMcla(unittest.TestCase):
     m = mcla.Mcla()
     team = {
       'name': 'Arizona State',
-      'year': '2020'
+      'year': '2020',
+      'sport': 'ml',
+      'source': 'mcla'
     }
     schedule = m.convert_schedule_html(html, team)
     self.assertEqual(schedule['team'], team)
     self.assertEqual(schedule['games'][0], {
-      'date': '2020-02-09',
+      'date': '2020-02-09T13:00:00',
       'opponent': {
-        'name': 'Dominican'
+        'name': 'Dominican',
+        'id': 'ml-mcla-dominican'
       },
       'home': True,
       'result': {
@@ -63,3 +68,19 @@ class TestMcla(unittest.TestCase):
         'points_against': 16
       }
     })
+    self.assertEqual(list(map(lambda t: t['opponent']['name'], schedule['games'])), [
+      'Dominican',
+      'USC',
+      'California',
+      'Cal Poly',
+      'Santa Clara',
+      'Georgia Tech',
+      'Texas A&M',
+      'San Diego State',
+      'UCLA',
+      'Brigham Young',
+      'Concordia-Irvine',
+      'Chapman',
+      'Grand Canyon',
+      'Arizona'
+    ])

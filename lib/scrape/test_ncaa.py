@@ -32,14 +32,17 @@ class TestScrape(unittest.TestCase):
         'year': '2020',
         'id': 'ml-ncaa-721',
         'div':'1',
-        'sport': 'ml'
+        'sport': 'ml',
+        'source': 'ncaa'
       })
 
   def test_ncaa_team_schedule_html(self):
     html = fixtures.ncaa_game_by_game()
     n = ncaa.Ncaa()
     team = {
-      'name': 'Air Force'
+      'name': 'Air Force',
+      'sport': 'ml',
+      'source': 'ncaa'
     }
     schedule = n.convert_schedule_html(html, team)
     self.assertEqual(schedule['team'], team)
@@ -48,7 +51,8 @@ class TestScrape(unittest.TestCase):
       {
         'date': '2020-02-01',
         'opponent': {
-          'name': 'Duke'
+          'name': 'Duke',
+          'id': 'ml-ncaa-193'
         },
         'home': False,
         'result': {
@@ -56,3 +60,13 @@ class TestScrape(unittest.TestCase):
           'points_against': 13
         }
       })
+    self.assertEqual(list(map(lambda g: g['opponent']['name'], schedule['games'])), [
+      'Duke',
+      'Denver',
+      'Utah',
+      'Cleveland St.',
+      'St. Bonaventure',
+      'Virginia',
+      'Canisius',
+      'Furman'
+    ])

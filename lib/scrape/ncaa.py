@@ -45,7 +45,8 @@ class Ncaa():
         'id': f'{sport}-ncaa-{link_parts[2]}',
         'div': location['params']['division'],
         'sport': sport,
-        'year': location['params']['academic_year']
+        'year': location['params']['academic_year'],
+        'source': 'ncaa'
       }
 
   def convert_schedule_html(self, html, team):
@@ -56,18 +57,32 @@ class Ncaa():
       game = {}
       if 'class' in row.attrs or 'style' in row.attrs:
         continue
-      strings = list(row.stripped_strings)
+      cols = list(row.find_all('td'))
+      date_col = cols[0]
+      opp_col = cols[1]
+      result_col = cols[2]
 
-      date = datetime.datetime.strptime(strings[0], '%m/%d/%Y').date()
+      date = datetime.datetime.strptime(date_col.string, '%m/%d/%Y').date()
       game['date'] = date.isoformat()
 
-      opp_match = re.match(r'(?P<away>\@)?\s+(?P<opponent_name>.*)', strings[1])
+      def no_class(tag):
+        return not tag.has_attr('class')
+
+      opp_link = opp_col.find(lambda tag: tag.name == 'a' and not tag.has_attr('class'))
+      opp_string = ' '.join(opp_col.stripped_strings)
+      opp_match = re.match(r'(?P<away>\@)?\s*(?P<opponent_name>[^\@]+)(\@(?P<neutral_site>.*))?', opp_string)
       if not opp_match:
         continue
-      game['opponent'] = { 'name': opp_match.group('opponent_name') }
+
+      game['opponent'] = { 'name': opp_match.group('opponent_name').strip() }
       game['home'] = opp_match.group('away') is None
 
-      score_match = re.match(r'(?P<outcome>[WL])\s*(?P<points_for>\d+)\s*\-\s*(?P<points_against>\d+)', strings[2])
+      opp_link_parts = opp_link['href'].split('/')
+      if len(opp_link_parts) > 2:
+        game['opponent']['id'] = '-'.join([team['sport'], team['source'], opp_link_parts[2]])
+
+      result_str = ' '.join(result_col.stripped_strings)
+      score_match = re.match(r'(?P<outcome>[WL])\s*(?P<points_for>\d+)\s*\-\s*(?P<points_against>\d+)', result_str)
       if score_match:
         game['result'] = {
           'points_for': int(score_match.group('points_for')),

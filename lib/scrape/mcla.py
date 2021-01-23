@@ -28,7 +28,8 @@ class Mcla():
           'year': location['year'],
           'id': f'ml-mcla-{self._normalize_slug(slug)}',
           'div': DIVISON_MAP[divison_text],
-          'sport': 'ml'
+          'sport': 'ml',
+          'source': 'mcla'
         }
 
   def convert_schedule_html(self, html, team):
@@ -49,6 +50,11 @@ class Mcla():
       else:
         game['opponent'] = { 'name': opponent_parts[1] }
         game['home'] = False
+      opp_link = opponent_col.a['href']
+      opp_link_parts = opp_link.split('/')
+      if len(opp_link_parts) > 2:
+        game['opponent']['id'] = '-'.join([team['sport'], team['source'], opp_link_parts[2]])
+
 
       date = ' '.join([team['year']] + list(date_col.stripped_strings))
       game['date'] = datetime.datetime.strptime(date, '%Y %a %b %d %I:%M%p').isoformat()
