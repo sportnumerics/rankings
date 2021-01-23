@@ -52,9 +52,9 @@ class Mcla():
         game['home'] = False
       opp_link = opponent_col.a['href']
       opp_link_parts = opp_link.split('/')
+      opp_id = self._normalize_slug(opp_link_parts[2])
       if len(opp_link_parts) > 2:
-        game['opponent']['id'] = '-'.join([team['sport'], team['source'], opp_link_parts[2]])
-
+        game['opponent']['id'] = '-'.join([team['sport'], team['source'], opp_id])
 
       date = ' '.join([team['year']] + list(date_col.stripped_strings))
       game['date'] = datetime.datetime.strptime(date, '%Y %a %b %d %I:%M%p').isoformat()
