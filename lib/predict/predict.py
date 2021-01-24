@@ -4,23 +4,26 @@ from scipy.sparse import coo_matrix
 from scipy.sparse import linalg
 import numpy as np
 import pathlib
+from datetime import datetime
 
 def predict(args):
-  if args.out_dir:
-    out_dir = args.out_dir
+  out_dir = args.out_dir
+  if args.year:
+    year = args.year
   else:
-    out_dir = 'out'
+    year = datetime.now().year
 
-  _, _, filenames = next(os.walk(args.schedule_dir))
+  schedules_dir = os.path.join(args.input_dir, year, 'schedules')
+  _, _, filenames = next(os.walk(schedules_dir))
 
-  schedules = load_schedules(map(lambda f: os.path.join(args.schedule_dir, f), filenames))
+  schedules = load_schedules(map(lambda f: os.path.join(schedules_dir, f), filenames))
 
   ratings, year, hfa = calculate_ratings(schedules)
 
   sorted_ratings = sorted(ratings.values(), key=lambda r: -r['overall'])
 
   pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True, exist_ok=True)
-  with open(os.path.join(out_dir, year, 'ratings.json'), 'w') as f:
+  with open(os.path.join(out_dir, year, 'team-ratings.json'), 'w') as f:
     json.dump(sorted_ratings, f, indent=2)
 
 def load_schedules(filenames):
