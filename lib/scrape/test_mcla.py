@@ -2,6 +2,7 @@ import unittest
 from . import mcla
 from . import fixtures
 
+
 class TestMcla(unittest.TestCase):
   def test_mcla_urls(self):
     m = mcla.Mcla()

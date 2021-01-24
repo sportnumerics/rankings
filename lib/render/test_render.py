@@ -2,6 +2,7 @@ import unittest
 from . import render
 from .. import testing
 
+
 class TestRender(unittest.TestCase):
   def test_extract_data(self):
     team1 = testing.create_team('team-1')

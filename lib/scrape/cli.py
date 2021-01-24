@@ -1,5 +1,6 @@
 from . import scrape
 
+
 def add_parsers(parsers):
   scrape_parser = parsers.add_parser('scrape', help='scrape stats from league websites')
   scrape_parser.add_argument('--source', choices=['ncaa','mcla'], help='league source')

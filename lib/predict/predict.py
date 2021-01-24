@@ -6,6 +6,7 @@ import numpy as np
 import pathlib
 from datetime import datetime
 
+
 def predict(args):
   out_dir = args.out_dir
   if args.year:

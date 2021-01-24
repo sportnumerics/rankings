@@ -2,6 +2,7 @@ import unittest
 from . import predict
 from .. import testing
 
+
 class TestPredict(unittest.TestCase):
   def test_calculate_ratings(self):
     schedules = [

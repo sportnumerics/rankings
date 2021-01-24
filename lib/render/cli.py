@@ -1,5 +1,6 @@
 from . import render
 
+
 def add_parsers(parsers):
   render_parser = parsers.add_parser('render', help='render to html')
   render_parser.add_argument('--year', help='Year to render')

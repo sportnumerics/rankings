@@ -3,6 +3,7 @@ import datetime
 from . import ncaa
 from . import fixtures
 
+
 class TestScrape(unittest.TestCase):
   def test_ncaa_urls(self):
     n = ncaa.Ncaa(['MLA'], ['1','2'])

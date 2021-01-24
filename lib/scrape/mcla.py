@@ -3,6 +3,7 @@ import re
 from bs4 import BeautifulSoup
 import datetime
 
+
 class Mcla():
   def get_team_list_urls(self, year):
     yield {

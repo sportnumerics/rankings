@@ -1,5 +1,6 @@
 from . import predict
 
+
 def add_parsers(parsers):
   predict_parser = parsers.add_parser('predict', help='calculate ratings and predictions')
   predict_parser.add_argument('--year', help='Year to calculate ratings for')
