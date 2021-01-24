@@ -1,6 +1,7 @@
 import argparse
 import lib.scrape.cli
 import lib.predict.cli
+import lib.render.cli
 
 
 def main():
@@ -9,6 +10,7 @@ def main():
   parser.set_defaults(func=lambda args: parser.print_help())
   lib.scrape.cli.add_parsers(subparsers)
   lib.predict.cli.add_parsers(subparsers)
+  lib.render.cli.add_parsers(subparsers)
   args = parser.parse_args()
   args.func(args)
 

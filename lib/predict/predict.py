@@ -18,7 +18,7 @@ def predict(args):
 
   schedules = load_schedules(map(lambda f: os.path.join(schedules_dir, f), filenames))
 
-  ratings, year, hfa = calculate_ratings(schedules)
+  ratings, hfa = calculate_ratings(schedules)
 
   sorted_ratings = sorted(ratings.values(), key=lambda r: -r['overall'])
 
@@ -34,7 +34,6 @@ def load_schedules(filenames):
 def calculate_ratings(schedules):
   game_map = {}
   for schedule in schedules:
-    year = schedule['team']['year']
     for game in schedule['games']:
       if 'result' not in game:
         continue
@@ -75,7 +74,7 @@ def calculate_ratings(schedules):
       'overall': overall[i],
     }
 
-  return results, year, hfa
+  return results, hfa
 
 def build_team_map(games):
   ids_to_indicies = {}
