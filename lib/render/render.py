@@ -1,6 +1,7 @@
 from datetime import datetime
 from functools import reduce
 import pathlib
+import jinja2
 import json
 import math
 import os
@@ -24,11 +25,15 @@ def render(args):
 
   team_lists = create_team_lists(ratings, teams, schedules)
 
+  env = jinja2.Environment(loader=jinja2.PackageLoader('lib.render'))
+  template = env.get_template('teams.html')
+
   for uri, teams in team_lists.items():
     div_dir = os.path.join(out_dir, 'html', *uri.split('/'))
     pathlib.Path(div_dir).mkdir(parents=True, exist_ok=True)
-    with open(os.path.join(div_dir, 'data.json'), 'w') as f:
-      json.dump(teams, f, indent=2)
+    teams_html = template.render(teams)
+    with open(os.path.join(div_dir, 'index.html'), 'w') as f:
+      f.write(teams_html)
 
 def extract_ratings(year_dir):
   with open(os.path.join(year_dir, 'team-ratings.json')) as f:
@@ -60,8 +65,9 @@ def create_team_lists(ratings, teams, schedules):
       tid = t['id']
       year = t['year']
       source = t['source']
+      sport = t['sport']
       div = t['div']
-      uri = f'/{year}/{source}/{div}'
+      uri = f'/{year}/{sport}/{source}/{div}'
       div = team_lists.setdefault(uri, {
         'div': div,
         'year': year,

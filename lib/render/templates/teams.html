@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Division {{ div }} ({{ year }})</title>
+  </head>
+  <body>
+    <table>
+      <thead>
+        <tr>
+          <td>Rank</td>
+          <td>Team</td>
+          <td>Rating</td></tr>
+      </thead>
+      <tbody>
+        {% for team in teams %}
+        <tr>
+          <td><span class="rank">{{ loop.index }}</span></td>
+          <td><span class="team-name">{{ team.name }}</span>
+            {%- if team.wins and team.losses -%}
+            <span class="record">({{ team.wins}}-{{team.losses}}{% if team.ties %}-{{team.ties}}{% endif %})</span>
+            {%- endif -%}
+          </td>
+          <td><span class="rating">{% if team.overall %}{{ team.overall | round(2) }}{% else %}--{% endif %}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
