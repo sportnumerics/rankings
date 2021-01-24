@@ -47,7 +47,7 @@ class ScrapeRunner():
   def scrape_and_write_team_lists(self):
     teams = self.scrape_teams()
 
-    pathlib.Path(self.out_dir).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(os.path.join(self.out_dir, self.year)).mkdir(parents=True, exist_ok=True)
     with open(self.get_team_list_filename(), 'w') as f:
       json.dump(list(teams), f, indent=2)
 
@@ -59,6 +59,8 @@ class ScrapeRunner():
     pathlib.Path(schedule_dir).mkdir(parents=True, exist_ok=True)
     for team in teams:
       schedule = self.scrape_schedule(team)
+      if not schedule:
+        continue
       with open(os.path.join(schedule_dir, team['id'] + '.json'), 'w') as f:
         json.dump(schedule, f, indent=2)
 
@@ -84,4 +86,4 @@ class ScrapeRunner():
     return self.cache.get(location['url'],params=location.get('params'),headers={'user-agent': USER_AGENT}).text
 
   def get_team_list_filename(self):
-    return os.path.join(self.out_dir, f'{self.source}-{self.year}-teams.json')
+    return os.path.join(self.out_dir, self.year, f'{self.source}-teams.json')
