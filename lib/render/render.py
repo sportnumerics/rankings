@@ -27,14 +27,9 @@ def render(args):
   team_lists = create_team_lists(ratings, teams, schedules)
 
   env = jinja2.Environment(loader=jinja2.PackageLoader('lib.render'))
-  template = env.get_template('teams.html')
 
-  for uri, teams in team_lists.items():
-    div_dir = os.path.join(out_dir, 'html', *uri.split('/'))
-    pathlib.Path(div_dir).mkdir(parents=True, exist_ok=True)
-    teams_html = template.render(teams)
-    with open(os.path.join(div_dir, 'index.html'), 'w') as f:
-      f.write(teams_html)
+  render_team_lists(team_lists, out_dir, env)
+  render_teams(team_lists, out_dir, env)
 
   if args.serve:
     httpd = http.server.HTTPServer(
@@ -54,7 +49,6 @@ def extract_teams(year_dir):
   for file in filenames:
     teams_match = re.match(r'(?P<source>\w+)\-teams\.json', file)
     if teams_match:
-      source = teams_match.group('source')
       with open(os.path.join(year_dir, file)) as f:
         yield json.load(f)
 
@@ -81,7 +75,7 @@ def create_team_lists(ratings, teams, schedules):
       div = t['div']
       uri = f'/{year}/{sport}/{source}/{div}'
       div = team_lists.setdefault(uri, {'div': div, 'year': year, 'teams': []})
-      team = {'name': t['name'], 'id': tid}
+      team = {'name': t['name'], 'id': tid, 'year': year}
 
       ratings = ratings_dict.get(tid)
       if ratings:
@@ -94,6 +88,7 @@ def create_team_lists(ratings, teams, schedules):
         team['wins'] = sum(map(is_win, schedule['games']))
         team['losses'] = sum(map(is_loss, schedule['games']))
         team['ties'] = sum(map(is_tie, schedule['games']))
+        team['games'] = map(lambda g: enrich_game(g, tid, ratings_dict, schedule_dict), schedule['games'])
 
       div['teams'].append(team)
 
@@ -102,6 +97,56 @@ def create_team_lists(ratings, teams, schedules):
         key=lambda t: -t['overall'] if 'overall' in t else math.inf)
 
   return team_lists
+
+
+def enrich_game(game, tid, ratings, schedules):
+  enriched_game = {
+    **game,
+    'date': datetime.fromisoformat(game['date']),
+  }
+  opp_id = game['opponent']['id']
+  opp_ratings = ratings.get(opp_id)
+  team_ratings = ratings.get(tid)
+  if opp_ratings and team_ratings:
+    enriched_game['predicted_points_for'] = team_ratings['offense'] - opp_ratings['defense']
+    enriched_game['predicted_points_against'] = opp_ratings['offense'] - team_ratings['defense']
+  opp_schedule = schedules.get(opp_id)
+  if opp_schedule:
+    opp_team = opp_schedule['team']
+    year = opp_team['year']
+    sport = opp_team['sport']
+    source = opp_team['source']
+    div = opp_team['div']
+    enriched_game['opponent']['uri'] = f'/{year}/{sport}/{source}/{div}/{opp_id}.html'
+  return enriched_game
+
+
+def render_team_lists(team_lists, out_dir, env):
+  template = env.get_template('teams.html')
+
+  for uri, teams in team_lists.items():
+    div_dir = division_directory(out_dir, uri)
+    pathlib.Path(div_dir).mkdir(parents=True, exist_ok=True)
+    teams_html = template.render(teams)
+    with open(os.path.join(div_dir, 'index.html'), 'w') as f:
+      f.write(teams_html)
+
+
+def render_teams(team_lists, out_dir, env):
+  template = env.get_template('team.html')
+
+  for uri, teams in team_lists.items():
+    div_dir = division_directory(out_dir, uri)
+    pathlib.Path(div_dir).mkdir(parents=True, exist_ok=True)
+    for team in teams['teams']:
+      tid = team['id']
+      team_html = template.render(team)
+      with open(os.path.join(div_dir, f'{tid}.html'), 'w') as f:
+        f.write(team_html)
+
+
+def division_directory(out_dir, div_uri):
+  return os.path.join(out_dir, 'html', *div_uri.split('/'))
 
 
 def is_win(game):

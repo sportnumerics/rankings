@@ -1,10 +1,10 @@
 import os
 import json
+from datetime import datetime
+import pathlib
+import numpy as np
 from scipy.sparse import coo_matrix
 from scipy.sparse import linalg
-import numpy as np
-import pathlib
-from datetime import datetime
 
 
 def predict(args):
@@ -20,7 +20,7 @@ def predict(args):
   schedules = load_schedules(
       map(lambda f: os.path.join(schedules_dir, f), filenames))
 
-  ratings, hfa = calculate_ratings(schedules)
+  ratings, _ = calculate_ratings(schedules)
 
   sorted_ratings = sorted(ratings.values(), key=lambda r: -r['overall'])
 

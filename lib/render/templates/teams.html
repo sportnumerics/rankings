@@ -4,6 +4,7 @@
     <title>Division {{ div }} ({{ year }})</title>
   </head>
   <body>
+    <h1>Divison {{ div }} ({{ year }})</h1>
     <table>
       <thead>
         <tr>
@@ -15,7 +16,7 @@
         {% for team in teams %}
         <tr>
           <td><span class="rank">{{ loop.index }}</span></td>
-          <td><span class="team-name">{{ team.name }}</span>
+          <td><span class="team-name"><a href="{{ team.id }}.html">{{ team.name }}</a></span>
             {%- if team.wins and team.losses -%}
             <span class="record">({{ team.wins}}-{{team.losses}}{% if team.ties %}-{{team.ties}}{% endif %})</span>
             {%- endif -%}
