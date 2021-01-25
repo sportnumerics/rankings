@@ -88,7 +88,7 @@ def create_team_lists(ratings, teams, schedules):
         team['wins'] = sum(map(is_win, schedule['games']))
         team['losses'] = sum(map(is_loss, schedule['games']))
         team['ties'] = sum(map(is_tie, schedule['games']))
-        team['games'] = map(lambda g: enrich_game(g, tid, ratings_dict, schedule_dict), schedule['games'])
+        team['games'] = map(partial(enrich_game, tid=tid, ratings=ratings_dict, schedules=schedule_dict), schedule['games'])
 
       div['teams'].append(team)
 
