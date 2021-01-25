@@ -1,5 +1,6 @@
 from datetime import datetime
-from functools import reduce
+from functools import partial
+import http.server
 import pathlib
 import jinja2
 import json
@@ -35,9 +36,18 @@ def render(args):
     with open(os.path.join(div_dir, 'index.html'), 'w') as f:
       f.write(teams_html)
 
+  if args.serve:
+    httpd = http.server.HTTPServer(
+        ('', args.port),
+        partial(http.server.SimpleHTTPRequestHandler,
+                directory=os.path.join(out_dir, 'html')))
+    httpd.serve_forever()
+
+
 def extract_ratings(year_dir):
   with open(os.path.join(year_dir, 'team-ratings.json')) as f:
     return json.load(f)
+
 
 def extract_teams(year_dir):
   _, _, filenames = next(os.walk(year_dir))
@@ -48,12 +58,14 @@ def extract_teams(year_dir):
       with open(os.path.join(year_dir, file)) as f:
         yield json.load(f)
 
+
 def extract_schedules(year_dir):
   schedule_dir = os.path.join(year_dir, 'schedules')
   _, _, filenames = next(os.walk(schedule_dir))
   for file in filenames:
     with open(os.path.join(schedule_dir, file)) as f:
       yield json.load(f)
+
 
 def create_team_lists(ratings, teams, schedules):
   ratings_dict = {r['team']: r for r in ratings}
@@ -68,15 +80,8 @@ def create_team_lists(ratings, teams, schedules):
       sport = t['sport']
       div = t['div']
       uri = f'/{year}/{sport}/{source}/{div}'
-      div = team_lists.setdefault(uri, {
-        'div': div,
-        'year': year,
-        'teams': []
-      })
-      team = {
-        'name': t['name'],
-        'id': tid
-      }
+      div = team_lists.setdefault(uri, {'div': div, 'year': year, 'teams': []})
+      team = {'name': t['name'], 'id': tid}
 
       ratings = ratings_dict.get(tid)
       if ratings:
@@ -93,15 +98,22 @@ def create_team_lists(ratings, teams, schedules):
       div['teams'].append(team)
 
   for div in team_lists.values():
-    div['teams'].sort(key=lambda t: -t['overall'] if 'overall' in t else math.inf)
+    div['teams'].sort(
+        key=lambda t: -t['overall'] if 'overall' in t else math.inf)
 
   return team_lists
 
+
 def is_win(game):
-  return 'result' in game and game['result']['points_for'] > game['result']['points_against']
+  return 'result' in game and game['result']['points_for'] > game['result'][
+      'points_against']
+
 
 def is_loss(game):
-  return 'result' in game and game['result']['points_for'] < game['result']['points_against']
+  return 'result' in game and game['result']['points_for'] < game['result'][
+      'points_against']
+
 
 def is_tie(game):
-  return 'result' in game and game['result']['points_for'] == game['result']['points_against']
+  return 'result' in game and game['result']['points_for'] == game['result'][
+      'points_against']

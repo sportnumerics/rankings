@@ -10,6 +10,8 @@ requests-cache = "~=0.4"
 scipy = "*"
 numpy = "*"
 jinja2 = "*"
+pylint = "*"
+yapf = "*"
 
 [dev-packages]
 
@@ -18,4 +20,5 @@ python_version = "3.8"
 
 [scripts]
 main = "python main.py"
+lint = "pylint lib"
 test = "python -m unittest discover"

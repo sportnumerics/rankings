@@ -7,13 +7,14 @@ import os
 import pathlib
 import fileinput
 
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
 
-USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
 
 def scrape_team_list(args):
   runner = ScrapeRunner(args)
 
   runner.scrape_and_write_team_lists()
+
 
 def scrape_schedules(args):
   runner = ScrapeRunner(args)
@@ -25,6 +26,7 @@ def scrape_schedules(args):
     team_list_file = args.team_list_file
 
   runner.scrape_and_write_schedules(team_list_file)
+
 
 class ScrapeRunner():
   def __init__(self, args):
@@ -43,12 +45,15 @@ class ScrapeRunner():
 
     self.out_dir = args.out_dir
 
-    self.cache = requests_cache.CachedSession(cache_name=os.path.join(self.out_dir, 'cache'), expire_after=timedelta(days=1))
+    self.cache = requests_cache.CachedSession(cache_name=os.path.join(
+        self.out_dir, 'cache'),
+                                              expire_after=timedelta(days=1))
 
   def scrape_and_write_team_lists(self):
     teams = self.scrape_teams()
 
-    pathlib.Path(os.path.join(self.out_dir, self.year)).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(os.path.join(self.out_dir, self.year)).mkdir(parents=True,
+                                                              exist_ok=True)
     with open(self.get_team_list_filename(), 'w') as f:
       json.dump(list(teams), f, indent=2)
 
@@ -84,7 +89,11 @@ class ScrapeRunner():
       print(f'Unable to convert schedule html from {location}: {e}')
 
   def fetch(self, location):
-    return self.cache.get(location['url'],params=location.get('params'),headers={'user-agent': USER_AGENT}).text
+    return self.cache.get(location['url'],
+                          params=location.get('params'),
+                          headers={
+                              'user-agent': USER_AGENT
+                          }).text
 
   def get_team_list_filename(self):
     return os.path.join(self.out_dir, self.year, f'{self.source}-teams.json')
