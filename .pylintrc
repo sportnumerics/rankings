@@ -1,3 +1,7 @@
+[MASTER]
+disable=
+  C0116, #missing-function-docstring
+
 [FORMAT]
 
 indent-string='  '

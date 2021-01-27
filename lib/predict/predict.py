@@ -61,7 +61,7 @@ def calculate_ratings(schedules):
 
   coefficients = build_offensive_defensive_coefficient_matrix(games, team_map)
 
-  constants = build_offensive_defensive_constants(games, team_map)
+  constants = build_offensive_defensive_constants(games)
 
   raw_ratings, _, _, _, _, _, _, _, _, _ = linalg.lsqr(
       coefficients, constants, damp=0.2)
@@ -133,7 +133,7 @@ def build_offensive_defensive_coefficient_matrix(games, team_map):
                     shape=(2 * len(games), 2 * len(ids_to_indicies) + 1))
 
 
-def build_offensive_defensive_constants(games, team_map):
+def build_offensive_defensive_constants(games):
   return np.array(
       [p for g in games for p in (g['points_for'], g['points_against'])])
 
