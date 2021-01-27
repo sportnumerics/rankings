@@ -1,0 +1,25 @@
+@media (max-width: 600px) {
+  h1 {
+    margin-left: 2rem;
+  }
+
+  table {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (min-width: 600px) {
+  h1 {
+    margin-left: 5rem;
+  }
+
+  table {
+    margin-left: 5rem;
+  }
+}
+
+
+thead {
+  font-weight: bold;
+}

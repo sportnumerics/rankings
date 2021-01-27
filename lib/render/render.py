@@ -30,6 +30,7 @@ def render(args):
 
   render_team_lists(team_lists, out_dir, env)
   render_teams(team_lists, out_dir, env)
+  render_styles(out_dir, env)
 
   if args.serve:
     httpd = http.server.HTTPServer(
@@ -145,8 +146,19 @@ def render_teams(team_lists, out_dir, env):
         f.write(team_html)
 
 
+def render_styles(out_dir, env):
+  template = env.get_template('style.css')
+  css = template.render()
+  with open(os.path.join(content_directory(out_dir), 'style.css'), 'w') as f:
+    f.write(css)
+
+
+def content_directory(out_dir):
+  return os.path.join(out_dir, 'html')
+
+
 def division_directory(out_dir, div_uri):
-  return os.path.join(out_dir, 'html', *div_uri.split('/'))
+  return os.path.join(content_directory(out_dir), *div_uri.split('/'))
 
 
 def is_win(game):

@@ -12,6 +12,7 @@ def add_parsers(parsers):
   scrape_parser.add_argument('--out-dir',
                              default='out',
                              help='output directory')
+  scrape_parser.set_defaults(func=lambda args: scrape_parser.print_help())
 
   scrape_subparsers = scrape_parser.add_subparsers()
 

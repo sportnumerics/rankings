@@ -14,7 +14,7 @@ def predict(args):
   else:
     year = datetime.now().year
 
-  schedules_dir = os.path.join(args.input_dir, year, 'schedules')
+  schedules_dir = os.path.join(args.input_dir, str(year), 'schedules')
   _, _, filenames = next(os.walk(schedules_dir))
 
   schedules = load_schedules(

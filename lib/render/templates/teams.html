@@ -2,6 +2,33 @@
 <html>
   <head>
     <title>Division {{ div }} ({{ year }})</title>
+    <link rel="stylesheet" href="/style.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      thead {
+        font-weight: bold;
+      }
+
+      .rank {
+        padding-right: 1rem;
+      }
+
+      .team-name {
+        padding-right: 2rem;
+      }
+
+      .team-name > .name {
+        padding-right: 0.2rem;
+      }
+
+      .team-name > .record {
+        font-size: smaller;
+      }
+
+      .rating {
+        padding-right: 1rem;
+      }
+    </style>
   </head>
   <body>
     <h1>Divison {{ div }} ({{ year }})</h1>
@@ -15,13 +42,13 @@
       <tbody>
         {% for team in teams %}
         <tr>
-          <td><span class="rank">{{ loop.index }}</span></td>
-          <td><span class="team-name"><a href="{{ team.id }}.html">{{ team.name }}</a></span>
+          <td class="rank">{{ loop.index }}</td>
+          <td class="team-name"><span class="name"><a href="{{ team.id }}.html">{{ team.name }}</a></span>
             {%- if team.wins and team.losses -%}
             <span class="record">({{ team.wins}}-{{team.losses}}{% if team.ties %}-{{team.ties}}{% endif %})</span>
             {%- endif -%}
           </td>
-          <td><span class="rating">{% if team.overall %}{{ team.overall | round(2) }}{% else %}--{% endif %}</span></td>
+          <td>{% if team.overall %}{{ team.overall | round(2) }}{% else %}--{% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
