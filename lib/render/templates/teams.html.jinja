@@ -1,0 +1,54 @@
+{% extends "base.html.jinja" %}
+{% block head %}
+  <title>Divison {{ div }} ({{ year }})</title>
+  {{ super() }}
+  <style>
+    thead {
+      font-weight: bold;
+    }
+
+    .rank {
+      padding-right: 1rem;
+    }
+
+    .team-name {
+      padding-right: 2rem;
+    }
+
+    .team-name > .name {
+      padding-right: 0.2rem;
+    }
+
+    .team-name > .record {
+      font-size: smaller;
+    }
+
+    .rating {
+      padding-right: 1rem;
+    }
+  </style>
+{% endblock %}
+{% block body %}
+  <h1>Divison {{ div }} ({{ year }})</h1>
+  <table>
+    <thead>
+      <tr>
+        <td>Rank</td>
+        <td>Team</td>
+        <td>Rating</td></tr>
+    </thead>
+    <tbody>
+      {% for team in teams %}
+      <tr>
+        <td class="rank">{{ loop.index }}</td>
+        <td class="team-name"><span class="name"><a href="{{ team.id }}.html">{{ team.name }}</a></span>
+          {%- if team.wins and team.losses -%}
+          <span class="record">({{ team.wins}}-{{team.losses}}{% if team.ties %}-{{team.ties}}{% endif %})</span>
+          {%- endif -%}
+        </td>
+        <td>{% if team.overall %}{{ team.overall | round(2) }}{% else %}--{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

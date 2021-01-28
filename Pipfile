@@ -12,6 +12,7 @@ numpy = "*"
 jinja2 = "*"
 pylint = "*"
 yapf = "*"
+watchdog = "*"
 
 [dev-packages]
 

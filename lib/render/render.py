@@ -1,9 +1,13 @@
+from watchdog.events import FileSystemEventHandler, LoggingEventHandler
+from watchdog.observers import Observer
 from datetime import datetime
 from functools import partial
 import http.server
 import pathlib
+import signal
 import jinja2
 import json
+import time
 import math
 import os
 import re
@@ -28,16 +32,49 @@ def render(args):
 
   env = jinja2.Environment(loader=jinja2.PackageLoader('lib.render'))
 
-  render_team_lists(team_lists, out_dir, env)
-  render_teams(team_lists, out_dir, env)
-  render_styles(out_dir, env)
-
   if args.serve:
-    httpd = http.server.HTTPServer(
-        ('', args.port),
-        partial(http.server.SimpleHTTPRequestHandler,
-                directory=os.path.join(out_dir, 'html')))
-    httpd.serve_forever()
+    server_pid = os.fork()
+    if server_pid == 0:
+      start_server(args.port, out_dir)
+    else:
+      watch_templates_and_rebuild_on_changes(team_lists, out_dir, env)
+    os.kill(server_pid, signal.SIGINT)
+    os.waitpid(server_pid, 0)
+
+
+def start_server(port, out_dir):
+  httpd = http.server.HTTPServer(
+          ('', port),
+          partial(http.server.SimpleHTTPRequestHandler,
+                  directory=os.path.join(out_dir, 'html')))
+  print(f'listening on {port}')
+  httpd.serve_forever()
+
+
+def watch_templates_and_rebuild_on_changes(team_lists, out_dir, env):
+  def rebuild():
+    render_team_lists(team_lists, out_dir, env)
+    render_teams(team_lists, out_dir, env)
+    render_styles(out_dir, env)
+
+  rebuild()
+
+  class Watcher(FileSystemEventHandler):
+    def on_any_event(self, event):
+      rebuild()
+
+  observer = Observer()
+  script_dir = os.path.dirname(__file__)
+  templates_dir = os.path.join(script_dir, 'templates')
+  observer.schedule(Watcher(), templates_dir, recursive=True)
+  observer.start()
+  print(f'waiting on file changes in {templates_dir}')
+  try:
+    while True:
+      time.sleep(1)
+  except KeyboardInterrupt:
+    observer.stop()
+  observer.join()
 
 
 def extract_ratings(year_dir):
@@ -123,7 +160,7 @@ def enrich_game(game, tid, ratings, schedules):
 
 
 def render_team_lists(team_lists, out_dir, env):
-  template = env.get_template('teams.html')
+  template = env.get_template('teams.html.jinja')
 
   for uri, teams in team_lists.items():
     div_dir = division_directory(out_dir, uri)
@@ -134,7 +171,7 @@ def render_team_lists(team_lists, out_dir, env):
 
 
 def render_teams(team_lists, out_dir, env):
-  template = env.get_template('team.html')
+  template = env.get_template('team.html.jinja')
 
   for uri, teams in team_lists.items():
     div_dir = division_directory(out_dir, uri)
@@ -147,7 +184,7 @@ def render_teams(team_lists, out_dir, env):
 
 
 def render_styles(out_dir, env):
-  template = env.get_template('style.css')
+  template = env.get_template('style.css.jinja')
   css = template.render()
   with open(os.path.join(content_directory(out_dir), 'style.css'), 'w') as f:
     f.write(css)
