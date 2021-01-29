@@ -2,13 +2,40 @@
 <html>
   <head>
     {% block head %}
-    <link rel="stylesheet" href="/style.css"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" >
+    <link rel="stylesheet" href="/style.css"/>
+    <link rel="stylesheet" href="/fontawesome/all.min.css"/>
+    <script type="module" src="/app.js"></script>
     {% endblock %}
   </head>
   <body>
+    <div class="header">
+      <div class="logo" aria-hidden="true">S#</div>
+      <ul class="menu">
+        <div class="mobile-menu-anchor desk-def-hidden"><i class="fas fa-bars"></i></div>
+        <li class="menu-item expand-anchor mob-def-hidden">Years <i class="fas fa-caret-down"></i>
+          <ul class="menu expandable">
+            <li class="menu-item">2020</li>
+            <li class="menu-item">2019</li>
+            <li class="menu-item">2018</li>
+          </ul>
+        </li>
+        <li class="menu-item expand-anchor mob-def-hidden">Divisions <i class="fas fa-caret-down"></i>
+          <ul class="menu expandable">
+            <li class="menu-item">NCAA Men's Division 1</li>
+            <li class="menu-item">NCAA Men's Division 2</li>
+            <li class="menu-item">NCAA Men's Division 3</li>
+            <li class="menu-item">NCAA Women's Division 1</li>
+            <li class="menu-item">NCAA Women's Division 2</li>
+            <li class="menu-item">NCAA Women's Division 3</li>
+            <li class="menu-item">MCLA Division 1</li>
+            <li class="menu-item">MCLA Division 2</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
     {% block body %}{% endblock %}
   </body>
 </html>

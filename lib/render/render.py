@@ -2,6 +2,7 @@ from watchdog.events import FileSystemEventHandler, LoggingEventHandler
 from watchdog.observers import Observer
 from datetime import datetime
 from functools import partial
+from shutil import copyfile
 import http.server
 import pathlib
 import signal
@@ -32,6 +33,7 @@ def render(args):
 
   env = jinja2.Environment(loader=jinja2.PackageLoader('lib.render'))
 
+  rebuild_all(team_lists, out_dir, env)
   if args.serve:
     server_pid = os.fork()
     if server_pid == 0:
@@ -52,21 +54,17 @@ def start_server(port, out_dir):
 
 
 def watch_templates_and_rebuild_on_changes(team_lists, out_dir, env):
-  def rebuild():
-    render_team_lists(team_lists, out_dir, env)
-    render_teams(team_lists, out_dir, env)
-    render_styles(out_dir, env)
-
-  rebuild()
-
   class Watcher(FileSystemEventHandler):
     def on_any_event(self, event):
-      rebuild()
+      rebuild_all(team_lists, out_dir, env)
 
   observer = Observer()
   script_dir = os.path.dirname(__file__)
   templates_dir = os.path.join(script_dir, 'templates')
-  observer.schedule(Watcher(), templates_dir, recursive=True)
+  static_dir = os.path.join(script_dir, 'static')
+  watcher = Watcher()
+  observer.schedule(watcher, templates_dir, recursive=True)
+  observer.schedule(watcher, static_dir, recursive=True)
   observer.start()
   print(f'waiting on file changes in {templates_dir}')
   try:
@@ -75,6 +73,13 @@ def watch_templates_and_rebuild_on_changes(team_lists, out_dir, env):
   except KeyboardInterrupt:
     observer.stop()
   observer.join()
+
+
+def rebuild_all(team_lists, out_dir, env):
+  render_team_lists(team_lists, out_dir, env)
+  render_teams(team_lists, out_dir, env)
+  render_styles(out_dir, env)
+  render_static(out_dir)
 
 
 def extract_ratings(year_dir):
@@ -126,7 +131,7 @@ def create_team_lists(ratings, teams, schedules):
         team['wins'] = sum(map(is_win, schedule['games']))
         team['losses'] = sum(map(is_loss, schedule['games']))
         team['ties'] = sum(map(is_tie, schedule['games']))
-        team['games'] = map(partial(enrich_game, tid=tid, ratings=ratings_dict, schedules=schedule_dict), schedule['games'])
+        team['games'] = list(map(partial(enrich_game, tid=tid, ratings=ratings_dict, schedules=schedule_dict), schedule['games']))
 
       div['teams'].append(team)
 
@@ -188,6 +193,16 @@ def render_styles(out_dir, env):
   css = template.render()
   with open(os.path.join(content_directory(out_dir), 'style.css'), 'w') as f:
     f.write(css)
+
+
+def render_static(out_dir):
+  static_dir = os.path.join(os.path.dirname(__file__), 'static')
+  for dirpath, _, files in os.walk(static_dir):
+    for file in files:
+      rel_dir = os.path.relpath(dirpath, static_dir)
+      target_dir = os.path.join(content_directory(out_dir), rel_dir)
+      pathlib.Path(target_dir).mkdir(parents=True, exist_ok=True)
+      copyfile(os.path.join(dirpath, file), os.path.join(target_dir, file))
 
 
 def content_directory(out_dir):
