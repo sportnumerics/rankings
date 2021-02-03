@@ -13,17 +13,19 @@
   <body>
     <div class="header">
       <div class="logo" aria-hidden="true">S#</div>
-      <ul class="menu">
-        <div class="mobile-menu-anchor desk-def-hidden"><i class="fas fa-bars"></i></div>
-        <li class="menu-item expand-anchor mob-def-hidden">Years <i class="fas fa-caret-down"></i>
-          <ul class="menu expandable">
+      <div class="mobile-menu-anchor expand-anchor desk-def-hidden" tabindex="0"><i class="fas fa-bars"></i></div>
+      <ul class="menu mob-def-hidden">
+        <li class="menu-item">
+          <div class="expand-anchor" tabindex="1">Years <i class="fas fa-caret-down"></i></div>
+          <ul class="menu desk-def-hidden">
             <li class="menu-item">2020</li>
             <li class="menu-item">2019</li>
             <li class="menu-item">2018</li>
           </ul>
         </li>
-        <li class="menu-item expand-anchor mob-def-hidden">Divisions <i class="fas fa-caret-down"></i>
-          <ul class="menu expandable">
+        <li class="menu-item">
+          <div class="expand-anchor" tabindex="2">Divisions <i class="fas fa-caret-down"></i></div>
+          <ul class="menu desk-def-hidden">
             <li class="menu-item">NCAA Men's Division 1</li>
             <li class="menu-item">NCAA Men's Division 2</li>
             <li class="menu-item">NCAA Men's Division 3</li>
