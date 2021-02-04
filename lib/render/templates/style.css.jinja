@@ -50,6 +50,10 @@ ul {
     margin-left: 2rem;
   }
 
+  h3 {
+    margin-block-end: 0.5em;
+  }
+
   table {
     margin-left: auto;
     margin-right: auto;
@@ -64,7 +68,7 @@ ul {
     flex-direction: column;
   }
 
-  .menu.mob-def-hidden {
+  .mob-def-hidden {
     display: none;
   }
 
@@ -72,7 +76,16 @@ ul {
     position: absolute;
     top: 0rem;
     right: 0rem;
-    margin: 1.5rem;
+    margin: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .fas.fa-caret-down {
+    display: none;
+  }
+
+  .menu-heading {
+    margin-top: 1rem;
   }
 }
 
@@ -95,16 +108,19 @@ ul {
     padding-left: 3rem;
   }
 
-  .menu-item > div {
-    padding: 1rem;
-  }
-
   .menu .menu {
     position: absolute;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     background-color: white;
-    color: black;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    /* border-radius: 0.25rem; */
+    color: rgb(92, 92, 92);
+  }
+
+  .menu .menu .menu-item {
+    padding-left: 0.5rem;
   }
 
   .desk-def-hidden {
