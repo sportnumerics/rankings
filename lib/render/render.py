@@ -110,36 +110,50 @@ def create_team_lists(ratings, teams, schedules):
 
   team_lists = {}
   for tl in teams:
-    for t in tl:
-      tid = t['id']
-      year = t['year']
-      source = t['source']
-      sport = t['sport']
-      div = t['div']
-      uri = f'/{year}/{sport}/{source}/{div}'
-      div = team_lists.setdefault(uri, {'div': div, 'year': year, 'teams': []})
-      team = {'name': t['name'], 'id': tid, 'year': year}
+    for team in tl:
+      year = team['year']
+      source = team['source']
+      sport = team['sport']
+      div_id = team['div']
+      uri = uri_for_div(year=year, source=source, sport=sport, div=div_id)
+      uri_for_year = partial(uri_for_div, source=source, sport=sport, div=div_id)
+      div = team_lists.setdefault(uri, dict(div=div_id, year=year, uri_for_div=uri_for_div, uri_for_year=uri_for_year, teams=[]))
 
-      ratings = ratings_dict.get(tid)
-      if ratings:
-        team['overall'] = ratings['overall']
-        team['offense'] = ratings['offense']
-        team['defense'] = ratings['defense']
-
-      schedule = schedule_dict.get(tid)
-      if schedule:
-        team['wins'] = sum(map(is_win, schedule['games']))
-        team['losses'] = sum(map(is_loss, schedule['games']))
-        team['ties'] = sum(map(is_tie, schedule['games']))
-        team['games'] = list(map(partial(enrich_game, tid=tid, ratings=ratings_dict, schedules=schedule_dict), schedule['games']))
-
-      div['teams'].append(team)
+      add_team_to_div(team, div, ratings_dict, schedule_dict)
 
   for div in team_lists.values():
     div['teams'].sort(
         key=lambda t: -t['overall'] if 'overall' in t else math.inf)
 
   return team_lists
+
+
+def add_team_to_div(team, div, ratings_dict, schedule_dict):
+  tid = team['id']
+  name = team['name']
+  year = team['year']
+  source = team['source']
+  sport = team['sport']
+  div_id = team['div']
+  team = dict(name=name, id=tid, year=year)
+
+  ratings = ratings_dict.get(tid)
+  if ratings:
+    team['overall'] = ratings['overall']
+    team['offense'] = ratings['offense']
+    team['defense'] = ratings['defense']
+
+  schedule = schedule_dict.get(tid)
+  if schedule:
+    team['wins'] = sum(map(is_win, schedule['games']))
+    team['losses'] = sum(map(is_loss, schedule['games']))
+    team['ties'] = sum(map(is_tie, schedule['games']))
+    team['games'] = list(map(partial(enrich_game, tid=tid, ratings=ratings_dict, schedules=schedule_dict), schedule['games']))
+
+  team['uri_for_year'] = partial(uri_for_team, sport=sport, source=source, div=div_id, team_id=tid)
+  team['uri_for_div'] = uri_for_div
+
+  div['teams'].append(team)
 
 
 def enrich_game(game, tid, ratings, schedules):
@@ -160,7 +174,7 @@ def enrich_game(game, tid, ratings, schedules):
     sport = opp_team['sport']
     source = opp_team['source']
     div = opp_team['div']
-    enriched_game['opponent']['uri'] = f'/{year}/{sport}/{source}/{div}/{opp_id}.html'
+    enriched_game['opponent']['uri'] = uri_for_team(year=year, sport=sport, source=source, div=div, team_id=opp_id)
   return enriched_game
 
 
@@ -226,3 +240,9 @@ def is_loss(game):
 def is_tie(game):
   return 'result' in game and game['result']['points_for'] == game['result'][
       'points_against']
+
+def uri_for_team(year, sport, source, div, team_id):
+  return f'/{year}/{sport}/{source}/{div}/{team_id}.html'
+
+def uri_for_div(year, sport, source, div):
+  return f'/{year}/{sport}/{source}/{div}/'
