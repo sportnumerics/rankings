@@ -43,7 +43,7 @@
       <tr>
         <td class="rank">{{ loop.index }}</td>
         <td class="team-name"><span class="name"><a href="{{ team.id }}.html">{{ team.name }}</a></span>
-          {%- if team.wins and team.losses -%}
+          {%- if team.wins is not none and team.losses is not none -%}
           <span class="record">({{ team.wins}}-{{team.losses}}{% if team.ties %}-{{team.ties}}{% endif %})</span>
           {%- endif -%}
         </td>

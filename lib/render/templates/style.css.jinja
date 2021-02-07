@@ -12,6 +12,10 @@ th {
   text-align: left;
 }
 
+a, a:visited {
+  color: blue;
+}
+
 .header {
   background-color: #551c1c;
   color: white;
@@ -44,6 +48,15 @@ ul {
   display: none;
 }
 
+.footer {
+  padding: 4rem;
+  text-align: center;
+}
+
+.footer a {
+  color: grey;
+}
+
 /* MOBILE */
 @media (max-width: 600px) {
   h1 {
@@ -62,6 +75,10 @@ ul {
   .header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .header a, .header a:visited {
+    color: rgb(87, 135, 255);
   }
 
   .menu, .menu.expanded {
