@@ -1,9 +1,9 @@
 from . import render
-
+from datetime import datetime
 
 def add_parsers(parsers):
   render_parser = parsers.add_parser('render', help='render to html')
-  render_parser.add_argument('--year', help='Year to render')
+  render_parser.add_argument('--year', default=str(datetime.now().year), help='Year to render')
   render_parser.add_argument('--input-dir',
                              default='out',
                              help='Input directory')

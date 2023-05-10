@@ -1,5 +1,5 @@
 from . import scrape
-
+from datetime import datetime
 
 def add_parsers(parsers):
   scrape_parser = parsers.add_parser('scrape',
@@ -8,6 +8,7 @@ def add_parsers(parsers):
                              choices=['ncaa', 'mcla'],
                              help='league source')
   scrape_parser.add_argument('--year',
+                             default=str(datetime.now().year),
                              help='year to fetch (defaults to current year)')
   scrape_parser.add_argument('--out-dir',
                              default='out',

@@ -9,12 +9,9 @@ from scipy.sparse import linalg
 
 def predict(args):
   out_dir = args.out_dir
-  if args.year:
-    year = args.year
-  else:
-    year = datetime.now().year
+  year = args.year
 
-  schedules_dir = os.path.join(args.input_dir, str(year), 'schedules')
+  schedules_dir = os.path.join(args.input_dir, year, 'schedules')
   _, _, filenames = next(os.walk(schedules_dir))
 
   schedules = load_schedules(

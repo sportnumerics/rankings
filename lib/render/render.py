@@ -15,10 +15,7 @@ import re
 
 
 def render(args):
-  if args.year:
-    year = args.year
-  else:
-    year = datetime.now().year
+  year = args.year
   out_dir = args.out_dir
 
   year_dir = os.path.join(args.input_dir, year)
@@ -34,7 +31,7 @@ def render(args):
   env = jinja2.Environment(loader=jinja2.PackageLoader('lib.render'))
 
   rebuild_all(team_lists, out_dir, env)
-  if args.serve:
+  if hasattr(args, 'serve') and args.serve:
     server_pid = os.fork()
     if server_pid == 0:
       start_server(args.port, out_dir)
@@ -159,7 +156,7 @@ def add_team_to_div(team, div, ratings_dict, schedule_dict):
 def enrich_game(game, tid, ratings, schedules):
   enriched_game = {
     **game,
-    'date': datetime.fromisoformat(game['date']),
+    'date': datetime.fromisoformat(game['date']) if isinstance(game['date'], str) else game['date'],
   }
   opp_id = game['opponent']['id']
   opp_ratings = ratings.get(opp_id)

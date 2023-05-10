@@ -1,3 +1,5 @@
+from datetime import datetime
+
 def create_team(team_id,
                 name=None,
                 sport='ml',
@@ -34,7 +36,7 @@ def create_game(opponent_id, result=None, home=False):
           'id': opponent_id,
       },
       'home': home,
-      'date': 'today'
+      'date': '2020-01-31T13:00:00'
   }
   if result:
     game['result'] = {'points_for': result[0], 'points_against': result[1]}

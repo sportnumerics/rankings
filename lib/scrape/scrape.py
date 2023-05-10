@@ -5,21 +5,22 @@ from datetime import datetime, timedelta
 import json
 import os
 import pathlib
-import fileinput
+import logging
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
+LOGGER = logging.getLogger(__name__)
 
 
 def scrape_team_list(args):
-  runner = ScrapeRunner(args)
+  runner = ScrapeRunner(source=args.source, year=args.year, out_dir=args.out_dir)
 
   runner.scrape_and_write_team_lists()
 
 
 def scrape_schedules(args):
-  runner = ScrapeRunner(args)
+  runner = ScrapeRunner(source=args.source, year=args.year, out_dir=args.out_dir)
 
-  if not args.team_list_file:
+  if not hasattr(args, 'team_list_file'):
     runner.scrape_and_write_team_lists()
     team_list_file = runner.get_team_list_filename()
   else:
@@ -29,27 +30,24 @@ def scrape_schedules(args):
 
 
 class ScrapeRunner():
-  def __init__(self, args):
-    if args.source == 'ncaa':
+  def __init__(self, source, year, out_dir):
+    if source == 'ncaa':
       self.scraper = ncaa.Ncaa()
-    elif args.source == 'mcla':
+    elif source == 'mcla':
       self.scraper = mcla.Mcla()
     else:
-      raise Exception(f'Unimplemented source {args.source}')
-    self.source = args.source
+      raise Exception(f'Unimplemented source {source}')
+    self.source = source
 
-    if args.year:
-      self.year = str(args.year)
-    else:
-      self.year = str(datetime.now().year)
+    self.year = year
 
-    self.out_dir = args.out_dir
+    self.out_dir = out_dir
 
-    self.cache = requests_cache.CachedSession(cache_name=os.path.join(
-        self.out_dir, 'cache'),
+    self.cache = requests_cache.CachedSession(cache_name=os.path.join(self.out_dir, 'cache'),
                                               expire_after=timedelta(days=1))
 
   def scrape_and_write_team_lists(self):
+    LOGGER.info(f'scraping teams for {self.source} ({self.year}) into {self.out_dir}')
     teams = self.scrape_teams()
 
     pathlib.Path(os.path.join(self.out_dir, self.year)).mkdir(parents=True,
@@ -58,6 +56,7 @@ class ScrapeRunner():
       json.dump(list(teams), f, indent=2)
 
   def scrape_and_write_schedules(self, team_list_file):
+    LOGGER.info(f'scraping schedules for {self.source} ({self.year}) into {self.out_dir}')
     with open(team_list_file) as f:
       teams = json.load(f)
 
