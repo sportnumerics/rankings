@@ -13,6 +13,7 @@ jinja2 = "*"
 pylint = "*"
 yapf = "*"
 watchdog = "*"
+python-dateutil = "*"
 
 [dev-packages]
 

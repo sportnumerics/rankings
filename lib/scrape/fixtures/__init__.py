@@ -16,6 +16,8 @@ def ncaa_game_by_game():
 def mcla_schedule():
   return load_fixture('mcla_schedule.html')
 
+def mcla_game_details():
+  return load_fixture('mcla_game_details.html')
 
 def load_fixture(filename):
   d = os.path.dirname(__file__)

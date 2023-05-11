@@ -6,6 +6,7 @@ import json
 import os
 import pathlib
 import logging
+import traceback
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
 LOGGER = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ def scrape_team_list(args):
 def scrape_schedules(args):
   runner = ScrapeRunner(source=args.source, year=args.year, out_dir=args.out_dir)
 
-  if not hasattr(args, 'team_list_file'):
+  if not hasattr(args, 'team_list_file') or not args.team_list_file:
     runner.scrape_and_write_team_lists()
     team_list_file = runner.get_team_list_filename()
   else:
@@ -62,12 +63,24 @@ class ScrapeRunner():
 
     schedule_dir = os.path.join(self.out_dir, self.year, 'schedules')
     pathlib.Path(schedule_dir).mkdir(parents=True, exist_ok=True)
+    games_dir = os.path.join(self.out_dir, self.year, 'games')
+    pathlib.Path(games_dir).mkdir(parents=True, exist_ok=True)
     for team in teams:
+      LOGGER.info(f'scraping schedule for {team["name"]}')
       schedule = self.scrape_schedule(team)
       if not schedule:
         continue
       with open(os.path.join(schedule_dir, team['id'] + '.json'), 'w') as f:
         json.dump(schedule, f, indent=2)
+      for game in schedule['games']:
+        if 'details' in game:
+          LOGGER.info(f'scraping game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}')
+          game_details = self.scrape_game_details(game['details'], game['id'], team['sport'], team['source'])
+          if not game_details:
+            continue
+          with open(os.path.join(games_dir, game_details['id'] + '.json'), 'w') as f:
+            json.dump(game_details, f, indent=2)
+
 
   def scrape_teams(self):
     for url in self.scraper.get_team_list_urls(self.year):
@@ -86,6 +99,14 @@ class ScrapeRunner():
       return self.scraper.convert_schedule_html(html, team)
     except Exception as e:
       print(f'Unable to convert schedule html from {schedule}: {e}')
+
+  def scrape_game_details(self, location, game_id, sport, source):
+    html = self.fetch(location)
+    try:
+      return self.scraper.convert_game_details_html(html, game_id, sport, source)
+    except Exception as e:
+      print(f'Unable to convert game details html from {location}:')
+      traceback.print_exception(e)
 
   def fetch(self, location):
     return self.cache.get(location['url'],

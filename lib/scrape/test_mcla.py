@@ -60,6 +60,7 @@ class TestMcla(unittest.TestCase):
     self.assertEqual(schedule['team'], team)
     self.assertEqual(
         schedule['games'][0], {
+            'id': 'ml-mcla-23539',
             'date': '2020-02-09T13:00:00',
             'opponent': {
                 'name': 'Dominican',
@@ -81,3 +82,44 @@ class TestMcla(unittest.TestCase):
             'Brigham Young', 'Concordia-Irvine', 'Chapman', 'Grand Canyon',
             'Arizona'
         ])
+
+  def test_mcla_game_details(self):
+    html = fixtures.mcla_game_details()
+    m = mcla.Mcla()
+    game_details = m.convert_game_details_html(html, 'ml-mcla-26005', 'ml', 'mcla')
+    self.assertEqual(game_details['date'], '2023-02-17T19:00:00-07:00')
+    self.assertEqual(game_details['id'], 'ml-mcla-26005')
+    self.assertEqual(game_details['home_team'], {
+        'name': 'Loyola Marymount',
+        'id': 'ml-mcla-loyola-marymount'
+    })
+    self.assertEqual(game_details['away_team'], {
+        'name': 'Air Force',
+        'id': 'ml-mcla-air-force'
+    })
+    self.assertEqual(game_details['result'], {
+        'home_score': 12,
+        'away_score': 24
+    })
+    self.assertEqual(game_details['home_stats'][0], {
+        'player': {
+            'name': 'Ben Taylor',
+            'id': 'ml-mcla-56639',
+        },
+        'number': 5,
+        'position': 'M',
+        'gb': 2,
+        'g': 1,
+        'a': 1
+    })
+    self.assertEqual(game_details['away_stats'][0], {
+      'player': {
+        'name': 'Aden Extrand',
+        'id': 'ml-mcla-59796'
+      },
+      'number': 32,
+      'position': 'DM',
+      'gb': 0,
+      'g': 0,
+      'a': 0
+    })
