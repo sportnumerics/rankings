@@ -168,7 +168,8 @@ class Mcla():
             row['s'] = int(cell.string)
           if col_name == 'GA':
             row['ga'] = int(cell.string)
-        stats.append(row)
+        if row:
+          stats.append(row)
     return stats
 
 
