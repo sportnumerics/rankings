@@ -32,7 +32,7 @@ class TestScrape(unittest.TestCase):
     self.assertEqual(
         team_list[0], {
             'name': 'Air Force',
-            'schedule_location': {
+            'schedule': {
                 'url': 'https://stats.ncaa.org/player/game_by_game',
                 'params': {
                     'game_sport_year_ctl_id': '15203',
@@ -64,6 +64,9 @@ class TestScrape(unittest.TestCase):
             'result': {
                 'points_for': 14,
                 'points_against': 13
+            },
+            'details': {
+              'url': '/game/index/4915046?org_id=721'
             }
         })
     self.assertEqual(

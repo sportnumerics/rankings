@@ -20,7 +20,7 @@ class Mcla():
         year = location['year']
         yield {
             'name': next(link.stripped_strings),
-            'schedule_location': {
+            'schedule': {
                 'url': f'https://mcla.us/team/{slug}/{year}/schedule.html'
             },
             'year': location['year'],
@@ -58,6 +58,9 @@ class Mcla():
       date = ' '.join([team['year']] + list(date_col.stripped_strings))
       game['date'] = datetime.datetime.strptime(
           date, '%Y %a %b %d %I:%M%p').isoformat()
+      game['details'] = {
+        'url': date_col.a['href']
+      }
 
       score = score_col.string
       score_match = re.match(

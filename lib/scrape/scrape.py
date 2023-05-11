@@ -80,12 +80,12 @@ class ScrapeRunner():
           f.write(html)
 
   def scrape_schedule(self, team):
-    location = team['schedule_location']
-    html = self.fetch(location)
+    schedule = team['schedule']
+    html = self.fetch(schedule)
     try:
       return self.scraper.convert_schedule_html(html, team)
     except Exception as e:
-      print(f'Unable to convert schedule html from {location}: {e}')
+      print(f'Unable to convert schedule html from {schedule}: {e}')
 
   def fetch(self, location):
     return self.cache.get(location['url'],

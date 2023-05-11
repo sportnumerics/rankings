@@ -19,7 +19,7 @@ class TestMcla(unittest.TestCase):
     self.assertEqual(
         team_list[0], {
             'name': 'Alabama',
-            'schedule_location': {
+            'schedule': {
                 'url': 'https://mcla.us/team/alabama/2020/schedule.html'
             },
             'year': '2020',
@@ -37,7 +37,7 @@ class TestMcla(unittest.TestCase):
     self.assertEqual(
         team_list[2], {
             'name': 'Arizona State',
-            'schedule_location': {
+            'schedule': {
                 'url': 'https://mcla.us/team/arizona_state/2020/schedule.html'
             },
             'year': '2020',
@@ -69,6 +69,9 @@ class TestMcla(unittest.TestCase):
             'result': {
                 'points_for': 11,
                 'points_against': 16
+            },
+            'details': {
+              'url': 'https://mcla.us/game/23539'
             }
         })
     self.assertEqual(

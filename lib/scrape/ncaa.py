@@ -31,7 +31,7 @@ class Ncaa():
       sport = SPORT_MAP[location['params']['sport_code']]
       yield {
           'name': link.string,
-          'schedule_location': {
+          'schedule': {
               'url': 'https://stats.ncaa.org/player/game_by_game',
               'params': {
                   'game_sport_year_ctl_id': link_parts[3],
@@ -90,6 +90,10 @@ class Ncaa():
         game['result'] = {
             'points_for': int(score_match.group('points_for')),
             'points_against': int(score_match.group('points_against'))
+        }
+      if hasattr(result_col, 'a') and hasattr(result_col.a, 'href'):
+        game['details'] = {
+          'url': result_col.a['href']
         }
 
       games.append(game)
