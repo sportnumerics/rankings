@@ -36,6 +36,41 @@ def rank_players(args):
 
   games = list(load_from_files(map(lambda f: os.path.join(games_dir, f), filenames)))
 
+  players = {}
+  def add_player_stats(entry, team, opponent, game_id, date):
+    player_id = entry['player']['id']
+    if player_id not in players:
+      player = {
+        'id': player_id,
+        'name': entry['player']['name'],
+        'team': team,
+        'stats': []
+      }
+      players[player_id] = player
+    else:
+      player = players[player_id]
+
+    line = {
+      'game_id': game_id,
+      'date': date,
+      'opponent': opponent,
+      'g': entry['g'],
+      'a': entry['a'],
+      'gb': entry['gb']
+    }
+    if 'face_offs' in entry:
+      line['face_offs'] = entry['face_offs']
+    if 'position' in entry:
+      player['position'] = entry['position']
+    player['stats'].append(line)
+    player['stats'].sort(key=lambda x: x['date'])
+
+  for game in games:
+    for entry in game.get('home_stats', []):
+      add_player_stats(entry, game['home_team'], game['away_team'], game['id'], game['date'])
+    for entry in game.get('away_stats', []):
+      add_player_stats(entry, game['away_team'], game['home_team'], game['id'], game['date'])
+
   # To get a player ranking we can have pts / assists / goals ranking
   # lets start with pts
   # basically, we'll say each team has a defensive rating
@@ -84,10 +119,10 @@ def rank_players(args):
   goal_ratings = get_ratings(lambda e: e['g'])
   assist_ratings = get_ratings(lambda e: e['a'])
 
-  players = []
+  player_ratings = []
   for i in range(0, n_players):
     player = player_idx_to_id[i]
-    players.append({
+    player_ratings.append({
       'player': player,
       'points': pts_ratings[i],
       'goals': goal_ratings[i],
@@ -107,16 +142,21 @@ def rank_players(args):
       'assists_def': assist_ratings[n_players + n_teams + i]
     })
 
-  sorted_players = sorted(players, key=lambda r: -r['points'])
+  sorted_players = sorted(player_ratings, key=lambda r: -r['points'])
   sorted_teams = sorted(teams, key=lambda r: -r['points_def'])
 
   pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True, exist_ok=True)
   with open(os.path.join(out_dir, year, 'player-ratings.json'), 'w') as f:
     json.dump(sorted_players, f, indent=2)
 
-  pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True, exist_ok=True)
   with open(os.path.join(out_dir, year, 'team-player-ratings.json'), 'w') as f:
     json.dump(sorted_teams, f, indent=2)
+
+  pathlib.Path(os.path.join(out_dir, year, 'players')).mkdir(parents=True, exist_ok=True)
+  for player in players.values():
+    with open(os.path.join(out_dir, year, 'players', player['id'] + '.json'), 'w') as f:
+      json.dump(player, f, indent=2)
+
 
 def index_ids(ids):
   id_to_idx = {}
