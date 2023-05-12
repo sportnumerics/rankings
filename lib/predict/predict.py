@@ -42,6 +42,12 @@ def rank_players(args):
   # and each player has a pts rating
   # we minimize
   # Player_rating - Defense_rating = Points_actual
+  # this isn't quite good enough though - the issue is that most players don't score any points
+  # so the defensive rating is forced very close to zero
+  # we possibly need another factor to represent the rest of the team
+  # a very good player does not play independently of his/her team
+  # so possibly it should be
+  # Player_rating + Offense_rating - Defense_rating = Points_actual
   player_id_to_idx, player_idx_to_id = index_ids([entry['player']['id'] for game in games for stats in [game.get('home_stats', []), game.get('away_stats', [])] for entry in stats])
   team_id_to_idx, team_idx_to_id = index_ids([id for game in games for id in [game['away_team']['id'], game['home_team']['id']]])
 
@@ -51,36 +57,41 @@ def rank_players(args):
   constants = []
   n_players = len(player_id_to_idx)
   n_teams = len(team_id_to_idx)
-  for game in games:
-    for entry in game.get('away_stats', []):
-      row = len(constants)
-      data.append(1)
-      i.append(row)
-      j.append(player_id_to_idx[entry['player']['id']])
-      data.append(-1)
-      i.append(row)
-      j.append(n_players + team_id_to_idx[game['home_team']['id']])
-      constants.append(entry['g'])
-    for entry in game.get('home_stats', []):
-      row = len(constants)
-      data.append(1)
-      i.append(row)
-      j.append(player_id_to_idx[entry['player']['id']])
-      data.append(-1)
-      i.append(row)
-      j.append(n_players + team_id_to_idx[game['away_team']['id']])
-      constants.append(entry['g'])
+  def get_coefficients(stats):
+    for (player, team, opponent, pts) in stats:
+      yield ([1, 1, -1], [player_id_to_idx[player], n_players + team_id_to_idx[team], n_players + n_teams + team_id_to_idx[opponent]], pts)
 
-  coefficients = coo_matrix((data, (i, j)), shape=(len(constants), n_players + n_teams))
+  def get_ratings(stat):
+    for game in games:
+      for d, jx, c in get_coefficients([(entry['player']['id'], game['home_team']['id'], game['away_team']['id'], stat(entry)) for entry in game.get('home_stats', [])]):
+        data.extend(d)
+        i.extend([len(constants)] * len(jx))
+        j.extend(jx)
+        constants.append(c)
+      for d, jx, c in get_coefficients([(entry['player']['id'], game['away_team']['id'], game['home_team']['id'], stat(entry)) for entry in game.get('away_stats', [])]):
+        data.extend(d)
+        i.extend([len(constants)] * len(jx))
+        j.extend(jx)
+        constants.append(c)
 
-  ratings, _, _, _, _, _, _, _, _, _ = linalg.lsqr(coefficients, constants, damp=1.0)
+    coefficients = coo_matrix((data, (i, j)), shape=(len(constants), n_players + 2 * n_teams))
+
+    ratings, _, _, _, _, _, _, _, _, _ = linalg.lsqr(coefficients, constants, damp=1.0)
+
+    return ratings
+
+  pts_ratings = get_ratings(lambda e: e['g'] + e['a'])
+  goal_ratings = get_ratings(lambda e: e['g'])
+  assist_ratings = get_ratings(lambda e: e['a'])
 
   players = []
   for i in range(0, n_players):
     player = player_idx_to_id[i]
     players.append({
       'player': player,
-      'rating': ratings[i]
+      'points': pts_ratings[i],
+      'goals': goal_ratings[i],
+      'assists': assist_ratings[i]
     })
 
   teams = []
@@ -88,11 +99,16 @@ def rank_players(args):
     team = team_idx_to_id[i]
     teams.append({
       'team': team,
-      'rating': ratings[n_players + i]
+      'points_off': pts_ratings[n_players + i],
+      'points_def': pts_ratings[n_players + n_teams + i],
+      'goals_off': goal_ratings[n_players + i],
+      'goals_def': goal_ratings[n_players + n_teams + i],
+      'assists_off': assist_ratings[n_players + i],
+      'assists_def': assist_ratings[n_players + n_teams + i]
     })
 
-  sorted_players = sorted(players, key=lambda r: -r['rating'])
-  sorted_teams = sorted(teams, key=lambda r: -r['rating'])
+  sorted_players = sorted(players, key=lambda r: -r['points'])
+  sorted_teams = sorted(teams, key=lambda r: -r['points_def'])
 
   pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True, exist_ok=True)
   with open(os.path.join(out_dir, year, 'player-ratings.json'), 'w') as f:
