@@ -22,9 +22,15 @@ def render(args):
 
   ratings = extract_ratings(year_dir)
 
+  player_ratings = extract_ratings(year_dir)
+
+  players = extract_players(year_dir)
+
   teams = extract_teams(year_dir)
 
   schedules = extract_schedules(year_dir)
+
+  player_lists = create_player_lists(player_ratings, players)
 
   team_lists = create_team_lists(ratings, teams, schedules)
 
@@ -82,7 +88,17 @@ def rebuild_all(team_lists, out_dir, env):
 def extract_ratings(year_dir):
   with open(os.path.join(year_dir, 'team-ratings.json')) as f:
     return json.load(f)
-
+  
+def extract_player_ratings(year_dir):
+  with open(os.path.join(year_dir, 'player-ratings.json')) as f:
+    return json.load(f)
+  
+def extract_players(year_dir):
+  players_dir = os.path.join(year_dir, 'players')
+  _, _, filenames = next(os.walk(players_dir))
+  for file in filenames:
+    with open(os.path.join(players_dir, file)) as f:
+      yield json.load(f)
 
 def extract_teams(year_dir):
   _, _, filenames = next(os.walk(year_dir))
@@ -92,6 +108,12 @@ def extract_teams(year_dir):
       with open(os.path.join(year_dir, file)) as f:
         yield json.load(f)
 
+def extract_games(year_dir):
+  games_dir = os.path.join(year_dir, 'games')
+  _, _, filenames = next(os.walk(games_dir))
+  for file in filenames:
+    with open(os.path.join(games_dir, file)) as f:
+      yield json.load(f)
 
 def extract_schedules(year_dir):
   schedule_dir = os.path.join(year_dir, 'schedules')
@@ -123,6 +145,9 @@ def create_team_lists(ratings, teams, schedules):
         key=lambda t: -t['overall'] if 'overall' in t else math.inf)
 
   return team_lists
+
+def create_player_lists(ratings, teams):
+  pass
 
 
 def add_team_to_div(team, div, ratings_dict, schedule_dict):
@@ -180,9 +205,9 @@ def render_team_lists(team_lists, out_dir, env):
 
   for uri, teams in team_lists.items():
     div_dir = division_directory(out_dir, uri)
-    pathlib.Path(div_dir).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(os.path.join(div_dir, 'teams')).mkdir(parents=True, exist_ok=True)
     teams_html = template.render(teams)
-    with open(os.path.join(div_dir, 'index.html'), 'w') as f:
+    with open(os.path.join(div_dir, 'teams', 'index.html'), 'w') as f:
       f.write(teams_html)
 
 
@@ -191,11 +216,11 @@ def render_teams(team_lists, out_dir, env):
 
   for uri, teams in team_lists.items():
     div_dir = division_directory(out_dir, uri)
-    pathlib.Path(div_dir).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(os.path.join(div_dir, 'teams')).mkdir(parents=True, exist_ok=True)
     for team in teams['teams']:
       tid = team['id']
       team_html = template.render(team)
-      with open(os.path.join(div_dir, f'{tid}.html'), 'w') as f:
+      with open(os.path.join(div_dir, 'teams', f'{tid}.html'), 'w') as f:
         f.write(team_html)
 
 

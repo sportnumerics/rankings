@@ -103,7 +103,7 @@ class ScrapeRunner():
   def scrape_game_details(self, location, game_id, sport, source):
     html = self.fetch(location)
     try:
-      return self.scraper.convert_game_details_html(html, game_id, sport, source)
+      return self.scraper.convert_game_details_html(html, location, game_id, sport, source)
     except Exception as e:
       print(f'Unable to convert game details html from {location}:')
       traceback.print_exception(e)

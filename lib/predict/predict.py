@@ -121,9 +121,12 @@ def rank_players(args):
 
   player_ratings = []
   for i in range(0, n_players):
-    player = player_idx_to_id[i]
+    player_id = player_idx_to_id[i]
+    player = players[player_id]
     player_ratings.append({
-      'player': player,
+      'id': player['id'],
+      'name': player['name'],
+      'team': player['team'],
       'points': pts_ratings[i],
       'goals': goal_ratings[i],
       'assists': assist_ratings[i]

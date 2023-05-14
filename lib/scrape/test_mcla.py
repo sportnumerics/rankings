@@ -86,9 +86,10 @@ class TestMcla(unittest.TestCase):
   def test_mcla_game_details(self):
     html = fixtures.mcla_game_details()
     m = mcla.Mcla()
-    game_details = m.convert_game_details_html(html, 'ml-mcla-26005', 'ml', 'mcla')
+    game_details = m.convert_game_details_html(html, 'https://mcla.us/games/26005', 'ml-mcla-26005', 'ml', 'mcla')
     self.assertEqual(game_details['date'], '2023-02-17T19:00:00-07:00')
     self.assertEqual(game_details['id'], 'ml-mcla-26005')
+    self.assertEqual(game_details['external_link'], 'https://mcla.us/games/26005')
     self.assertEqual(game_details['home_team'], {
         'name': 'Loyola Marymount',
         'id': 'ml-mcla-loyola-marymount'
