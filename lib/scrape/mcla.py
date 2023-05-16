@@ -36,7 +36,7 @@ class Mcla():
             },
             'year': location['year'],
             'id': f'ml-mcla-{self._normalize_slug(slug)}',
-            'div': DIVISON_MAP[divison_text],
+            'div': 'mcla' + DIVISON_MAP[divison_text],
             'sport': 'ml',
             'source': 'mcla'
         }
@@ -148,7 +148,8 @@ class Mcla():
           if col_name == 'Field Player' or col_name == 'Goalie':
             row['player'] = {
               'id': self._parse_player_link_into_id(sport, source, cell.a['href']),
-              'name': cell.a.string
+              'name': cell.a.string,
+              'external_link': cell.a['href']
             }
           if col_name == 'Pos':
             row['position'] = cell.string

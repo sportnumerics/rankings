@@ -1,66 +1,107 @@
 
-export async function getTeams({ year, source }: { year: string, source: string }): Promise<TeamMap> {
-    const response = await fetch(`${process.env.BASE_URL}/${year}/${source}-teams.json`);
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+export async function getYears(): Promise<Year[]> {
+    const response = await fetch(`${BASE_URL}/years.json`);
+    return response.json();
+}
+
+export async function getDivs(): Promise<Division[]> {
+    const response = await fetch(`${BASE_URL}/divs.json`);
+    return response.json();
+}
+
+export async function getTeams({ year, div }: { year: string, div: string }): Promise<TeamMap | null> {
+    const divisions = await getDivs();
+    const division = divisions.find(division => division.id === div);
+    if (!division) {
+        return null;
+    }
+    const response = await fetch(`${BASE_URL}/data/${year}/${division.source}-teams.json`);
+    if (!response.ok) {
+        return null;
+    }
     const teams: Team[] = await response.json();
     return Object.fromEntries(teams.map(team => [team.id, team]));
 }
 
-export async function getRankedTeamsByDiv({ year, source, div }: { year: string, source: string, div: string }): Promise<RankedTeamMap> {
-    const teamsPromise = getTeams({year, source});
+export async function getRankedTeamsByDiv({ year, div }: { year: string, div: string }): Promise<RankedTeamMap | null> {
+    const teamsPromise = getTeams({year, div});
     const ratingsPromise = getRatings({year});
     const [teams, ratings] = await Promise.all([teamsPromise, ratingsPromise]);
+    if (!teams || !ratings) {
+        return null;
+    }
     const teamRatings = Object.values(teams)
-        .filter(team => team.source === source && team.div === div)
+        .filter(team => team.div === div)
         .map(team => ({...team, ...ratings[team.id]}));
     teamRatings.sort((a, b) => b.overall - a.overall);
     return Object.fromEntries(teamRatings.map((team, i) => [team.id, {...team, rank: i + 1}]));
 }
 
-export async function getTeamSchedule({ year, id }: { year: string, id: string }): Promise<TeamSchedule> {
-    const response = await fetch(`${process.env.BASE_URL}/${year}/schedules/${id}.json`);
+export async function getTeamSchedule({ year, team }: { year: string, team: string }): Promise<TeamSchedule | null> {
+    const response = await fetch(`${BASE_URL}/data/${year}/schedules/${team}.json`);
+    if (!response.ok) {
+        return null;
+    }
     return await response.json();
 }
 
-export async function getRatings({ year }: { year: string}): Promise<RatingMap> {
-    const response = await fetch(`${process.env.BASE_URL}/${year}/team-ratings.json`);
+export async function getRatings({ year }: { year: string}): Promise<RatingMap | null> {
+    const response = await fetch(`${BASE_URL}/data/${year}/team-ratings.json`);
+    if (!response.ok) {
+        return null;
+    }
     const ratings: TeamRating[] = await response.json();
     return Object.fromEntries(ratings.map(rating => [rating.team, rating]));
 }
 
-export async function getPlayerRatings({ year }: {year: string}): Promise<PlayerRatingMap> {
-    const response = await fetch(`${process.env.BASE_URL}/${year}/player-ratings.json`);
+export async function getPlayerRatings({ year }: {year: string}): Promise<PlayerRatingMap | null> {
+    const response = await fetch(`${BASE_URL}/data/${year}/player-ratings.json`);
+    if (!response.ok) {
+        return null;
+    }
     const ratings: PlayerRating[] = await response.json();
     return Object.fromEntries(ratings.map(rating => [rating.id, rating]));
 }
 
-export async function getRankedPlayersByDiv({ year, source, div }: { year: string, source: string, div: string }): Promise<RankedPlayerMap> {
-    const teamsPromise = getTeams({year, source});
+export async function getRankedPlayersByDiv({ year, div }: { year: string, div: string }): Promise<RankedPlayerMap | null> {
+    const teamsPromise = getTeams({year, div});
     const ratingsPromise = getPlayerRatings({ year });
     const [teams, ratings] = await Promise.all([teamsPromise, ratingsPromise]);
+    if (!teams || !ratings) {
+        return null;
+    }
     const playerRatings = Object.values(ratings)
-        .filter(player => {
-            const team = teams[player.team.id];
-            return team.source === source && team.div === div;
-        });
+        .filter(player => teams[player.team.id].div === div);
     playerRatings.sort((a, b) => b.points - a.points);
     return Object.fromEntries(playerRatings.map((player, i) => [player.id, {...player, rank: i + 1}]));
 }
 
-export async function getRankedPlayersByTeam({ year, team }: { year: string, team: string }): Promise<RankedPlayerMap> {
+export async function getRankedPlayersByTeam({ year, team }: { year: string, team: string }): Promise<RankedPlayerMap | null> {
     const ratings = await getPlayerRatings({ year });
+    if (!ratings) {
+        return null;
+    }
     const players = Object.values(ratings)
         .filter(player => player.team.id === team);
     players.sort((a, b) => b.points - a.points);
     return Object.fromEntries(players.map((player, i) => [player.id, {...player, rank: i + 1}]));
 }
 
-export async function getPlayerStats({ year, id }: { year: string, id: string }): Promise<PlayerStats> {
-    const response = await fetch(`${process.env.BASE_URL}/${year}/players/${id}.json`);
+export async function getPlayerStats({ year, id }: { year: string, id: string }): Promise<PlayerStats | null> {
+    const response = await fetch(`${BASE_URL}/data/${year}/players/${id}.json`);
+    if (!response.ok) {
+        return null;
+    }
     return await response.json();
 }
 
-export async function getGame({ year, id }: { year: string, id: string }): Promise<Game> {
-    const response = await fetch(`${process.env.BASE_URL}/${year}/games/${id}.json`);
+export async function getGame({ year, id }: { year: string, id: string }): Promise<Game | null> {
+    const response = await fetch(`${BASE_URL}/data/${year}/games/${id}.json`);
+    if (!response.ok) {
+        return null;
+    }
     return await response.json();
 }
 
@@ -152,6 +193,7 @@ export interface RankedTeamMap {
 export interface PlayerStats {
     id: string;
     name: string;
+    external_link: string;
     team: TeamSummary;
     stats: StatLine[]
 }
@@ -199,4 +241,17 @@ export interface PlayerSummary {
 export interface FaceOffResults {
     won: number;
     lost: number;
+}
+
+export interface Year {
+    id: string;
+    unavailable: string[];
+}
+
+export interface Division {
+    name: string;
+    id: string;
+    sport: string;
+    source: string;
+    div: string;
 }

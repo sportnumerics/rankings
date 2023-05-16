@@ -1,10 +1,14 @@
-import Params from '../params';
+import { HasDivision } from '../../../navigation';
 import { getRankedPlayersByDiv } from '@/app/services/data';
 import { twoPlaces } from '@/app/formatting';
 import Link from 'next/link';
+import { Content, Error } from '@/app/shared';
 
-export default async function Page({ params } : { params: Params}) {
+export default async function Page({ params } : { params: HasDivision}) {
     const players = await getRankedPlayersByDiv(params);
+    if (!players) {
+        return <Content><Error /></Content>
+    }
     const playerRatings = Object.values(players);
     playerRatings.sort((a, b) => a.rank - b.rank);
     const top200 = playerRatings.slice(0, 200);

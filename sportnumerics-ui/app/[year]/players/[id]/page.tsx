@@ -1,5 +1,6 @@
 import { date } from "@/app/formatting";
 import { getPlayerStats } from "@/app/services/data";
+import { ExternalLink, Table, TableHeader } from "@/app/shared";
 import Link from "next/link";
 
 interface Params {
@@ -13,8 +14,9 @@ export default async function Page({ params } : { params: Params}) {
     return <div>
         <h1>{player.name}</h1>
         <h2><Link href={`/${params.year}/teams/${player.team.id}`}>{player.team.name}</Link></h2>
-        <table>
-            <thead><tr><th>Date</th><th>Opponent</th><th>G</th><th>A</th><th>GB</th></tr></thead>
+        {player.external_link && <ExternalLink href={player.external_link} /> }
+        <Table>
+            <TableHeader><tr><th>Date</th><th>Opponent</th><th>G</th><th>A</th><th>GB</th></tr></TableHeader>
             <tbody>
                 {player.stats.map(line => <tr>
                     <td>{date(line.date)}</td>
@@ -24,6 +26,6 @@ export default async function Page({ params } : { params: Params}) {
                     <td>{line.gb}</td>
                     </tr>)}
             </tbody>
-        </table>
+        </Table>
     </div>
 }

@@ -1,5 +1,6 @@
 import { datetime } from "@/app/formatting";
 import { GameStatLine, getGame } from "@/app/services/data";
+import { ExternalLink } from "@/app/shared";
 import Link from "next/link";
 
 interface Params {
@@ -33,7 +34,7 @@ export default async function Page({ params } : { params: Params}) {
         <h1>{game.away_team.name} at {game.home_team.name}</h1>
         <h2>{datetime(game.date)}</h2>
         <h3>{game.away_team.name} {game.result.away_score} - {game.home_team.name} {game.result.home_score}</h3>
-        {game.external_link && <div><Link href={game.external_link}>External Link</Link></div>}
+        {game.external_link && <ExternalLink href={game.external_link} />}
         <div>
             <h2>{game.away_team.name}</h2>
             <StatLines stats={game.away_stats} />

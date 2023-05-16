@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 
 SPORT_MAP = {'MLA': 'ml', 'WLA': 'wl'}
 
-
 class Ncaa():
   def __init__(self, sports=['MLA', 'WLA'], divs=['1', '2', '3']):
     self.sports = sports
@@ -40,7 +39,7 @@ class Ncaa():
               }
           },
           'id': f'{sport}-ncaa-{link_parts[2]}',
-          'div': location['params']['division'],
+          'div': sport + location['params']['division'],
           'sport': sport,
           'year': location['params']['academic_year'],
           'source': 'ncaa'

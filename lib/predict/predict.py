@@ -44,7 +44,8 @@ def rank_players(args):
         'id': player_id,
         'name': entry['player']['name'],
         'team': team,
-        'stats': []
+        'stats': [],
+        'external_link': entry['player']['external_link']
       }
       players[player_id] = player
     else:

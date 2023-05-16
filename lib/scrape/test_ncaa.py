@@ -42,7 +42,7 @@ class TestScrape(unittest.TestCase):
             },
             'year': '2020',
             'id': 'ml-ncaa-721',
-            'div': '1',
+            'div': 'ml1',
             'sport': 'ml',
             'source': 'ncaa'
         })

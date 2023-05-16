@@ -23,7 +23,7 @@ class TestMcla(unittest.TestCase):
                 'url': 'https://mcla.us/team/alabama/2020/schedule.html'
             },
             'year': '2020',
-            'div': '1',
+            'div': 'mcla1',
             'id': 'ml-mcla-alabama',
             'sport': 'ml',
             'source': 'mcla'
@@ -41,7 +41,7 @@ class TestMcla(unittest.TestCase):
                 'url': 'https://mcla.us/team/arizona_state/2020/schedule.html'
             },
             'year': '2020',
-            'div': '1',
+            'div': 'mcla1',
             'id': 'ml-mcla-arizona-state',
             'sport': 'ml',
             'source': 'mcla'
@@ -86,7 +86,7 @@ class TestMcla(unittest.TestCase):
   def test_mcla_game_details(self):
     html = fixtures.mcla_game_details()
     m = mcla.Mcla()
-    game_details = m.convert_game_details_html(html, 'https://mcla.us/games/26005', 'ml-mcla-26005', 'ml', 'mcla')
+    game_details = m.convert_game_details_html(html, {'url': 'https://mcla.us/games/26005'}, 'ml-mcla-26005', 'ml', 'mcla')
     self.assertEqual(game_details['date'], '2023-02-17T19:00:00-07:00')
     self.assertEqual(game_details['id'], 'ml-mcla-26005')
     self.assertEqual(game_details['external_link'], 'https://mcla.us/games/26005')
@@ -106,6 +106,7 @@ class TestMcla(unittest.TestCase):
         'player': {
             'name': 'Ben Taylor',
             'id': 'ml-mcla-56639',
+            'external_link': 'https://mcla.us/player/56639/ben_taylor.html'
         },
         'number': 5,
         'position': 'M',
@@ -116,7 +117,8 @@ class TestMcla(unittest.TestCase):
     self.assertEqual(game_details['away_stats'][0], {
       'player': {
         'name': 'Aden Extrand',
-        'id': 'ml-mcla-59796'
+        'id': 'ml-mcla-59796',
+        'external_link': 'https://mcla.us/player/59796/aden_extrand.html'
       },
       'number': 32,
       'position': 'DM',
