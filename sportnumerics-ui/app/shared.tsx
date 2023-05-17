@@ -1,7 +1,8 @@
-import { LinkProps, default as NextLink } from "next/link";
+import { LinkProps as NextLinkProps, default as NextLink } from "next/link";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
-import { DivisionLinkType, Header, Navigation, Overlay, YearLinkType } from "./client";
+import { Header } from "./client";
 import { Location } from "./navigation";
+import { getDivs, getYears } from "./services/data";
 
 export function ExternalLink({ href } : { href: string }) {
     const url = new URL(href);
@@ -10,8 +11,13 @@ export function ExternalLink({ href } : { href: string }) {
         </div>;
 }
 
-export function Link(props: Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps> & LinkProps & { children?: React.ReactNode}) {
-    return <NextLink {...props} className={`${props.className} underline`}>{props.children}</NextLink>
+interface LinkProps {
+    nounderline?: boolean;
+}
+
+export function Link(props: Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof NextLinkProps> & NextLinkProps & { children?: React.ReactNode} & LinkProps) {
+    const {nounderline: _, ...passedProps} = props;
+    return <NextLink {...passedProps} className={`${props.className ?? ""} ${props.nounderline ? "" : "underline"}`}>{props.children}</NextLink>
 }
 
 export function Card({ children, title } : {children: React.ReactNode, title: string }) {
@@ -41,13 +47,21 @@ export function H2({ children }: { children: React.ReactNode }) {
     return <h2 className="text-l font-bold tracking-wider mb-2">{ children }</h2>;
 }
 
-export function Content({ children, location = {} }: { children: React.ReactNode, location?: Location }) {
+async function AsyncContent({ children, location = {} }: { children: React.ReactNode, location?: Location }) {
+    const yearsPromise = getYears();
+    const divsPromise = getDivs();
+    const [years, divs] = await Promise.all([yearsPromise, divsPromise]);
     return <div>
-        <Header location={location} />
-        <div className="mx-auto container">
+        <Header location={location} years={years} divs={divs} />
+        <div className="mx-auto container px-4">
             {children}
         </div>
     </div>
+}
+
+export function Content({ children, location = {}}: { children: React.ReactNode, location?: Location }) {
+    {/* @ts-expect-error Async Server Component */}
+    return <AsyncContent location={location}>{children}</AsyncContent>
 }
 
 export function Error() {

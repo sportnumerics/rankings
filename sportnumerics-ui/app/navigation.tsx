@@ -1,5 +1,4 @@
-import { JsxElement } from "typescript";
-import { Link } from "./shared";
+import Link from "next/link"
 
 export interface HasYear {
     year: string
@@ -63,33 +62,67 @@ function hasDiv(location: Location, div: string): location is HasDivision {
     return (location as HasDivision).div === div;
 }
 
-export function LinkToYear({ year, location } : { year: string, location: Location }) {
+export type LinkComponentProps = {isActive?: boolean}
+export type LinkComponent = React.FunctionComponent<LinkComponentProps>
+
+export function linkToYear(year: string, location: Location): string | null {
     if (hasYear(location, year)) {
-        return <>{year}</>;
+        return null;
     } else if (isPlayersList(location)) {
-        return <Link href={`/${year}/${location.div}/players`}>{year}</Link>;
+        return `/${year}/${location.div}/players`;
     } else if (isTeamsList(location)) {
-        return <Link href={`/${year}/${location.div}/teams`}>{year}</Link>
+        return `/${year}/${location.div}/teams`;
     } else if (isGame(location)) {
         // TODO: home page for year
-        return <Link href="/">{year}</Link>;
+        return "/";
     } else if (isPlayer(location)) {
-        return <Link href={`/${year}/players/${location.player}`}>{year}</Link>
+        return `/${year}/players/${location.player}`
     } else if (isTeam(location)) {
-        return <Link href={`/${year}/teams/${location.team}`}>{year}</Link>
+        return `/${year}/teams/${location.team}`
     } else {
-        return <Link href="/">{year}</Link>;
+        return "/";
     }
 }
 
-export function LinkToDiv({ div, name, location } : { div: string, name: string, location: Location }) {
-    if (hasDiv(location, div)) {
-        return <>{name}</>
+export function LinkToYear({ year, location, Component } : { year: string, location: Location, Component: LinkComponent }) {
+    if (hasYear(location, year)) {
+        return <Component isActive />;
     } else if (isPlayersList(location)) {
-        return <Link href={`/${location.year}/${div}/players`}>{name}</Link>;
+        return <Link href={`/${year}/${location.div}/players`}><Component /></Link>;
     } else if (isTeamsList(location)) {
-        return <Link href={`/${location.year}/${div}/teams`}>{name}</Link>;
+        return <Link href={`/${year}/${location.div}/teams`}><Component /></Link>
+    } else if (isGame(location)) {
+        // TODO: home page for year
+        return <Link href="/"><Component /></Link>;
+    } else if (isPlayer(location)) {
+        return <Link href={`/${year}/players/${location.player}`}><Component /></Link>
+    } else if (isTeam(location)) {
+        return <Link href={`/${year}/teams/${location.team}`}><Component /></Link>
     } else {
-        return <Link href="/">{name}</Link>
+        return <Link href="/"><Component /></Link>;
+    }
+}
+
+export function linkToDiv(div: string, location: Location): string | null {
+    if (hasDiv(location, div)) {
+        return null;
+    } else if (isPlayersList(location)) {
+        return `/${location.year}/${div}/players`;
+    } else if (isTeamsList(location)) {
+        return `/${location.year}/${div}/teams`;
+    } else {
+        return "/";
+    }
+}
+
+export function LinkToDiv({ div, location, Component } : { div: string, location: Location, Component: LinkComponent }) {
+    if (hasDiv(location, div)) {
+        return <Component isActive />;
+    } else if (isPlayersList(location)) {
+        return <Link href={`/${location.year}/${div}/players`}><Component /></Link>;
+    } else if (isTeamsList(location)) {
+        return <Link href={`/${location.year}/${div}/teams`}><Component /></Link>;
+    } else {
+        return <Link href="/"><Component /></Link>
     }
 }
