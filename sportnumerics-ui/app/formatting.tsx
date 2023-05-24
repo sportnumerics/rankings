@@ -8,6 +8,10 @@ export function datetime(date: string): string {
     return moment(date).format('M/D ha');
 }
 
+export function longDatetime(date: string): string {
+    return moment(date).format('MMMM Do, h:mma');
+}
+
 export function date(date: string): string {
     return moment(date).format('M/D');
 }

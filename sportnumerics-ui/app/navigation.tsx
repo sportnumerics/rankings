@@ -1,4 +1,6 @@
-import Link from "next/link"
+'use client';
+
+import { useParams, usePathname } from 'next/navigation';
 
 export interface HasYear {
     year: string
@@ -8,23 +10,27 @@ export interface HasDivision extends HasYear {
     div: string
 }
 
-export interface PlayersList extends HasDivision {
+export interface HasType extends HasDivision {
+    type: string
+}
+
+export interface PlayersList extends HasType {
     type: "players"
 }
 
-export interface TeamsList extends HasDivision {
+export interface TeamsList extends HasType {
     type: "teams"
 }
 
-export interface Game extends HasYear {
+export interface Game extends HasDivision {
     game: string
 }
 
-export interface Player extends HasYear {
+export interface Player extends HasDivision {
     player: string
 }
 
-export interface Team extends HasYear {
+export interface Team extends HasDivision {
     team: string
 }
 
@@ -42,24 +48,36 @@ function isTeamsList(location: Location): location is TeamsList {
     return (location as TeamsList).type === "teams";
 }
 
-function isGame(location: Location): location is Game {
+export function isGame(location: Location): location is Game {
     return (location as Game).game !== undefined;
 }
 
-function isPlayer(location: Location): location is Player {
+export function isPlayer(location: Location): location is Player {
     return (location as Player).player !== undefined;
 }
 
-function isTeam(location: Location): location is Team {
+export function isTeam(location: Location): location is Team {
     return (location as Team).team !== undefined;
 }
 
-function hasYear(location: Location, year: string): location is HasYear {
-    return (location as HasYear).year === year;
+function hasYear(location: Location, year?: string): location is HasYear {
+    if (year) {
+        return (location as HasYear).year === year;
+    } else {
+        return Boolean((location as HasYear).year);
+    }
 }
 
-function hasDiv(location: Location, div: string): location is HasDivision {
-    return (location as HasDivision).div === div;
+function hasDiv(location: Location, div?: string): location is HasDivision {
+    const hasDivision = location as HasDivision;
+    if (!hasDivision.year) {
+        return false;
+    }
+    if (div) {
+        return hasDivision.div === div;
+    } else {
+        return Boolean(hasDivision.div);
+    }
 }
 
 export type LinkComponentProps = {isActive?: boolean}
@@ -70,36 +88,14 @@ export function linkToYear(year: string, location: Location): string | null {
         return null;
     } else if (isPlayersList(location)) {
         return `/${year}/${location.div}/players`;
-    } else if (isTeamsList(location)) {
+    } else if (isTeamsList(location) || isGame(location)) {
         return `/${year}/${location.div}/teams`;
-    } else if (isGame(location)) {
-        // TODO: home page for year
-        return "/";
     } else if (isPlayer(location)) {
-        return `/${year}/players/${location.player}`
+        return `/${year}/${location.div}/players/${location.player}`
     } else if (isTeam(location)) {
-        return `/${year}/teams/${location.team}`
+        return `/${year}/${location.div}/teams/${location.team}`
     } else {
         return "/";
-    }
-}
-
-export function LinkToYear({ year, location, Component } : { year: string, location: Location, Component: LinkComponent }) {
-    if (hasYear(location, year)) {
-        return <Component isActive />;
-    } else if (isPlayersList(location)) {
-        return <Link href={`/${year}/${location.div}/players`}><Component /></Link>;
-    } else if (isTeamsList(location)) {
-        return <Link href={`/${year}/${location.div}/teams`}><Component /></Link>
-    } else if (isGame(location)) {
-        // TODO: home page for year
-        return <Link href="/"><Component /></Link>;
-    } else if (isPlayer(location)) {
-        return <Link href={`/${year}/players/${location.player}`}><Component /></Link>
-    } else if (isTeam(location)) {
-        return <Link href={`/${year}/teams/${location.team}`}><Component /></Link>
-    } else {
-        return <Link href="/"><Component /></Link>;
     }
 }
 
@@ -115,14 +111,22 @@ export function linkToDiv(div: string, location: Location): string | null {
     }
 }
 
-export function LinkToDiv({ div, location, Component } : { div: string, location: Location, Component: LinkComponent }) {
-    if (hasDiv(location, div)) {
-        return <Component isActive />;
-    } else if (isPlayersList(location)) {
-        return <Link href={`/${location.year}/${div}/players`}><Component /></Link>;
-    } else if (isTeamsList(location)) {
-        return <Link href={`/${location.year}/${div}/teams`}><Component /></Link>;
+export function linkToPlayers(location: Location): string | null {
+    if (isPlayersList(location)) {
+        return null;
+    } else if (hasYear(location) && hasDiv(location)) {
+        return `/${location.year}/${location.div}/players`;
     } else {
-        return <Link href="/"><Component /></Link>
+        return "/"
+    }
+}
+
+export function linkToTeams(location: Location): string | null {
+    if (isTeamsList(location)) {
+        return null;
+    } else if (hasYear(location) && hasDiv(location)) {
+        return `/${location.year}/${location.div}/teams`;
+    } else {
+        return "/";
     }
 }

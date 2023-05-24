@@ -1,19 +1,33 @@
 import {HasDivision} from '../../../navigation';
-import { getRankedTeamsByDiv } from '@/app/services/data';
+import { getDiv, getRankedTeamsByDiv } from '@/app/services/data';
 import { twoPlaces } from '@/app/formatting';
-import Link from 'next/link';
-import { Content, Error } from '@/app/shared';
+import { Card, Content, Error, H1, H2, Link, Table, TableHeader } from '@/app/shared';
 
 export default async function Page({ params } : { params: HasDivision}) {
-    const teams = await getRankedTeamsByDiv(params);
-    if (!teams) {
+    const teamsPromise = await getRankedTeamsByDiv(params);
+    const divPromise = getDiv(params.div);
+    const [teams, div] = await Promise.all([teamsPromise, divPromise]);
+     if (!teams || !div) {
+        console.error(`No teams or division for ${JSON.stringify(params)}`);
         return <Content><Error /></Content>
     }
     const sortedTeams = Object.values(teams);
     sortedTeams.sort((a, b) => a.rank - b.rank);
-
-    return <table>
-        <thead><tr><th>Rank</th><th>Team</th><th>Rating</th></tr></thead>
-        <tbody>{sortedTeams.map((team) => <tr><td>{team.rank}</td><td><Link href={`/${params.year}/teams/${team.id}`}>{team.name}</Link></td><td>{twoPlaces(team.overall)}</td></tr>)}</tbody>
-        </table>;
+    return <Content>
+        <div>
+        <H1>Top Teams</H1>
+        <H2>{div.name}</H2>
+        </div>
+        <Card>
+            <Table>
+                <TableHeader><tr><th>Rank</th><th>Team</th><th>Rating</th></tr></TableHeader>
+                <tbody>{sortedTeams.map((team) => <tr>
+                        <td className="w-16">{team.rank}</td>
+                        <td className="w-64"><Link href={`/${params.year}/${params.div}/teams/${team.id}`}>{team.name}</Link></td>
+                        <td className="w-24">{twoPlaces(team.overall)}</td>
+                    </tr>)}
+                </tbody>
+            </Table>
+        </Card>
+    </Content>;
 }

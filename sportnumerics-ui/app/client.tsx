@@ -2,35 +2,44 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { default as NextLink } from "next/link";
-import { useClickOutside } from "./hooks";
-import { Location, linkToDiv, linkToYear } from "./navigation";
-import { Division, Year } from "./services/data";
+import { useClickOutside, useLocation, usePromise } from "./hooks";
+import { HasDivision, HasType, HasYear, linkToDiv, linkToPlayers, linkToTeams, linkToYear } from "./navigation";
+import { getDivs, getYears } from "./services/data";
 import { Link } from "./shared";
-import { Bars3Icon } from "@heroicons/react/24/outline";
+import { Bars3Icon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 type OverlayControlProps = {toggle: VoidFunction, isOpen: boolean};
 type OverlayControl = React.FunctionComponent<OverlayControlProps>
 
-export function Header({ location = {}, years = [], divs = [] }: { location: Location, years: Year[], divs: Division[] } = { location: {}, years: [], divs: []}) {
+export function Header() {
+    const { value: years = [] } = usePromise(getYears, []);
+    const { value: divs = [] } = usePromise(getDivs, []);
+    const location = useLocation();
+    const playersHref = linkToPlayers(location);
+    const teamsHref = linkToTeams(location);
+    const type = (location as HasType).type;
+    const division = divs.find(div => div.id === (location as HasDivision).div);
     return <NavBar>
         <Nav>
             <div className="text-2xl font-black tracking-widest italic"><NextLink href="/">S#</NextLink></div>
         </Nav>
-        <DropdownNav content="Years">
+        <DropdownNav content={`${(location as HasYear)?.year ?? "Years"}`}>
             {years.map(year => {
                 const href = linkToYear(year.id, location);
-                const link = href ? <Link href={href} nounderline>{year.id}</Link> : year.id;
-                return <DropdownItem key={year.id} content={link} isActive={!href} />;
+                return <DropdownItem key={year.id} href={href} isActive={!href} >{year.id}</DropdownItem>;
             })}
         </DropdownNav>
-        <DropdownNav content="Division">
+        <DropdownNav content={`${division?.name ?? "Divisions"}`}>
             {divs.map(div => {
                 const href = linkToDiv(div.id, location);
-                const link = href ? <Link href={href} nounderline>{div.name}</Link> : div.name;
-                return <DropdownItem key={div.id} content={link} isActive={!href} />
+                return <DropdownItem key={div.id} href={href} isActive={!href} >{div.name}</DropdownItem>
             })}
         </DropdownNav>
-    </NavBar>
+        {type && <DropdownNav content={type === "players" ? "Players" : "Teams"}>
+            <DropdownItem isActive={!teamsHref} href={ teamsHref }>Teams</DropdownItem>
+            <DropdownItem isActive={!playersHref} href={ playersHref }>Players</DropdownItem>
+            </DropdownNav>}
+    </NavBar>;
 }
 
 export function NavBar({ children }: { children: React.ReactNode }) {
@@ -50,8 +59,9 @@ export function Nav({ children, isActive }: { children: React.ReactNode, isActiv
 
 export function DropdownNav({ content, children }: { content: React.ReactNode, children: React.ReactNode }) {
     const DropdownControl = useMemo(() => function ({ toggle, isOpen }: OverlayControlProps) {
+        const Icon = isOpen ? ChevronDownIcon : ChevronRightIcon;
         return <button className="w-full text-left" onClick={toggle} >
-            <div className={`leading-8 px-8 py-6 ${activeOrHover(isOpen, "bg-black/10")}`}>{content}</div>
+            <div className={`leading-8 flex px-8 py-6 ${activeOrHover(isOpen, "bg-black/10")}`}><ChevronDownIcon className="w-6 h-6 m-auto mr-3" />{content}</div>
         </button>;
     }, [content]);
     
@@ -62,8 +72,9 @@ export function DropdownNav({ content, children }: { content: React.ReactNode, c
     </Overlay>;
 }
 
-export function DropdownItem({ content, isActive }: { content: React.ReactNode, isActive?: boolean }) {
-    return <div className={`py-4 px-10 first:rounded-t last:rounded-b ${activeOrHover(isActive, "bg-black/10")}`}>{content}</div>;
+export function DropdownItem({ children, isActive, href }: { children: React.ReactNode, isActive?: boolean, href?: string | null }) {
+    const content = <div className="py-4 px-10">{children}</div>;
+    return <div className={`first:rounded-t last:rounded-b ${activeOrHover(isActive, "bg-black/10")}`}>{href ? <Link href={href} nounderline>{content}</Link> : content}</div>;
 }
 
 function activeOrHover(show: boolean | undefined, value: string) {

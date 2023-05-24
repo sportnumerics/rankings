@@ -1,8 +1,6 @@
 import { LinkProps as NextLinkProps, default as NextLink } from "next/link";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { Header } from "./client";
-import { Location } from "./navigation";
-import { getDivs, getYears } from "./services/data";
 
 export function ExternalLink({ href } : { href: string }) {
     const url = new URL(href);
@@ -20,9 +18,9 @@ export function Link(props: Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 
     return <NextLink {...passedProps} className={`${props.className ?? ""} ${props.nounderline ? "" : "underline"}`}>{props.children}</NextLink>
 }
 
-export function Card({ children, title } : {children: React.ReactNode, title: string }) {
+export function Card({ children, title } : {children: React.ReactNode, title?: string }) {
     return <div className="border rounded my-4 p-4 shadow-md w-fit">
-        <H2>{ title }</H2>
+        {title && <H2>{ title }</H2> }
         { children }
     </div>
 }
@@ -44,24 +42,16 @@ export function H1({ children }: { children: React.ReactNode }) {
 }
 
 export function H2({ children }: { children: React.ReactNode }) {
-    return <h2 className="text-l font-bold tracking-wider mb-2">{ children }</h2>;
+    return <h2 className="text-l font-bold tracking-wider my-2">{ children }</h2>;
 }
 
-async function AsyncContent({ children, location = {} }: { children: React.ReactNode, location?: Location }) {
-    const yearsPromise = getYears();
-    const divsPromise = getDivs();
-    const [years, divs] = await Promise.all([yearsPromise, divsPromise]);
+export function Content({ children }: { children: React.ReactNode }) {
     return <div>
-        <Header location={location} years={years} divs={divs} />
+        <Header />
         <div className="mx-auto container px-4">
             {children}
         </div>
     </div>
-}
-
-export function Content({ children, location = {}}: { children: React.ReactNode, location?: Location }) {
-    {/* @ts-expect-error Async Server Component */}
-    return <AsyncContent location={location}>{children}</AsyncContent>
 }
 
 export function Error() {

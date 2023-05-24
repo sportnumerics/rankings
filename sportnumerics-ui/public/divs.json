@@ -54,5 +54,12 @@
         "sport": "ml",
         "source": "mcla",
         "div": "2"
+    },
+    {
+        "name": "MCLA Division III",
+        "id": "mcla3",
+        "sport": "ml",
+        "source": "mcla",
+        "div": "3"
     }
 ]

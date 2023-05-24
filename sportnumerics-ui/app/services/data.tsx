@@ -11,6 +11,11 @@ export async function getDivs(): Promise<Division[]> {
     return response.json();
 }
 
+export async function getDiv(div: string): Promise<Division | null> {
+    const divs = await getDivs();
+    return divs.find(d => d.id === div) ?? null;
+}
+
 export async function getTeams({ year, div }: { year: string, div: string }): Promise<TeamMap | null> {
     const divisions = await getDivs();
     const division = divisions.find(division => division.id === div);
@@ -73,7 +78,7 @@ export async function getRankedPlayersByDiv({ year, div }: { year: string, div: 
         return null;
     }
     const playerRatings = Object.values(ratings)
-        .filter(player => teams[player.team.id].div === div);
+        .filter(player => teams[player.team.id]?.div === div);
     playerRatings.sort((a, b) => b.points - a.points);
     return Object.fromEntries(playerRatings.map((player, i) => [player.id, {...player, rank: i + 1}]));
 }
@@ -89,16 +94,16 @@ export async function getRankedPlayersByTeam({ year, team }: { year: string, tea
     return Object.fromEntries(players.map((player, i) => [player.id, {...player, rank: i + 1}]));
 }
 
-export async function getPlayerStats({ year, id }: { year: string, id: string }): Promise<PlayerStats | null> {
-    const response = await fetch(`${BASE_URL}/data/${year}/players/${id}.json`);
+export async function getPlayerStats({ year, player }: { year: string, player: string }): Promise<PlayerStats | null> {
+    const response = await fetch(`${BASE_URL}/data/${year}/players/${player}.json`);
     if (!response.ok) {
         return null;
     }
     return await response.json();
 }
 
-export async function getGame({ year, id }: { year: string, id: string }): Promise<Game | null> {
-    const response = await fetch(`${BASE_URL}/data/${year}/games/${id}.json`);
+export async function getGame({ year, game }: { year: string, game: string }): Promise<Game | null> {
+    const response = await fetch(`${BASE_URL}/data/${year}/games/${game}.json`);
     if (!response.ok) {
         return null;
     }

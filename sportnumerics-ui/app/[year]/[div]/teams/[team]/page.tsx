@@ -1,9 +1,10 @@
 import { datetime, twoPlaces } from "@/app/formatting";
-import { TeamSummary, getDivs, getRankedPlayersByTeam, getRankedTeamsByDiv, getTeamSchedule } from "@/app/services/data";
+import { TeamSummary, getDiv, getRankedPlayersByTeam, getRankedTeamsByDiv, getTeamSchedule } from "@/app/services/data";
 import { Card, Content, ExternalLink, Link, H1, Table, TableHeader, Error, H2 } from "@/app/shared";
 
 interface Params {
     year: string;
+    div: string;
     team: string;
 }
 
@@ -11,15 +12,17 @@ export default async function Page({ params } : { params: Params}) {
     const schedule = await getTeamSchedule(params);
 
     if (!schedule) {
-        return <Content location={params}><Error /></Content>
+        console.error(`No schedule for ${JSON.stringify(params)}`);
+        return <Content><Error /></Content>
     }
 
     const teamPromise = getRankedTeamsByDiv({ year: params.year, div: schedule.team.div });
     const playersPromise = getRankedPlayersByTeam({ year: params.year, team: schedule.team.id });
-    const divsPromise = getDivs();
-    const [teams, players, divs] = await Promise.all([teamPromise, playersPromise, divsPromise]);
-    if (!teams || !players) {
-        return <Content location={params}><Error /></Content>
+    const divPromise = getDiv(schedule.team.div);
+    const [teams, players, div] = await Promise.all([teamPromise, playersPromise, divPromise]);
+    if (!teams || !players || !div) {
+        console.error(`No teams, players or division for ${JSON.stringify(params)}`);
+        return <Content><Error /></Content>
     }
 
     const rankedPlayers = Object.values(players);
@@ -27,19 +30,20 @@ export default async function Page({ params } : { params: Params}) {
 
     function Opponent(summary: TeamSummary) {
         if (!teams) {
+            console.error(`No teams for opponent ${JSON.stringify(summary)}`);
             return <Error />
         }
         const opponent = teams[summary.id];
-        return <Link href={`/${params.year}/teams/${summary.id}`} className="space-x-1">
+        return <Link href={`/${params.year}/${params.div}/teams/${summary.id}`} className="space-x-1">
             <span className="text-xs">{opponent?.rank <= 25 ? opponent.rank : ""}</span>
             <span>{summary.name}</span>
         </Link>
     }
 
-    return <Content location={params}>
+    return <Content>
         <div>
             <H1>{schedule.team.name} ({params.year})</H1>
-            <H2>{divs.find(div => div.id === schedule.team.div)?.name}</H2>
+            <H2>{div.name}</H2>
             <ExternalLink href={schedule.team.schedule.url} />
         </div>
         <Card title="Schedule">
@@ -47,7 +51,7 @@ export default async function Page({ params } : { params: Params}) {
                 <TableHeader><tr><th>Date</th><th>Opponent</th><th>Result</th></tr></TableHeader>
                 <tbody>
                     {schedule.games.map(game => <tr>
-                        <td className="w-24">{game.result ? <Link href={`/${params.year}/games/${game.id}`}>{datetime(game.date)}</Link> : datetime(game.date)}</td>
+                        <td className="w-24">{game.result ? <Link href={`/${params.year}/${params.div}/games/${game.id}`}>{datetime(game.date)}</Link> : datetime(game.date)}</td>
                         <td className="w-64"><Opponent {...game.opponent}/></td>
                         <td className="w-24">{game.result ? game.result.points_for + "-" + game.result.points_against : ""}</td>
                         </tr>)}
@@ -60,7 +64,7 @@ export default async function Page({ params } : { params: Params}) {
                 <tbody>
                     {rankedPlayers.slice(0, 20).map(player => <tr>
                         <td className="w-24">{player.rank}</td>
-                        <td className="w-64"><Link href={`/${params.year}/players/${player.id}`}>{player.name}</Link></td>
+                        <td className="w-64"><Link href={`/${params.year}/${params.div}/players/${player.id}`}>{player.name}</Link></td>
                         <td className="w-24">{twoPlaces(player.points)}</td>
                     </tr>)}
                 </tbody>
