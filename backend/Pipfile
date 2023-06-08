@@ -14,6 +14,7 @@ pylint = "*"
 yapf = "*"
 watchdog = "*"
 python-dateutil = "*"
+pulumi = "*"
 
 [dev-packages]
 

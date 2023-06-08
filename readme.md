@@ -13,10 +13,20 @@ However, this time I'd like to be able to move things around between the steps a
 
 I'd like to organise the project around a python executable with modules. Then I can run that exec anywhere, in docker, or locally.
 
-I'd also like to move away from react, and ideally just create static html from the pipeline itself and serve that from S3 with a CDN to make it super fast.
+~I'd also like to move away from react, and ideally just create static html from the pipeline itself and serve that from S3 with a CDN to make it super fast.~
 
-### Getting started
+Ok had to scratch that because React is just so much easier.
 
-    pipenv install
-    pipenv run main
+### Structure
 
+    /infrastructure
+
+Shared resources like the target S3 bucket.
+
+    /backend
+
+Backend for scraping and predicting rankings
+
+    /frontend
+
+Next.js UI for rendering the output in the browser.
