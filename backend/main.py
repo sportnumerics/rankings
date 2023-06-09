@@ -2,6 +2,7 @@ import argparse
 import logging
 import lib.scrape.cli
 import lib.predict.cli
+import lib.sync.cli
 import lib.all.cli
 
 
@@ -12,6 +13,7 @@ def main():
   parser.set_defaults(func=lambda args: parser.print_help())
   lib.scrape.cli.add_parsers(subparsers)
   lib.predict.cli.add_parsers(subparsers)
+  lib.sync.cli.add_parsers(subparsers)
   lib.all.cli.add_parsers(subparsers)
   args = parser.parse_args()
   args.func(args)
