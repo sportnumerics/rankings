@@ -14,3 +14,9 @@ variable "subnets" {
     type        = list(string)
     default     = ["subnet-53f5bb0a", "subnet-24bfda41"]
 }
+
+variable "image_tag" {
+    description = "Docker image tag"
+    type        = string
+    default     = "latest"
+}

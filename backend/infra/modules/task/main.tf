@@ -1,5 +1,7 @@
 locals {
     bucket_name = "${var.bucket_prefix}-${var.environment}"
+    bucket_url = "s3://${local.bucket_name}/data"
+    image_url = "${aws_ecr_repository.rankings_backend.repository_url}:${var.image_tag}"
 }
 
 resource "aws_ecs_task_definition" "rankings_backend" {
@@ -11,8 +13,8 @@ resource "aws_ecs_task_definition" "rankings_backend" {
     container_definitions = jsonencode([
         {
             "name": "rankings-backend",
-            "image": "${aws_ecr_repository.rankings_backend.repository_url}/backend:latest",
-            "command": ["--bucket-url", "s3://${local.bucket_name}/data"]
+            "image": local.image_url,
+            "command": ["--bucket-url", local.bucket_url]
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
