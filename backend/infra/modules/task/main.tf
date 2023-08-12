@@ -83,7 +83,8 @@ resource "aws_ecr_repository" "rankings_backend" {
 
 resource "aws_iam_role" "rankings_backend_execution_role" {
     name = "rankings-backend-execution-role-${var.environment}"
-    assume_role_policy = data.aws_iam_policy_document.rankings_backend_assume_role_policy.json
+    assume_role_policy = data.aws_iam_policy_document.rankings_backend_tasks_assume_role.json
+    managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
 
     tags = {
         App = "rankings"
@@ -91,7 +92,18 @@ resource "aws_iam_role" "rankings_backend_execution_role" {
     }
 }
 
-data "aws_iam_policy_document" "rankings_backend_assume_role_policy" {
+resource "aws_iam_role" "rankings_backend_task_role" {
+    name = "rankings-backend-task-role-${var.environment}"
+    assume_role_policy = data.aws_iam_policy_document.rankings_backend_tasks_assume_role.json
+    managed_policy_arns = [aws_iam_policy.rankings_backend_task_role.arn]
+
+    tags = {
+        App = "rankings"
+        Stage = var.environment
+    }
+}
+
+data "aws_iam_policy_document" "rankings_backend_tasks_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -102,22 +114,10 @@ data "aws_iam_policy_document" "rankings_backend_assume_role_policy" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "rankings_backend_execution_role" {
-    role = aws_iam_role.rankings_backend_execution_role.name
-    policy_arn = data.aws_iam_policy.rankings_backend_execution_role.arn
-}
+resource "aws_iam_policy" "rankings_backend_task_role" {
+    name = "rankings-backend-task-role-policy-${var.environment}"
 
-data "aws_iam_policy" "rankings_backend_execution_role" {
-    arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-resource "aws_iam_role" "rankings_backend_task_role" {
-    name = "rankings-backend-task-role-${var.environment}"
-    assume_role_policy = data.aws_iam_policy_document.rankings_backend_assume_role_policy.json
-
-    inline_policy {
-        policy = data.aws_iam_policy_document.rankings_backend_task_role.json
-    }
+    policy = data.aws_iam_policy_document.rankings_backend_task_role.json
 
     tags = {
         App = "rankings"
@@ -144,11 +144,8 @@ data "aws_iam_policy_document" "rankings_backend_task_role" {
 
 resource "aws_iam_role" "rankings_backend_scheduler_role" {
     name = "rankings-backend-scheduler-role-${var.environment}"
-    assume_role_policy = data.aws_iam_policy_document.rankings_backend_scheduler_assume_role_policy.json
-
-    inline_policy {
-      policy = data.aws_iam_policy_document.rankings_backend_scheduler_role.json
-    }
+    assume_role_policy = data.aws_iam_policy_document.rankings_backend_scheduler_assume_role.json
+    managed_policy_arns = [aws_iam_policy.rankings_backend_scheduler_role.arn]
 
     tags = {
         App = "rankings"
@@ -156,7 +153,7 @@ resource "aws_iam_role" "rankings_backend_scheduler_role" {
     }
 }
 
-data "aws_iam_policy_document" "rankings_backend_scheduler_assume_role_policy" {
+data "aws_iam_policy_document" "rankings_backend_scheduler_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -165,6 +162,17 @@ data "aws_iam_policy_document" "rankings_backend_scheduler_assume_role_policy" {
       identifiers = ["scheduler.amazonaws.com"]
     }
   }
+}
+
+resource "aws_iam_policy" "rankings_backend_scheduler_role" {
+    name = "rankings-backend-scheduler-role-policy-${var.environment}"
+
+    policy = data.aws_iam_policy_document.rankings_backend_scheduler_role.json
+
+    tags = {
+        App = "rankings"
+        Stage = var.environment
+    }
 }
 
 data "aws_iam_policy_document" "rankings_backend_scheduler_role" {
