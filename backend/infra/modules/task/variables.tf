@@ -12,7 +12,7 @@ variable "bucket_prefix" {
 variable "subnets" {
     description = "Subnets for ECS task"
     type        = list(string)
-    default     = ["subnet-53f5bb0a", "subnet-24bfda41"]
+    default     = ["subnet-f728fa92", "subnet-866f9ff1", "subnet-cb183ce3", "subnet-c09b8b86"]
 }
 
 variable "image_tag" {

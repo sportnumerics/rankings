@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 environment=${1:-dev}
 
 terraform -chdir=infra/environments/$environment init -input=false
@@ -12,6 +14,8 @@ image_url=$(terraform -chdir=infra/environments/$environment output -raw ranking
 echo "logging into $repository"
 aws ecr get-login-password | docker login --username AWS --password-stdin $repository
 
-docker build -t "$image_url" .
-
-docker push "$image_url"
+docker buildx build \
+    --push \
+    --platform linux/arm64,linux/amd64 \
+    --tag "$image_url" \
+    .
