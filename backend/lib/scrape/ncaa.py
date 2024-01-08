@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 SPORT_MAP = {'MLA': 'ml', 'WLA': 'wl'}
 
 class Ncaa():
+  base_url = 'https://stats.ncaa.org'
+
   def __init__(self, sports=['MLA', 'WLA'], divs=['1', '2', '3']):
     self.sports = sports
     self.divs = divs
@@ -14,7 +16,7 @@ class Ncaa():
     for sport in self.sports:
       for div in self.divs:
         yield {
-            'url': 'https://stats.ncaa.org/team/inst_team_list',
+            'url': f'{self.base_url}/team/inst_team_list',
             'params': {
                 'academic_year': year,
                 'division': div,
@@ -31,7 +33,7 @@ class Ncaa():
       yield {
           'name': link.string,
           'schedule': {
-              'url': 'https://stats.ncaa.org/player/game_by_game',
+              'url': f'{self.base_url}/player/game_by_game',
               'params': {
                   'game_sport_year_ctl_id': link_parts[3],
                   'org_id': link_parts[2],
@@ -58,11 +60,7 @@ class Ncaa():
       opp_col = cols[1]
       result_col = cols[2]
 
-      date = datetime.datetime.strptime(date_col.string, '%m/%d/%Y').date()
-      game['date'] = date.isoformat()
-
-      def no_class(tag):
-        return not tag.has_attr('class')
+      game['date'] = self.to_iso_format(date_col.string)
 
       opp_link = opp_col.find(
           lambda tag: tag.name == 'a' and not tag.has_attr('class'))
@@ -83,7 +81,7 @@ class Ncaa():
 
       result_str = ' '.join(result_col.stripped_strings)
       score_match = re.match(
-          r'(?P<outcome>[WL])\s*(?P<points_for>\d+)\s*\-\s*(?P<points_against>\d+)',
+          r'(?P<outcome>[WL])?\s*(?P<points_for>\d+)\s*\-\s*(?P<points_against>\d+)',
           result_str)
       if score_match:
         game['result'] = {
@@ -91,9 +89,100 @@ class Ncaa():
             'points_against': int(score_match.group('points_against'))
         }
       if hasattr(result_col, 'a') and hasattr(result_col.a, 'href'):
-        game['details'] = {
-          'url': result_col.a['href']
-        }
+        game_details_url = result_col.a['href']
+        url_match = re.match(r'/contests/(?P<id>\d+)/box_score', game_details_url)
+        if url_match:
+          game['details'] = {
+            'url': self.base_url + game_details_url
+          }
+          game['id'] = 'ml-ncaa-' + url_match.group('id')
 
       games.append(game)
     return {'team': team, 'games': games}
+
+  TEAM_HREF_REGEX = re.compile(r'/teams/(?P<id>\d+)')
+  TEAM_NAME_REGEX = re.compile(r'(?P<name>[a-zA-Z0-9\-_&\' ]+) \(\d+-\d+\)')
+  PLAYER_HREF_REGEX = re.compile(r'/player/index\?game_sport_year_ctl_id=(?P<gsycid>\d+)&(amp;)?org_id=(?P<org_id>\d+)&(amp;)?stats_player_seq=(?P<spseq>\d+)')
+
+  def map_statistic(self, sport, source, key, tag):
+    text = tag.get_text(strip=True)
+    try:
+      match key:
+        case 'Player':
+          a = tag.find('a')
+          if not a:
+            return None
+          href = a['href']
+          href_match = self.PLAYER_HREF_REGEX.match(href)
+          if not href_match:
+            raise Exception(f'no match {href}')
+          last, first = text.split(', ')
+          return ('player', {
+            'name': f'{first} {last}',
+            'id': sport + '-' + source + '-' + href_match.group('spseq'),
+            'external_link': self.base_url + href.replace('&amp;', '&')
+          })
+        case 'Pos':
+          return ('position', text) if text else None
+        case 'Goals':
+          return ('g', int(text) if text else 0)
+        case 'Assists':
+          return ('a', int(text) if text else 0)
+        case 'GB':
+          return ('gb', int(text) if text else 0)
+        case _:
+          return None
+    except:
+      raise Exception(f'error mapping statistic {tag}')
+
+  def convert_game_details_html(self, html, location, game_id, sport, source):
+    soup = BeautifulSoup(html, 'html.parser')
+    date = self.to_iso_format(next(soup.find('td', string='Game Date:').find_next_sibling('td').stripped_strings))
+
+    def is_team_href(href):
+      m = self.TEAM_HREF_REGEX.match(href)
+      return m
+
+    team_links = soup.find_all('a', href=is_team_href)
+    def get_team(link):
+      team_link_match = self.TEAM_HREF_REGEX.match(link['href'])
+      team_name_match = self.TEAM_NAME_REGEX.match(link.get_text(strip=True))
+      return {
+        'id': sport + '-' + source + '-' + team_link_match.group('id'),
+        'name': team_name_match.group('name')
+      }
+
+    def get_total_score(link):
+      row = link.find_parent('tr')
+      cells = row.find_all('td')
+      return int(cells[5].get_text(strip=True))
+
+    stats_headers = list(map(lambda x: x.parent, soup.find_all('th', string='Player')))
+
+    def get_stats(header):
+      def cols(row, name):
+        return list(row.find_all(name))
+      def stats(row, keys):
+        columns = cols(row, 'td')
+        return {v[0]: v[1] for v in (self.map_statistic(sport, source, keys[i], v) for i, v in enumerate(columns)) if v}
+      keys = list(map(lambda x: x.get_text(strip=True), cols(header, 'th')))
+      stats = list(filter(lambda p: p.get('player'), map(lambda r: stats(r, keys), header.find_next_siblings('tr'))))
+      return stats
+
+    return {
+      'date': date,
+      'id': game_id,
+      'external_link': location['url'],
+      'away_team': get_team(team_links[0]),
+      'home_team': get_team(team_links[1]),
+      'result': {
+        'away_score': get_total_score(team_links[0]),
+        'home_score': get_total_score(team_links[1])
+      },
+      'away_stats': get_stats(stats_headers[0]),
+      'home_stats': get_stats(stats_headers[1])
+    }
+
+
+  def to_iso_format(self, date):
+    return datetime.datetime.strptime(date, '%m/%d/%Y').date().isoformat()
