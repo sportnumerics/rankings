@@ -1,42 +1,42 @@
 [
     {
         "name": "NCAA Mens Division I",
-        "id": "m1",
+        "id": "ml1",
         "sport": "ml",
         "source": "ncaa",
         "div": "1"
     },
     {
         "name": "NCAA Mens Division II",
-        "id": "m2",
+        "id": "ml2",
         "sport": "ml",
         "source": "ncaa",
         "div": "2"
     },
     {
         "name": "NCAA Mens Division III",
-        "id": "m3",
+        "id": "ml3",
         "sport": "ml",
         "source": "ncaa",
         "div": "3"
     },
     {
         "name": "NCAA Womens Division I",
-        "id": "w1",
+        "id": "wl1",
         "sport": "wl",
         "source": "ncaa",
         "div": "1"
     },
     {
         "name": "NCAA Womens Division II",
-        "id": "w2",
+        "id": "wl2",
         "sport": "wl",
         "source": "ncaa",
         "div": "2"
     },
     {
         "name": "NCAA Womens Division III",
-        "id": "w3",
+        "id": "wl3",
         "sport": "wl",
         "source": "ncaa",
         "div": "3"

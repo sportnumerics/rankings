@@ -101,39 +101,7 @@ class Ncaa():
     return {'team': team, 'games': games}
 
   TEAM_HREF_REGEX = re.compile(r'/teams/(?P<id>\d+)')
-  TEAM_NAME_REGEX = re.compile(r'(?P<name>[a-zA-Z0-9\-_&\' ]+) \(\d+-\d+\)')
-  PLAYER_HREF_REGEX = re.compile(r'/player/index\?game_sport_year_ctl_id=(?P<gsycid>\d+)&(amp;)?org_id=(?P<org_id>\d+)&(amp;)?stats_player_seq=(?P<spseq>\d+)')
-
-  def map_statistic(self, sport, source, key, tag):
-    text = tag.get_text(strip=True)
-    try:
-      match key:
-        case 'Player':
-          a = tag.find('a')
-          if not a:
-            return None
-          href = a['href']
-          href_match = self.PLAYER_HREF_REGEX.match(href)
-          if not href_match:
-            raise Exception(f'no match {href}')
-          last, first = text.split(', ')
-          return ('player', {
-            'name': f'{first} {last}',
-            'id': sport + '-' + source + '-' + href_match.group('spseq'),
-            'external_link': self.base_url + href.replace('&amp;', '&')
-          })
-        case 'Pos':
-          return ('position', text) if text else None
-        case 'Goals':
-          return ('g', int(text) if text else 0)
-        case 'Assists':
-          return ('a', int(text) if text else 0)
-        case 'GB':
-          return ('gb', int(text) if text else 0)
-        case _:
-          return None
-    except:
-      raise Exception(f'error mapping statistic {tag}')
+  TEAM_NAME_REGEX = re.compile(r'(#\d+ )?(?P<name>[a-zA-Z0-9\-_&\' .()]+) \(\d+-\d+\)')
 
   def convert_game_details_html(self, html, location, game_id, sport, source):
     soup = BeautifulSoup(html, 'html.parser')
@@ -183,6 +151,41 @@ class Ncaa():
       'home_stats': get_stats(stats_headers[1])
     }
 
+  PLAYER_HREF_REGEX = re.compile(r'/player/index\?game_sport_year_ctl_id=(?P<gsycid>\d+)&(amp;)?org_id=(?P<org_id>\d+)&(amp;)?stats_player_seq=(?P<spseq>\d+)')
+
+  def map_statistic(self, sport, source, key, tag):
+    text = tag.get_text(strip=True)
+    def get_num(t):
+      return int(t.replace('/','') if t else 0)
+
+    try:
+      match key:
+        case 'Player':
+          a = tag.find('a')
+          if not a:
+            return None
+          href = a['href']
+          href_match = self.PLAYER_HREF_REGEX.match(href)
+          if not href_match:
+            raise Exception(f'no match {href}')
+          last, first = text.split(', ')
+          return ('player', {
+            'name': f'{first} {last}',
+            'id': sport + '-' + source + '-' + href_match.group('spseq'),
+            'external_link': self.base_url + href.replace('&amp;', '&')
+          })
+        case 'Pos':
+          return ('position', text) if text else None
+        case 'Goals':
+          return ('g', get_num(text))
+        case 'Assists':
+          return ('a', get_num(text))
+        case 'GB':
+          return ('gb', get_num(text))
+        case _:
+          return None
+    except:
+      raise Exception(f'error mapping statistic {tag}')
 
   def to_iso_format(self, date):
     return datetime.datetime.strptime(date, '%m/%d/%Y').date().isoformat()

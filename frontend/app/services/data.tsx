@@ -20,10 +20,12 @@ export async function getTeams({ year, div }: { year: string, div: string }): Pr
     const divisions = await getDivs();
     const division = divisions.find(division => division.id === div);
     if (!division) {
+        console.error(`No division ${div}`)
         return null;
     }
     const response = await fetch(`${BASE_URL}/data/${year}/${division.source}-teams.json`);
     if (!response.ok) {
+        console.error(`/data/${year}/${division.source}-teams not available`);
         return null;
     }
     const teams: Team[] = await response.json();
@@ -34,7 +36,12 @@ export async function getRankedTeamsByDiv({ year, div }: { year: string, div: st
     const teamsPromise = getTeams({year, div});
     const ratingsPromise = getRatings({year});
     const [teams, ratings] = await Promise.all([teamsPromise, ratingsPromise]);
-    if (!teams || !ratings) {
+    if (!teams) {
+        console.error(`No teams for ${year} ${div}`)
+        return null;
+    }
+    if (!ratings) {
+        console.error(`No teams ratings for ${year} ${div}`);
         return null;
     }
     const teamRatings = Object.values(teams)
