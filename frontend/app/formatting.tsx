@@ -1,7 +1,7 @@
 import moment from "moment";
 
-export function twoPlaces(rating: number): string {
-    return (Math.round(rating * 100) / 100.0).toString();
+export function twoPlaces(rating?: number): string {
+    return rating ? (Math.round(rating * 100) / 100.0).toString() : '';
 }
 
 export function datetime(date: string): string {

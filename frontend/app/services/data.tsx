@@ -47,7 +47,7 @@ export async function getRankedTeamsByDiv({ year, div }: { year: string, div: st
     const teamRatings = Object.values(teams)
         .filter(team => team.div === div)
         .map(team => ({...team, ...ratings[team.id]}));
-    teamRatings.sort((a, b) => b.overall - a.overall);
+    teamRatings.sort((a, b) => (b.overall ?? -Infinity) - (a.overall ?? -Infinity));
     return Object.fromEntries(teamRatings.map((team, i) => [team.id, {...team, rank: i + 1}]));
 }
 
