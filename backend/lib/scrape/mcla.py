@@ -88,7 +88,7 @@ class Mcla():
 
     return {'team': team, 'games': games}
 
-  def convert_game_details_html(self, html, location, game_id, sport, source):
+  def convert_game_details_html(self, html, location, game_id, sport, source, home_team, away_team):
     soup = BeautifulSoup(html, 'html.parser')
     result = {
       'id': game_id,
