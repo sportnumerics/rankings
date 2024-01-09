@@ -80,18 +80,20 @@ class TestScrape(unittest.TestCase):
     self.maxDiff = None
     html = fixtures.ncaa_game_details()
     n = ncaa.Ncaa()
-    game_details = n.convert_game_details_html(html, { 'url': 'https://stats.ncaa.org/contests/1822151/box_score' }, 'ml-ncaa-1822151', 'ml', 'ncaa')
+    home_team = {
+        'name': 'Duke',
+        'id': 'ml-ncaa-193'
+    }
+    away_team = {
+        'name': 'Air Force',
+        'id': 'ml-ncaa-721'
+    }
+    game_details = n.convert_game_details_html(html, { 'url': 'https://stats.ncaa.org/contests/1822151/box_score' }, 'ml-ncaa-1822151', 'ml', 'ncaa', home_team, away_team)
     self.assertEqual(game_details['date'], '2020-02-01')
     self.assertEqual(game_details['id'], 'ml-ncaa-1822151')
     self.assertEqual(game_details['external_link'], 'https://stats.ncaa.org/contests/1822151/box_score')
-    self.assertEqual(game_details['home_team'], {
-        'name': 'Duke',
-        'id': 'ml-ncaa-493848'
-    })
-    self.assertEqual(game_details['away_team'], {
-        'name': 'Air Force',
-        'id': 'ml-ncaa-493893'
-    })
+    self.assertEqual(game_details['home_team'], home_team)
+    self.assertEqual(game_details['away_team'], away_team)
     self.assertEqual(game_details['result'], {
         'home_score': 13,
         'away_score': 14

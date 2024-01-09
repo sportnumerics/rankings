@@ -103,7 +103,7 @@ class Ncaa():
   TEAM_HREF_REGEX = re.compile(r'/teams/(?P<id>\d+)')
   TEAM_NAME_REGEX = re.compile(r'(#\d+ )?(?P<name>[a-zA-Z0-9\-_&\' .()]+) \(\d+-\d+\)')
 
-  def convert_game_details_html(self, html, location, game_id, sport, source):
+  def convert_game_details_html(self, html, location, game_id, sport, source, home_team, away_team):
     soup = BeautifulSoup(html, 'html.parser')
     date = self.to_iso_format(next(soup.find('td', string='Game Date:').find_next_sibling('td').stripped_strings))
 
@@ -112,11 +112,10 @@ class Ncaa():
       return m
 
     team_links = soup.find_all('a', href=is_team_href)
-    def get_team(link):
-      team_link_match = self.TEAM_HREF_REGEX.match(link['href'])
+    def get_team(link, id):
       team_name_match = self.TEAM_NAME_REGEX.match(link.get_text(strip=True))
       return {
-        'id': sport + '-' + source + '-' + team_link_match.group('id'),
+        'id': id,
         'name': team_name_match.group('name')
       }
 
@@ -141,8 +140,8 @@ class Ncaa():
       'date': date,
       'id': game_id,
       'external_link': location['url'],
-      'away_team': get_team(team_links[0]),
-      'home_team': get_team(team_links[1]),
+      'away_team': away_team,
+      'home_team': home_team,
       'result': {
         'away_score': get_total_score(team_links[0]),
         'home_score': get_total_score(team_links[1])

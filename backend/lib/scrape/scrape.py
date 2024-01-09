@@ -75,7 +75,9 @@ class ScrapeRunner():
       for game in schedule['games']:
         if 'details' in game:
           LOGGER.info(f'scraping game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}')
-          game_details = self.scrape_game_details(game['details'], game['id'], team['sport'], team['source'])
+          opponent = game['opponent']
+          (home_team, away_team) = (team, opponent) if game['home'] else (opponent, team)
+          game_details = self.scrape_game_details(game['details'], game['id'], team['sport'], team['source'], home_team, away_team)
           if not game_details:
             continue
           with open(os.path.join(games_dir, game_details['id'] + '.json'), 'w') as f:
@@ -100,10 +102,10 @@ class ScrapeRunner():
     except Exception as e:
       print(f'Unable to convert schedule html from {schedule}: {e}')
 
-  def scrape_game_details(self, location, game_id, sport, source):
+  def scrape_game_details(self, location, game_id, sport, source, home_team, away_team):
     html = self.fetch(location)
     try:
-      return self.scraper.convert_game_details_html(html, location, game_id, sport, source)
+      return self.scraper.convert_game_details_html(html, location, game_id, sport, source, home_team, away_team)
     except Exception as e:
       print(f'Unable to convert game details html from {location}:')
       traceback.print_exception(e)
