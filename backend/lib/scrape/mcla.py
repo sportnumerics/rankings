@@ -43,7 +43,8 @@ class Mcla():
 
   def convert_schedule_html(self, html, team):
     soup = BeautifulSoup(html, 'html.parser')
-    rows = soup.find('table', class_='team-schedule').tbody.find_all('tr')
+    team_schedule = soup.find('table', class_='team-schedule')
+    rows = team_schedule.tbody.find_all('tr') if team_schedule else []
     games = []
     for row in rows:
       game = {}

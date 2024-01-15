@@ -49,7 +49,8 @@ class Ncaa():
 
   def convert_schedule_html(self, html, team):
     soup = BeautifulSoup(html, 'html.parser')
-    rows = soup.find(id='game_breakdown_div').table.table.find_all('tr')
+    game_breakdown_div = soup.find(id='game_breakdown_div')
+    rows = game_breakdown_div.table.table.find_all('tr') if game_breakdown_div else []
     games = []
     for row in rows:
       game = {}
@@ -60,7 +61,7 @@ class Ncaa():
       opp_col = cols[1]
       result_col = cols[2]
 
-      game['date'] = self.to_iso_format(date_col.string)
+      game['date'] = self._to_iso_format(date_col.string)
 
       opp_link = opp_col.find(
           lambda tag: tag.name == 'a' and not tag.has_attr('class'))
@@ -105,7 +106,7 @@ class Ncaa():
 
   def convert_game_details_html(self, html, location, game_id, sport, source, home_team, away_team):
     soup = BeautifulSoup(html, 'html.parser')
-    date = self.to_iso_format(next(soup.find('td', string='Game Date:').find_next_sibling('td').stripped_strings))
+    date = self._to_iso_format(next(soup.find('td', string='Game Date:').find_next_sibling('td').stripped_strings))
 
     def is_team_href(href):
       m = self.TEAM_HREF_REGEX.match(href)
@@ -131,7 +132,7 @@ class Ncaa():
         return list(row.find_all(name))
       def stats(row, keys):
         columns = cols(row, 'td')
-        return {v[0]: v[1] for v in (self.map_statistic(sport, source, keys[i], v) for i, v in enumerate(columns)) if v}
+        return {v[0]: v[1] for v in (self._map_statistic(sport, source, keys[i], v) for i, v in enumerate(columns)) if v}
       keys = list(map(lambda x: x.get_text(strip=True), cols(header, 'th')))
       stats = list(filter(lambda p: p.get('player'), map(lambda r: stats(r, keys), header.find_next_siblings('tr'))))
       return stats
@@ -152,7 +153,7 @@ class Ncaa():
 
   PLAYER_HREF_REGEX = re.compile(r'/player/index\?game_sport_year_ctl_id=(?P<gsycid>\d+)&(amp;)?org_id=(?P<org_id>\d+)&(amp;)?stats_player_seq=(?P<spseq>\d+)')
 
-  def map_statistic(self, sport, source, key, tag):
+  def _map_statistic(self, sport, source, key, tag):
     text = tag.get_text(strip=True)
     def get_num(t):
       return int(t.replace('/','') if t else 0)
@@ -186,5 +187,5 @@ class Ncaa():
     except:
       raise Exception(f'error mapping statistic {tag}')
 
-  def to_iso_format(self, date):
+  def _to_iso_format(self, date):
     return datetime.datetime.strptime(date, '%m/%d/%Y').date().isoformat()
