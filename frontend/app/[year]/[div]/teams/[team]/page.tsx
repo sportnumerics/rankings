@@ -50,7 +50,7 @@ export default async function Page({ params } : { params: Params}) {
             <Table>
                 <TableHeader><tr><th>Date</th><th>Opponent</th><th>Result</th></tr></TableHeader>
                 <tbody>
-                    {schedule.games.map(game => <tr>
+                    {schedule.games.map(game => <tr key={game.id}>
                         <td className="w-24">{game.result ? <Link href={`/${params.year}/${params.div}/games/${game.id}`}>{datetime(game.date)}</Link> : datetime(game.date)}</td>
                         <td className="w-64"><Opponent {...game.opponent}/></td>
                         <td className="w-24">{game.result ? game.result.points_for + "-" + game.result.points_against : ""}</td>
@@ -62,7 +62,7 @@ export default async function Page({ params } : { params: Params}) {
             <Table>
                 <TableHeader><tr><th>Rank</th><th>Name</th><th>Rating</th></tr></TableHeader>
                 <tbody>
-                    {rankedPlayers.slice(0, 20).map(player => <tr>
+                    {rankedPlayers.slice(0, 20).map(player => <tr key={player.id}>
                         <td className="w-24">{player.rank}</td>
                         <td className="w-64"><Link href={`/${params.year}/${params.div}/players/${player.id}`}>{player.name}</Link></td>
                         <td className="w-24">{twoPlaces(player.points)}</td>

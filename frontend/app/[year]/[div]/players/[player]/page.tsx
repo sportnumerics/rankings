@@ -23,7 +23,7 @@ export default async function Page({ params } : { params: Params}) {
         <Table>
             <TableHeader><tr><th>Date</th><th>Opponent</th><th>G</th><th>A</th><th>GB</th></tr></TableHeader>
             <tbody>
-                {player.stats.map(line => <tr>
+                {player.stats.map(line => <tr key={line.opponent.id}>
                     <td className="w-16">{date(line.date)}</td>
                     <td className="w-64"><Link href={`${params.year}/${params.div}/teams/${line.opponent.id}`}>{line.opponent.name}</Link></td>
                     <td className="w-8">{line.g}</td>

@@ -21,7 +21,7 @@ export default async function Page({ params } : { params: HasDivision}) {
         <Card>
             <Table>
                 <TableHeader><tr><th>Rank</th><th>Team</th><th>Rating</th></tr></TableHeader>
-                <tbody>{sortedTeams.map((team) => <tr>
+                <tbody>{sortedTeams.map(team => <tr key={team.id}>
                         <td className="w-16">{team.rank}</td>
                         <td className="w-64"><Link href={`/${params.year}/${params.div}/teams/${team.id}`}>{team.name}</Link></td>
                         <td className="w-24">{twoPlaces(team.overall)}</td>

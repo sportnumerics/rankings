@@ -23,7 +23,7 @@ export default async function Page({ params } : { params: Params}) {
         return <Table>
             <TableHeader><tr><th>#</th><th>Name</th><th>Position</th><th>G</th><th>A</th><th>GB</th></tr></TableHeader>
             <tbody>
-                {sortedStats.map(line => <tr>
+                {sortedStats.map(line => <tr key={line.player.id}>
                     <td className="w-16">{line.number}</td>
                     <td className="w-64"><Link href={`/${params.year}/${params.div}/players/${line.player.id}`}>{line.player.name}</Link></td>
                     <td className="w-24">{line.position}</td>

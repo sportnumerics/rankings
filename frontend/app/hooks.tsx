@@ -36,14 +36,14 @@ interface Result<T> {
     loading: boolean;
 }
 
-export function usePromise<T>(get: () => Promise<T>, deps: DependencyList): Result<T> {
+export function usePromise<T>(get: () => Promise<T>): Result<T> {
     const [result, setResult] = useState<Result<T>>({ loading: true });
 
     useEffect(() => {
         get()
             .then(value => setResult({value, loading: false }))
             .catch(error => setResult({error, loading: false }))
-    }, deps);
+    }, [get]);
 
     return result;
 }

@@ -12,8 +12,8 @@ type OverlayControlProps = {toggle: VoidFunction, isOpen: boolean};
 type OverlayControl = React.FunctionComponent<OverlayControlProps>
 
 export function Header() {
-    const { value: years = [] } = usePromise(getYears, []);
-    const { value: divs = [] } = usePromise(getDivs, []);
+    const { value: years = [] } = usePromise(getYears);
+    const { value: divs = [] } = usePromise(getDivs);
     const location = useLocation();
     const playersHref = linkToPlayers(location);
     const teamsHref = linkToTeams(location);
@@ -58,14 +58,14 @@ export function Nav({ children, isActive }: { children: React.ReactNode, isActiv
 }
 
 export function DropdownNav({ content, children }: { content: React.ReactNode, children: React.ReactNode }) {
-    const DropdownControl = useMemo(() => function ({ toggle, isOpen }: OverlayControlProps) {
+    const MemoizedDropdownControl = useMemo(() => function DropdownControl({ toggle, isOpen }: OverlayControlProps) {
         const Icon = isOpen ? ChevronDownIcon : ChevronRightIcon;
         return <button className="w-full text-left" onClick={toggle} >
             <div className={`leading-8 flex px-8 py-6 ${activeOrHover(isOpen, "bg-black/10")}`}><ChevronDownIcon className="w-6 h-6 m-auto mr-3" />{content}</div>
         </button>;
     }, [content]);
-    
-    return <Overlay Component={DropdownControl}>
+
+    return <Overlay Component={MemoizedDropdownControl}>
         <div className="md:divide-y md:text-black w-full md:w-max">
             {children}
         </div>

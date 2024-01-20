@@ -23,7 +23,7 @@ export default async function Page({ params } : { params: HasDivision}) {
                 <Table>
                     <TableHeader><tr><th>Rank</th><th>Name</th><th>Rating</th></tr></TableHeader>
                     <tbody>
-                    {top200.map((player) => <tr>
+                    {top200.map(player => <tr key={player.id}>
                         <td className="w-16">{player.rank}</td>
                         <td className="w-96"><Link href={`/${params.year}/${params.div}/players/${player.id}`}>{player.name}</Link> ({player.team.name})</td>
                         <td className="w-24">{twoPlaces(player.points)}</td></tr>)}
