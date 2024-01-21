@@ -1,4 +1,4 @@
-import { DIVS } from "../route";
+import { DIVS } from "../../divs";
 
 export async function GET(request: Request, { params: { div } }: { params: { div: string }}) {
     const division = DIVS.find(d => d.id === div);

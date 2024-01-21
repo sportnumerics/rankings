@@ -1,4 +1,5 @@
-[
+
+export const DIVS = [
     {
         "name": "NCAA Mens Division I",
         "id": "ml1",

@@ -2,7 +2,7 @@ export async function GET() {
     return Response.json(YEARS);
 }
 
-export const YEARS = [
+const YEARS = [
     {
       "id": "2024"
     },

@@ -35,6 +35,17 @@ export class NotFoundError extends Error {
 
 }
 
+class SourceLoader implements Source {
+    source: Source | undefined;
+
+    async get(key: string) {
+        if (!this.source) {
+            this.source = getSource();
+        }
+        return this.source.get(key);
+    }
+}
+
 function getSource(): Source {
     if (process.env.DATA_BUCKET) {
         return new S3Source();
@@ -45,4 +56,6 @@ function getSource(): Source {
     }
 }
 
-export default getSource();
+const sourceLoader = new SourceLoader();
+
+export default sourceLoader;

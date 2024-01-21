@@ -1,8 +1,8 @@
 
 import { NextRequest } from "next/server";
-import { getTeams } from "../teams/route";
 import source from "../../source";
 import { PlayerRating, PlayerRatingMap, TeamMap } from "../../types";
+import { getTeams } from "../../teams";
 
 export async function GET(request: NextRequest, { params: { year } }: { params: { year: string }}) {
     const team = request.nextUrl.searchParams.get('team');
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params: { year } }: { params: 
     return Response.json(Object.fromEntries(players.map((player, i) => [player.id, {...player, rank: i + 1}])));
 }
 
-export async function getPlayerRatings({ year }: {year: string}): Promise<PlayerRatingMap> {
+async function getPlayerRatings({ year }: {year: string}): Promise<PlayerRatingMap> {
     const response = await source.get(`${year}/player-ratings.json`);
     const ratings: PlayerRating[] = JSON.parse(response);
     return Object.fromEntries(ratings.map(rating => [rating.id, rating]));
