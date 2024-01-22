@@ -10,11 +10,12 @@ interface Source {
 class S3Source implements Source {
     readonly client = new S3Client({});
     readonly bucket = process.env.DATA_BUCKET;
+    readonly prefix = process.env.DATA_BUCKET_PREFIX || 'data';
 
     async get(key: string) {
         const response = await this.client.send(new GetObjectCommand({
             Bucket: this.bucket,
-            Key: key
+            Key: `${this.prefix}/${key}`
         }))
         if (!response.Body) {
             throw new NotFoundError();
