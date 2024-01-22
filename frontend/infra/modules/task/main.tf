@@ -86,3 +86,22 @@ data "aws_iam_policy_document" "lambda_role" {
 
 
 data "aws_region" "current" {}
+
+module "static_files" {
+    source = "hashicorp/dir/template"
+
+    base_dir = "${path.cwd}/.next/static"
+}
+
+resource "aws_s3_object" "static_files" {
+    for_each = module.static_files.files
+
+    bucket = local.bucket_name
+    key = "static/${each.key}"
+    content_type = each.value.content_type
+
+    source = each.value.source_path
+    content = each.value.content
+
+    etag  = each.value.digests.md5
+}
