@@ -183,6 +183,12 @@ data "aws_iam_policy_document" "rankings_backend_scheduler_role" {
 
         resources = [aws_ecs_task_definition.rankings_backend.arn]
     }
+
+    statement {
+      actions = ["iam:PassRole"]
+
+      resources = [aws_iam_role.rankings_backend_execution_role.arn]
+    }
 }
 
 data "aws_region" "current" {}
