@@ -1,5 +1,7 @@
 locals {
     bucket_name = "${var.data_bucket_prefix}-${var.environment}"
+    lambda_origin = "lambda-origin"
+    s3_bucket_origin = "s3-bucket-origin"
 }
 
 data "archive_file" "package" {
@@ -104,4 +106,75 @@ resource "aws_s3_object" "static_files" {
     content = each.value.content
 
     etag  = each.value.digests.md5
+}
+
+resource "aws_cloudfront_distribution" "frontend" {
+    origin {
+        origin_id = local.lambda_origin
+        domain_name = split("://", aws_lambda_function_url.lambda.function_url)[1]
+    }
+
+    origin {
+        origin_id = local.s3_bucket_origin
+        domain_name = "${local.bucket_name}.${var.website_domain}"
+    }
+
+    restrictions {
+        geo_restriction {
+          restriction_type = "whitelist"
+          locations = [ "US" ]
+        }
+    }
+
+    default_cache_behavior {
+        allowed_methods = [ "HEAD", "OPTIONS", "GET" ]
+        cached_methods = [ "HEAD", "GET" ]
+        target_origin_id = local.lambda_origin
+
+        cache_policy_id = aws_cloudfront_cache_policy.default.id
+
+        viewer_protocol_policy = "redirect-to-https"
+    }
+
+    ordered_cache_behavior {
+      path_pattern = "/_next"
+      allowed_methods = [ "HEAD", "OPTIONS", "GET" ]
+      cached_methods = [ "HEAD", "GET" ]
+      target_origin_id = local.s3_bucket_origin
+
+      cache_policy_id = aws_cloudfront_cache_policy.default.id
+
+      viewer_protocol_policy = "redirect-to-https"
+    }
+
+    viewer_certificate {
+      cloudfront_default_certificate = true
+    }
+
+    enabled = true
+
+    tags = {
+        App = "rankings"
+        Stage = var.environment
+    }
+}
+
+resource "aws_cloudfront_cache_policy" "default" {
+    name = "default-cache-policy"
+
+    min_ttl = 600
+
+    parameters_in_cache_key_and_forwarded_to_origin {
+      cookies_config {
+        cookie_behavior = "none"
+      }
+
+      headers_config {
+        header_behavior = "none"
+      }
+
+      query_strings_config {
+        query_string_behavior = "none"
+      }
+    }
 }
