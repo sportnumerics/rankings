@@ -1,4 +1,3 @@
-
 type RankedTeam = Team & TeamRating & HasRanking;
 
 export interface HasRanking {
@@ -139,7 +138,7 @@ export interface FaceOffResults {
 
 export interface Year {
     id: string;
-    unavailable: string[];
+    unavailable?: string[];
 }
 
 export interface Division {

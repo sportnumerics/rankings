@@ -1,6 +1,11 @@
+import { getDiv } from "@/app/server/divs";
+import { getRankedPlayers } from "@/app/server/players";
+import { getRankedTeams, getTeam } from "@/app/server/teams";
+import { TeamSummary } from "@/app/server/types";
 import { datetime, twoPlaces } from "@/app/formatting";
-import { TeamSummary, getDiv, getRankedPlayersByTeam, getRankedTeamsByDiv, getTeamSchedule } from "@/app/services/data";
-import { Card, Content, ExternalLink, Link, H1, Table, TableHeader, Error, H2 } from "@/app/shared";
+import { Card, ExternalLink, H1, Table, TableHeader, Error, H2 } from "@/app/shared";
+import Content from "@/app/components/Content";
+import Link from "@/app/components/Link";
 
 interface Params {
     year: string;
@@ -9,15 +14,15 @@ interface Params {
 }
 
 export default async function Page({ params } : { params: Params}) {
-    const schedule = await getTeamSchedule(params);
+    const schedule = await getTeam(params);
 
     if (!schedule) {
         console.error(`No schedule for ${JSON.stringify(params)}`);
         return <Content><Error /></Content>
     }
 
-    const teamPromise = getRankedTeamsByDiv({ year: params.year, div: schedule.team.div });
-    const playersPromise = getRankedPlayersByTeam({ year: params.year, team: schedule.team.id });
+    const teamPromise = getRankedTeams({ year: params.year, div: schedule.team.div });
+    const playersPromise = getRankedPlayers({ year: params.year, team: schedule.team.id });
     const divPromise = getDiv(schedule.team.div);
     const [teams, players, div] = await Promise.all([teamPromise, playersPromise, divPromise]);
     if (!teams || !players || !div) {

@@ -1,21 +1,11 @@
-import { LinkProps as NextLinkProps, default as NextLink } from "next/link";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
-import { Header } from "./client";
+import Link from "./components/Link";
 
 export function ExternalLink({ href } : { href: string }) {
     const url = new URL(href);
     return <div className="w-fit">
         <Link className="flex space-x-1" href={href}><span>{url.hostname}</span><ArrowTopRightOnSquareIcon className="h-5 w-5"/></Link>
         </div>;
-}
-
-interface LinkProps {
-    nounderline?: boolean;
-}
-
-export function Link(props: Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof NextLinkProps> & NextLinkProps & { children?: React.ReactNode} & LinkProps) {
-    const {nounderline: _, ...passedProps} = props;
-    return <NextLink {...passedProps} className={`${props.className ?? ""} ${props.nounderline ? "" : "underline"}`}>{props.children}</NextLink>
 }
 
 export function Card({ children, title } : {children: React.ReactNode, title?: string }) {
@@ -43,15 +33,6 @@ export function H1({ children }: { children: React.ReactNode }) {
 
 export function H2({ children }: { children: React.ReactNode }) {
     return <h2 className="text-l font-bold tracking-wider my-2">{ children }</h2>;
-}
-
-export function Content({ children }: { children: React.ReactNode }) {
-    return <div>
-        <Header />
-        <div className="mx-auto container px-4">
-            {children}
-        </div>
-    </div>
 }
 
 export function Error() {

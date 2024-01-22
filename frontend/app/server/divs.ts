@@ -1,3 +1,18 @@
+import 'server-only';
+import { NotFoundError } from "./source";
+import { Division } from "./types"
+
+export async function getDivs(): Promise<Division[]> {
+    return DIVS;
+}
+
+export async function getDiv(div: string): Promise<Division> {
+    const division = DIVS.find(d => d.id === div);
+    if (!division) {
+        throw new NotFoundError('division not found');
+    }
+    return division;
+}
 
 export const DIVS = [
     {

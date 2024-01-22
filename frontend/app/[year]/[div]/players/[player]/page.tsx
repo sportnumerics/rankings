@@ -1,6 +1,8 @@
+import { getPlayerStats } from "@/app/server/players";
 import { date } from "@/app/formatting";
-import { getPlayerStats } from "@/app/services/data";
-import { Card, Content, Error, ExternalLink, H1, H2, Link, Table, TableHeader } from "@/app/shared";
+import { Card, Error, ExternalLink, H1, H2, Table, TableHeader } from "@/app/shared";
+import Link from "@/app/components/Link";
+import Content from "@/app/components/Content";
 
 interface Params {
     year: string;
@@ -23,7 +25,7 @@ export default async function Page({ params } : { params: Params}) {
         <Table>
             <TableHeader><tr><th>Date</th><th>Opponent</th><th>G</th><th>A</th><th>GB</th></tr></TableHeader>
             <tbody>
-                {player.stats.map(line => <tr key={line.opponent.id}>
+                {player.stats.map(line => <tr key={line.game_id}>
                     <td className="w-16">{date(line.date)}</td>
                     <td className="w-64"><Link href={`${params.year}/${params.div}/teams/${line.opponent.id}`}>{line.opponent.name}</Link></td>
                     <td className="w-8">{line.g}</td>

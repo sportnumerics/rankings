@@ -1,10 +1,13 @@
-import {HasDivision} from '../../../navigation';
-import { getDiv, getRankedTeamsByDiv } from '@/app/services/data';
+import { HasDivision } from '../../../navigation';
 import { twoPlaces } from '@/app/formatting';
-import { Card, Content, Error, H1, H2, Link, Table, TableHeader } from '@/app/shared';
+import { Card, Error, H1, H2, Table, TableHeader } from '@/app/shared';
+import { getRankedTeams } from '@/app/server/teams';
+import { getDiv } from '@/app/server/divs';
+import Content from '@/app/components/Content';
+import Link from '@/app/components/Link';
 
 export default async function Page({ params } : { params: HasDivision}) {
-    const teamsPromise = await getRankedTeamsByDiv(params);
+    const teamsPromise = await getRankedTeams(params);
     const divPromise = getDiv(params.div);
     const [teams, div] = await Promise.all([teamsPromise, divPromise]);
      if (!teams || !div) {

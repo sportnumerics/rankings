@@ -1,3 +1,4 @@
+import 'server-only';
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { promises } from "fs";
 import { join } from "path";
@@ -56,6 +57,6 @@ function getSource(): Source {
     }
 }
 
-const sourceLoader = new SourceLoader();
+const source = new SourceLoader();
 
-export default sourceLoader;
+export default source;

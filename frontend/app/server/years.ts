@@ -1,5 +1,8 @@
-export async function GET() {
-    return Response.json(YEARS);
+import 'server-only';
+import { Year } from "./types";
+
+export async function getYears(): Promise<Year[]> {
+    return YEARS;
 }
 
 const YEARS = [
