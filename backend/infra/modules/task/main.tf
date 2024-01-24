@@ -187,7 +187,7 @@ data "aws_iam_policy_document" "rankings_backend_scheduler_role" {
     statement {
       actions = ["iam:PassRole"]
 
-      resources = [aws_iam_role.rankings_backend_execution_role.arn]
+      resources = [aws_iam_role.rankings_backend_task_role.arn]
     }
 }
 
