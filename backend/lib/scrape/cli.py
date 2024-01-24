@@ -6,10 +6,8 @@ def add_parsers(parsers):
                                      help='scrape stats from league websites')
   scrape_parser.add_argument('--source',
                              choices=['ncaa', 'mcla'],
+                             required=True,
                              help='league source')
-  scrape_parser.add_argument('--year',
-                             default=str(datetime.now().year),
-                             help='year to fetch (defaults to current year)')
   scrape_parser.add_argument('--out-dir',
                              default='out',
                              help='output directory')

@@ -3,8 +3,7 @@ from datetime import datetime
 
 def add_parsers(parsers):
   sync_parser = parsers.add_parser('sync', help='sync to s3')
-  sync_parser.add_argument('--year', default=str(datetime.now().year), help='Year to sync')
-  sync_parser.add_argument('--input-dir', 
+  sync_parser.add_argument('--input-dir',
                            default='out',
                            help='Local directory to sync')
   sync_parser.add_argument('--bucket-url',

@@ -1,3 +1,4 @@
+import os, datetime
 import argparse
 import logging
 import lib.scrape.cli
@@ -9,6 +10,9 @@ import lib.all.cli
 def main():
   logging.basicConfig(level=logging.INFO)
   parser = argparse.ArgumentParser(description='Sportnumerics core')
+  parser.add_argument('--year',
+                      default=get_default_year(),
+                      help='year to fetch (defaults to environment variable YEAR or current year)')
   subparsers = parser.add_subparsers()
   parser.set_defaults(func=lambda args: parser.print_help())
   lib.scrape.cli.add_parsers(subparsers)
@@ -17,6 +21,9 @@ def main():
   lib.all.cli.add_parsers(subparsers)
   args = parser.parse_args()
   args.func(args)
+
+def get_default_year():
+  return os.environ["YEAR"] or str(datetime.now().year)
 
 
 if __name__ == "__main__":
