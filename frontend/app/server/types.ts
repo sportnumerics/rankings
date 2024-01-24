@@ -38,7 +38,7 @@ export interface PlayerRating {
     assists: number;
 }
 
-type RankedPlayer = PlayerRating & HasRanking;
+export type RankedPlayer = PlayerRating & HasRanking;
 
 export interface TeamMap {
     [id: string]: Team;

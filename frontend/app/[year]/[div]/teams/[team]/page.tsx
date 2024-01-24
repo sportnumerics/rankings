@@ -1,7 +1,8 @@
+'use server';
 import { getDiv } from "@/app/server/divs";
 import { getRankedPlayers } from "@/app/server/players";
 import { getRankedTeams, getTeam } from "@/app/server/teams";
-import { TeamSummary } from "@/app/server/types";
+import { GameResult, TeamSummary } from "@/app/server/types";
 import { datetime, twoPlaces } from "@/app/formatting";
 import { Card, ExternalLink, H1, Table, TableHeader, Error, H2 } from "@/app/shared";
 import Content from "@/app/components/Content";
@@ -45,7 +46,7 @@ export default async function Page({ params } : { params: Params}) {
         </Link>
     }
 
-    return <Content>
+    return <>
         <div>
             <H1>{schedule.team.name} ({params.year})</H1>
             <H2>{div.name}</H2>
@@ -58,7 +59,7 @@ export default async function Page({ params } : { params: Params}) {
                     {schedule.games.map(game => <tr key={game.id}>
                         <td className="w-24">{game.result ? <Link href={`/${params.year}/${params.div}/games/${game.id}`}>{datetime(game.date)}</Link> : datetime(game.date)}</td>
                         <td className="w-64"><Opponent {...game.opponent}/></td>
-                        <td className="w-24">{game.result ? game.result.points_for + "-" + game.result.points_against : ""}</td>
+                        <td className="w-24"><Result result={game.result} /></td>
                         </tr>)}
                 </tbody>
             </Table>
@@ -75,5 +76,26 @@ export default async function Page({ params } : { params: Params}) {
                 </tbody>
             </Table>
         </Card>
-        </Content>
+        </>
+}
+
+function Result({ result }: { result?: GameResult }) {
+    if (!result) {
+        return "";
+    }
+    return <><WinLossTie result={result} /><Score result={result} /></>;
+}
+
+function WinLossTie({ result }: { result: GameResult }) {
+    if (result.points_for > result.points_against) {
+        return "W "
+    } else if (result.points_for < result.points_against) {
+        return "L "
+    } else {
+        return "T "
+    }
+}
+
+function Score({ result }: { result: GameResult }) {
+    return result.points_for + "-" + result.points_against;
 }

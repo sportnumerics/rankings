@@ -1,11 +1,11 @@
 'use client';
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import { default as NextLink } from "next/link";
 import { useLocation } from "../hooks";
 import { HasDivision, HasType, HasYear, linkToDiv, linkToPlayers, linkToTeams, linkToYear } from "../navigation";
 import { Bars3Icon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { Division, Year } from "../server/types";
-import Overlay, { OverlayControlProps } from "./Overlay";
+import Overlay, { OverlayContext, OverlayControlProps } from "./Overlay";
 import Link from "./Link";
 
 type Props = { years: Year[], divs: Division[] };
@@ -44,9 +44,17 @@ function NavBar({ children }: { children: React.ReactNode }) {
         <div className="hidden md:flex">
             {children}
         </div>
-        <Overlay Component={({toggle}: OverlayControlProps) => <div className="p-3 flex md:hidden"><button className="rounded border h-10 w-10" onClick={toggle}><Bars3Icon className="h-8 w-8 m-auto"/></button></div>}>
+        <Overlay Component={OverlayButton}>
             {children}
         </Overlay>
+    </div>
+}
+
+function OverlayButton({ toggle }: OverlayControlProps) {
+    return <div className="p-3 flex md:hidden">
+        <button className="rounded border h-10 w-10" onClick={toggle}>
+            <Bars3Icon className="h-8 w-8 m-auto"/>
+        </button>
     </div>
 }
 
@@ -58,7 +66,7 @@ function DropdownNav({ content, children }: { content: React.ReactNode, children
     const MemoizedDropdownControl = useMemo(() => function DropdownControl({ toggle, isOpen }: OverlayControlProps) {
         const Icon = isOpen ? ChevronDownIcon : ChevronRightIcon;
         return <button className="w-full text-left" onClick={toggle} >
-            <div className={`leading-8 flex px-8 py-6 ${activeOrHover(isOpen, "bg-black/10")}`}><ChevronDownIcon className="w-6 h-6 m-auto mr-3" />{content}</div>
+            <div className={`leading-8 flex px-8 py-6 ${activeOrHover(isOpen, "bg-black/10")}`}><Icon className="w-6 h-6 m-auto mr-3" />{content}</div>
         </button>;
     }, [content]);
 
@@ -70,8 +78,9 @@ function DropdownNav({ content, children }: { content: React.ReactNode, children
 }
 
 function DropdownItem({ children, isActive, href }: { children: React.ReactNode, isActive?: boolean, href?: string | null }) {
+    const overlay = useContext(OverlayContext);
     const content = <div className="py-4 px-10">{children}</div>;
-    return <div className={`first:rounded-t last:rounded-b ${activeOrHover(isActive, "bg-black/10")}`}>{href ? <Link href={href} nounderline>{content}</Link> : content}</div>;
+    return <div className={`first:rounded-t last:rounded-b ${activeOrHover(isActive, "bg-black/10")}`}>{href ? <Link href={href} nounderline onClick={e => overlay.close()}>{content}</Link> : content}</div>;
 }
 
 function activeOrHover(show: boolean | undefined, value: string) {

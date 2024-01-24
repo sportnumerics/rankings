@@ -1,5 +1,6 @@
+'use server';
 import { getDiv } from '@/app/server/divs';
-import { HasDivision } from '../../../navigation';
+import { HasDivision, Player } from '../../../navigation';
 import { twoPlaces } from '@/app/formatting';
 import { Card, Error, H1, H2, Table, TableHeader } from '@/app/shared';
 import { getRankedPlayers } from '@/app/server/players';
@@ -12,12 +13,12 @@ export default async function Page({ params } : { params: HasDivision}) {
     const [players, div] = await Promise.all([playersPromise, divPromise]);
     if (!players || !div) {
         console.error(`No players or division for ${JSON.stringify(params)}`);
-        return <Content><Error /></Content>
+        return <Error />;
     }
     const playerRatings = Object.values(players);
     playerRatings.sort((a, b) => a.rank - b.rank);
     const top200 = playerRatings.slice(0, 200);
-    return <Content>
+    return <>
             <div>
             <H1>Top Players</H1>
             <H2>{div.name}</H2>
@@ -33,5 +34,5 @@ export default async function Page({ params } : { params: HasDivision}) {
                     </tbody>
                 </Table>
             </Card>
-        </Content>;
+        </>;
 }

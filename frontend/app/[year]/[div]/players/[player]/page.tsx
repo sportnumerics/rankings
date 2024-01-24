@@ -1,3 +1,4 @@
+'use server';
 import { getPlayerStats } from "@/app/server/players";
 import { date } from "@/app/formatting";
 import { Card, Error, ExternalLink, H1, H2, Table, TableHeader } from "@/app/shared";
@@ -14,10 +15,10 @@ export default async function Page({ params } : { params: Params}) {
     const player = await getPlayerStats(params);
     if (!player) {
         console.error(`No player for ${JSON.stringify(params)}`);
-        return <Content><Error /></Content>
+        return <Error />;
     }
 
-    return <Content>
+    return <>
         <H1>{player.name}</H1>
         <H2><Link href={`/${params.year}/${params.div}/teams/${player.team.id}`}>{player.team.name}</Link></H2>
         {player.external_link && <ExternalLink href={player.external_link} /> }
@@ -35,5 +36,5 @@ export default async function Page({ params } : { params: Params}) {
             </tbody>
         </Table>
         </Card>
-    </Content>
+    </>
 }

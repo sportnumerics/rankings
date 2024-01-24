@@ -1,3 +1,4 @@
+'use server';
 import { getGame } from "@/app/server/games";
 import { GameStatLine } from "@/app/server/types";
 import { longDatetime } from "@/app/formatting";
@@ -15,7 +16,7 @@ export default async function Page({ params } : { params: Params}) {
     const game = await getGame(params);
     if (!game) {
         console.error(`No game for ${JSON.stringify(params)}`);
-        return <Content><Error /></Content>
+        return <Error />;
     }
 
     function StatLines({ stats }: {stats: GameStatLine[]}) {
@@ -37,7 +38,7 @@ export default async function Page({ params } : { params: Params}) {
         </Table>
     }
 
-    return <Content>
+    return <>
         <div>
         <H1>{game.away_team.name} at {game.home_team.name}</H1>
         <H2>{longDatetime(game.date)}</H2>
@@ -52,5 +53,5 @@ export default async function Page({ params } : { params: Params}) {
         <Card title={game.home_team.name}>
             <StatLines stats={game.home_stats} />
         </Card>
-    </Content>
+    </>
 }

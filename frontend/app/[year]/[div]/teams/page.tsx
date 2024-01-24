@@ -1,3 +1,4 @@
+'use server';
 import { HasDivision } from '../../../navigation';
 import { twoPlaces } from '@/app/formatting';
 import { Card, Error, H1, H2, Table, TableHeader } from '@/app/shared';
@@ -12,11 +13,11 @@ export default async function Page({ params } : { params: HasDivision}) {
     const [teams, div] = await Promise.all([teamsPromise, divPromise]);
      if (!teams || !div) {
         console.error(`No teams or division for ${JSON.stringify(params)}`);
-        return <Content><Error /></Content>
+        return <Error />;
     }
     const sortedTeams = Object.values(teams);
     sortedTeams.sort((a, b) => a.rank - b.rank);
-    return <Content>
+    return <>
         <div>
         <H1>Top Teams</H1>
         <H2>{div.name}</H2>
@@ -32,5 +33,5 @@ export default async function Page({ params } : { params: HasDivision}) {
                 </tbody>
             </Table>
         </Card>
-    </Content>;
+    </>;
 }
