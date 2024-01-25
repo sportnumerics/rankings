@@ -1,3 +1,7 @@
-output "frontend_lambda_url" {
-    value = aws_lambda_function_url.lambda.function_url
+output "cloudfront_domain" {
+    value = aws_cloudfront_distribution.frontend.domain_name
+}
+
+output "cloudfront_distribution_id" {
+    value = aws_cloudfront_distribution.frontend.id
 }

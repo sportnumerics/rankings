@@ -12,5 +12,5 @@ variable "data_bucket_prefix" {
 variable "website_domain" {
     description = "Domain for S3 bucket website"
     type        = string
-    default = "s3-website-us-west-2.amazonaws.com"
+    default = "s3.us-west-2.amazonaws.com"
 }

@@ -7,19 +7,3 @@ resource "aws_s3_bucket" "bucket" {
         Stage = var.environment
     }
 }
-
-resource "aws_s3_bucket_public_access_block" "bucket" {
-    bucket = aws_s3_bucket.bucket.id
-}
-
-resource "aws_s3_bucket_website_configuration" "website" {
-    bucket = aws_s3_bucket.bucket.id
-
-    index_document {
-      suffix = "index.html"
-    }
-
-    error_document {
-      key = "error.html"
-    }
-}

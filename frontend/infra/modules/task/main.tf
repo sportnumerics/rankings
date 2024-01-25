@@ -2,6 +2,7 @@ locals {
     bucket_name = "${var.data_bucket_prefix}-${var.environment}"
     lambda_origin = "lambda-origin"
     s3_bucket_origin = "s3-bucket-origin"
+    aws_managed_caching_optimized_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
 }
 
 data "archive_file" "package" {
@@ -99,7 +100,7 @@ resource "aws_s3_object" "static_files" {
     for_each = module.static_files.files
 
     bucket = local.bucket_name
-    key = "static/${each.key}"
+    key = "_next/static/${each.key}"
     content_type = each.value.content_type
 
     source = each.value.source_path
@@ -111,11 +112,19 @@ resource "aws_s3_object" "static_files" {
 resource "aws_cloudfront_distribution" "frontend" {
     origin {
         origin_id = local.lambda_origin
-        domain_name = split("://", aws_lambda_function_url.lambda.function_url)[1]
+        domain_name = split("/", aws_lambda_function_url.lambda.function_url)[2]
+
+        custom_origin_config {
+          http_port = 80
+          https_port = 443
+          origin_protocol_policy = "https-only"
+          origin_ssl_protocols = ["SSLv3", "TLSv1.2"]
+        }
     }
 
     origin {
         origin_id = local.s3_bucket_origin
+        origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
         domain_name = "${local.bucket_name}.${var.website_domain}"
     }
 
@@ -131,18 +140,18 @@ resource "aws_cloudfront_distribution" "frontend" {
         cached_methods = [ "HEAD", "GET" ]
         target_origin_id = local.lambda_origin
 
-        cache_policy_id = aws_cloudfront_cache_policy.default.id
+        cache_policy_id = local.aws_managed_caching_optimized_policy_id
 
         viewer_protocol_policy = "redirect-to-https"
     }
 
     ordered_cache_behavior {
-      path_pattern = "/_next"
+      path_pattern = "_next/*"
       allowed_methods = [ "HEAD", "OPTIONS", "GET" ]
       cached_methods = [ "HEAD", "GET" ]
       target_origin_id = local.s3_bucket_origin
 
-      cache_policy_id = aws_cloudfront_cache_policy.default.id
+      cache_policy_id = local.aws_managed_caching_optimized_policy_id
 
       viewer_protocol_policy = "redirect-to-https"
     }
@@ -156,6 +165,34 @@ resource "aws_cloudfront_distribution" "frontend" {
     tags = {
         App = "rankings"
         Stage = var.environment
+    }
+}
+
+resource "aws_cloudfront_origin_access_control" "frontend" {
+    name = "sportnumerics-rankings-frontend-${var.environment}"
+    origin_access_control_origin_type = "s3"
+    signing_behavior = "always"
+    signing_protocol = "sigv4"
+}
+
+resource "aws_s3_bucket_policy" "cloudfront_bucket_policy" {
+    bucket = local.bucket_name
+    policy = data.aws_iam_policy_document.cloudfront_bucket_policy.json
+}
+
+data "aws_iam_policy_document" "cloudfront_bucket_policy" {
+    statement {
+      effect = "Allow"
+      principals {
+        type = "Service"
+        identifiers = ["cloudfront.amazonaws.com"]
+      }
+
+      actions = ["s3:GetObject"]
+
+      resources = [
+        "arn:aws:s3:::${local.bucket_name}/*"
+      ]
     }
 }
 
