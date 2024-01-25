@@ -55,9 +55,9 @@ def rank_players(args):
       'game_id': game_id,
       'date': date,
       'opponent': opponent,
-      'g': entry['g'],
-      'a': entry['a'],
-      'gb': entry['gb']
+      'g': entry['g'] if 'g' in entry else 0,
+      'a': entry['a'] if 'a' in entry else 0,
+      'gb': entry['gb'] if 'gb' in entry else 0
     }
     if 'face_offs' in entry:
       line['face_offs'] = entry['face_offs']

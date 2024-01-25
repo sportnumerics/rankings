@@ -23,7 +23,7 @@ def main():
   args.func(args)
 
 def get_default_year():
-  return os.environ["YEAR"] or str(datetime.now().year)
+  return os.environ.get("YEAR") or str(datetime.datetime.now().year)
 
 
 if __name__ == "__main__":
