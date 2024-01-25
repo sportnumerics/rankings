@@ -8,12 +8,12 @@ import { Division, Year } from "../server/types";
 import Overlay, { OverlayContext, OverlayControlProps } from "./Overlay";
 import Link from "./Link";
 
-type Props = { years: Year[], divs: Division[] };
+type Props = { years: Year[], divs: Division[], currentYear: string };
 
-export default function Header({ years, divs }: Props) {
+export default function Header({ years, divs, currentYear }: Props) {
     const location = useLocation();
-    const playersHref = linkToPlayers(location);
-    const teamsHref = linkToTeams(location);
+    const playersHref = linkToPlayers(location, currentYear);
+    const teamsHref = linkToTeams(location, currentYear);
     const type = (location as HasType).type;
     const division = divs.find(div => div.id === (location as HasDivision).div);
     return <NavBar>
@@ -28,7 +28,7 @@ export default function Header({ years, divs }: Props) {
         </DropdownNav>
         <DropdownNav content={`${division?.name ?? "Divisions"}`}>
             {divs.map(div => {
-                const href = linkToDiv(div.id, location);
+                const href = linkToDiv(div.id, location, currentYear);
                 return <DropdownItem key={div.id} href={href} isActive={!href} >{div.name}</DropdownItem>
             })}
         </DropdownNav>
@@ -80,7 +80,7 @@ function DropdownNav({ content, children }: { content: React.ReactNode, children
 function DropdownItem({ children, isActive, href }: { children: React.ReactNode, isActive?: boolean, href?: string | null }) {
     const overlay = useContext(OverlayContext);
     const content = <div className="py-4 px-10">{children}</div>;
-    return <div className={`first:rounded-t last:rounded-b ${activeOrHover(isActive, "bg-black/10")}`}>{href ? <Link href={href} nounderline onClick={e => overlay.close()}>{content}</Link> : content}</div>;
+    return <div className={`first:rounded-t last:rounded-b ${activeOrHover(isActive, "bg-black/10")}`}>{href ? <Link href={href} nounderline onClick={e => overlay.close(true)}>{content}</Link> : content}</div>;
 }
 
 function activeOrHover(show: boolean | undefined, value: string) {

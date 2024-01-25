@@ -4,8 +4,7 @@ import { getRankedPlayers } from "@/app/server/players";
 import { getRankedTeams, getTeam } from "@/app/server/teams";
 import { GameResult, TeamSummary } from "@/app/server/types";
 import { datetime, twoPlaces } from "@/app/formatting";
-import { Card, ExternalLink, H1, Table, TableHeader, Error, H2 } from "@/app/shared";
-import Content from "@/app/components/Content";
+import { Card, ExternalLink, H1, Table, TableHeader, H2 } from "@/app/shared";
 import Link from "@/app/components/Link";
 
 interface Params {

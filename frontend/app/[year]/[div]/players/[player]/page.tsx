@@ -1,9 +1,8 @@
 'use server';
 import { getPlayerStats } from "@/app/server/players";
 import { date } from "@/app/formatting";
-import { Card, Error, ExternalLink, H1, H2, Table, TableHeader } from "@/app/shared";
+import { Card, ExternalLink, H1, H2, Table, TableHeader } from "@/app/shared";
 import Link from "@/app/components/Link";
-import Content from "@/app/components/Content";
 
 interface Params {
     year: string;

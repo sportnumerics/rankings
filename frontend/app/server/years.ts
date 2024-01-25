@@ -7,6 +7,16 @@ export async function getYears(): Promise<Year[]> {
     return YEARS.filter(year => availableYears.includes(year.id));
 }
 
+export async function getCurrentYear(): Promise<string> {
+  const years = await getYears();
+  return latestYear(years);
+}
+
+export function latestYear(years: Year[]) {
+  years.sort((a, b) => Number(b.id) - Number(a.id));
+  return years[0].id;
+}
+
 const YEARS = [
     {
       "id": "2024"

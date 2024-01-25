@@ -91,15 +91,15 @@ export function linkToYear(year: string, location: Location): string | null {
     } else if (isTeamsList(location) || isGame(location)) {
         return `/${year}/${location.div}/teams`;
     } else if (isPlayer(location)) {
-        return `/${year}/${location.div}/players/${location.player}`
+        return `/${year}/${location.div}/players/${location.player}`;
     } else if (isTeam(location)) {
-        return `/${year}/${location.div}/teams/${location.team}`
+        return `/${year}/${location.div}/teams/${location.team}`;
     } else {
-        return "/";
+        return `/${year}`;
     }
 }
 
-export function linkToDiv(div: string, location: Location): string | null {
+export function linkToDiv(div: string, location: Location, currentYear: string): string | null {
     if (hasDiv(location, div)) {
         return null;
     } else if (isPlayersList(location)) {
@@ -107,26 +107,28 @@ export function linkToDiv(div: string, location: Location): string | null {
     } else if (isTeamsList(location)) {
         return `/${location.year}/${div}/teams`;
     } else {
-        return "/";
+        return `/${currentYear}/${div}/teams`;
     }
 }
 
-export function linkToPlayers(location: Location): string | null {
+export function linkToPlayers(location: Location, currentYear: string): string | null {
     if (isPlayersList(location)) {
         return null;
     } else if (hasYear(location) && hasDiv(location)) {
         return `/${location.year}/${location.div}/players`;
     } else {
-        return "/"
+        return `/${currentYear}`
     }
 }
 
-export function linkToTeams(location: Location): string | null {
+export function linkToTeams(location: Location, currentYear: string): string | null {
     if (isTeamsList(location)) {
         return null;
     } else if (hasYear(location) && hasDiv(location)) {
         return `/${location.year}/${location.div}/teams`;
+    } else if (hasYear(location)) {
+        return `/${location.year}`;
     } else {
-        return "/";
+        return ''
     }
 }

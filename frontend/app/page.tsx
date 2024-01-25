@@ -1,5 +1,8 @@
-import Image from 'next/image'
+'use server'
+import YearTeams from "./components/YearTeams";
+import { getCurrentYear } from "./server/years";
 
 export default async function Home() {
-  return "hi, index coming soon";
+    const year = await getCurrentYear();
+    return <YearTeams params={{year}}/>
 }

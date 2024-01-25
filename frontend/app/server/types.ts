@@ -1,4 +1,4 @@
-type RankedTeam = Team & TeamRating & HasRanking;
+export type RankedTeam = Team & TeamRating & HasRanking;
 
 export interface HasRanking {
     rank: number;
