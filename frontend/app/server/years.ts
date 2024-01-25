@@ -1,8 +1,10 @@
 import 'server-only';
 import { Year } from "./types";
+import source from './source';
 
 export async function getYears(): Promise<Year[]> {
-    return YEARS;
+    const availableYears = await source.list('');
+    return YEARS.filter(year => availableYears.includes(year.id));
 }
 
 const YEARS = [

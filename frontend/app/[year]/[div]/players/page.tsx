@@ -11,10 +11,6 @@ export default async function Page({ params } : { params: HasDivision}) {
     const playersPromise = getRankedPlayers(params);
     const divPromise = getDiv(params.div);
     const [players, div] = await Promise.all([playersPromise, divPromise]);
-    if (!players || !div) {
-        console.error(`No players or division for ${JSON.stringify(params)}`);
-        return <Error />;
-    }
     const playerRatings = Object.values(players);
     playerRatings.sort((a, b) => a.rank - b.rank);
     const top200 = playerRatings.slice(0, 200);

@@ -14,10 +14,6 @@ interface Params {
 
 export default async function Page({ params } : { params: Params}) {
     const game = await getGame(params);
-    if (!game) {
-        console.error(`No game for ${JSON.stringify(params)}`);
-        return <Error />;
-    }
 
     function StatLines({ stats }: {stats: GameStatLine[]}) {
         const sortedStats = stats.slice();

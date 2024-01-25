@@ -17,28 +17,15 @@ interface Params {
 export default async function Page({ params } : { params: Params}) {
     const schedule = await getTeam(params);
 
-    if (!schedule) {
-        console.error(`No schedule for ${JSON.stringify(params)}`);
-        return <Content><Error /></Content>
-    }
-
     const teamPromise = getRankedTeams({ year: params.year, div: schedule.team.div });
     const playersPromise = getRankedPlayers({ year: params.year, team: schedule.team.id });
     const divPromise = getDiv(schedule.team.div);
     const [teams, players, div] = await Promise.all([teamPromise, playersPromise, divPromise]);
-    if (!teams || !players || !div) {
-        console.error(`No teams, players or division for ${JSON.stringify(params)}`);
-        return <Content><Error /></Content>
-    }
 
     const rankedPlayers = Object.values(players);
     rankedPlayers.sort((a, b) => a.rank - b.rank);
 
     function Opponent(summary: TeamSummary) {
-        if (!teams) {
-            console.error(`No teams for opponent ${JSON.stringify(summary)}`);
-            return <Error />
-        }
         const opponent = teams[summary.id];
         return <Link href={`/${params.year}/${params.div}/teams/${summary.id}`} className="space-x-1">
             <span className="text-xs">{opponent?.rank <= 25 ? opponent.rank : ""}</span>

@@ -1,10 +1,11 @@
 import 'server-only';
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { promises } from "fs";
 import { join } from "path";
 
 interface Source {
     get(key: string): Promise<string>
+    list(key: string): Promise<string[]>
 }
 
 class S3Source implements Source {
@@ -23,6 +24,21 @@ class S3Source implements Source {
         const body = await response.Body?.transformToString()
         return body;
     }
+
+    async list(key: string): Promise<string[]> {
+        const response = await this.client.send(new ListObjectsV2Command({
+            Bucket: this.bucket,
+            Prefix: `${this.prefix}/${key}`,
+            Delimiter: '/'
+        }))
+        if (!response.CommonPrefixes) {
+            throw new NotFoundError();
+        }
+        const prefix = new RegExp(`^${this.prefix}/${key}`);
+        const suffix = /\/$/
+        const keys = response.CommonPrefixes.map(obj => obj.Prefix?.replace(prefix, '').replace(suffix, '')) as string[];
+        return keys;
+    }
 }
 
 class LocalFileSource implements Source {
@@ -30,6 +46,10 @@ class LocalFileSource implements Source {
 
     async get(key: string) {
         return await promises.readFile(join(this.basePath, key), 'utf8');
+    }
+
+    async list(key: string) {
+        return await promises.readdir(join(this.basePath, key));
     }
 }
 
@@ -41,10 +61,18 @@ class SourceLoader implements Source {
     source: Source | undefined;
 
     async get(key: string) {
+        return this.cachedSource().get(key);
+    }
+
+    async list(key: string) {
+        return this.cachedSource().list(key);
+    }
+
+    cachedSource() {
         if (!this.source) {
             this.source = getSource();
         }
-        return this.source.get(key);
+        return this.source;
     }
 }
 

@@ -13,10 +13,6 @@ interface Params {
 
 export default async function Page({ params } : { params: Params}) {
     const player = await getPlayerStats(params);
-    if (!player) {
-        console.error(`No player for ${JSON.stringify(params)}`);
-        return <Error />;
-    }
 
     return <>
         <H1>{player.name}</H1>
