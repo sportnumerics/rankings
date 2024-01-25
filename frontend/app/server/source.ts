@@ -53,27 +53,65 @@ class LocalFileSource implements Source {
     }
 }
 
-export class NotFoundError extends Error {
+class CachedSource implements Source {
+    readonly origin: Source;
+    readonly ttl: number;
+    objectCache: Cache<string>;
+    listCache: Cache<string[]>;
 
-}
-
-class SourceLoader implements Source {
-    source: Source | undefined;
+    constructor(origin: Source, ttl: number) {
+        this.origin = origin;
+        this.ttl = ttl;
+        this.objectCache = new Cache(k => origin.get(k), ttl);
+        this.listCache = new Cache(k => origin.list(k), ttl);
+    }
 
     async get(key: string) {
-        return this.cachedSource().get(key);
+        return this.objectCache.get(key);
     }
 
     async list(key: string) {
-        return this.cachedSource().list(key);
+        return this.listCache.get(key);
+    }
+}
+
+type Loader<T> = (key: string) => Promise<T>;
+
+class Cache<T> {
+    readonly loader: Loader<T>;
+    readonly ttl: number;
+    objects: {[key: string]: Entry<T>} = {}
+
+    constructor(loader: (key: string) => Promise<T>, ttl: number) {
+        this.loader = loader;
+        this.ttl = ttl;
     }
 
-    cachedSource() {
-        if (!this.source) {
-            this.source = getSource();
+    async get(key: string) {
+        const obj = this.objects[key]
+        const now = new Date();
+        if (obj && obj.expires > now) {
+            return obj.value;
         }
-        return this.source;
+        const value = await this.loader(key)
+        this.objects[key] = { value, expires: getExpires(this.ttl) };
+        return value;
     }
+}
+
+function getExpires(ttl: number) {
+    const now = new Date();
+    now.setSeconds(now.getSeconds() + ttl);
+    return now;
+}
+
+interface Entry<T> {
+    value: T
+    expires: Date
+}
+
+export class NotFoundError extends Error {
+
 }
 
 function getSource(): Source {
@@ -86,6 +124,6 @@ function getSource(): Source {
     }
 }
 
-const source = new SourceLoader();
+const source = new CachedSource(getSource(), 600);
 
 export default source;

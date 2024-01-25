@@ -113,12 +113,6 @@ class Ncaa():
       return m
 
     team_links = soup.find_all('a', href=is_team_href)
-    def get_team(link, id):
-      team_name_match = self.TEAM_NAME_REGEX.match(link.get_text(strip=True))
-      return {
-        'id': id,
-        'name': team_name_match.group('name')
-      }
 
     def get_total_score(link):
       row = link.find_parent('tr')
@@ -137,16 +131,17 @@ class Ncaa():
       stats = list(filter(lambda p: p.get('player'), map(lambda r: stats(r, keys), header.find_next_siblings('tr'))))
       return stats
 
+    home_score = get_total_score(team_links[0])
+    away_score = get_total_score(team_links[1])
+    result = {'home_score': home_score, 'away_score': away_score} if home_score and away_score else None
+
     return {
       'date': date,
       'id': game_id,
       'external_link': location['url'],
       'away_team': away_team,
       'home_team': home_team,
-      'result': {
-        'away_score': get_total_score(team_links[0]),
-        'home_score': get_total_score(team_links[1])
-      },
+      'result': result,
       'away_stats': get_stats(stats_headers[0]),
       'home_stats': get_stats(stats_headers[1])
     }
