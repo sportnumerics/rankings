@@ -32,7 +32,7 @@ export default function Header({ years, divs, currentYear }: Props) {
                 return <DropdownItem key={div.id} href={href} isActive={!href} >{div.name}</DropdownItem>
             })}
         </DropdownNav>
-        {type && <DropdownNav content={type === "players" ? "Players" : "Teams"}>
+        {type && <DropdownNav content={type.includes("player") ? "Players" : "Teams"}>
             <DropdownItem isActive={!teamsHref} href={ teamsHref }>Teams</DropdownItem>
             <DropdownItem isActive={!playersHref} href={ playersHref }>Players</DropdownItem>
             </DropdownNav>}

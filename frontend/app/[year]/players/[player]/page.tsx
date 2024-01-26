@@ -15,7 +15,7 @@ export default async function Page({ params } : { params: Params}) {
 
     return <>
         <H1>{player.name}</H1>
-        <H2><Link href={`/${params.year}/${params.div}/teams/${player.team.id}`}>{player.team.name}</Link></H2>
+        <H2><Link href={`/${params.year}/teams/${player.team.id}`}>{player.team.name}</Link></H2>
         {player.external_link && <ExternalLink href={player.external_link} /> }
         <Card title="Games Played">
         <Table>
@@ -23,7 +23,7 @@ export default async function Page({ params } : { params: Params}) {
             <tbody>
                 {player.stats.map(line => <tr key={line.game_id}>
                     <td className="w-16">{date(line.date)}</td>
-                    <td className="w-64"><Link href={`${params.year}/${params.div}/teams/${line.opponent.id}`}>{line.opponent.name}</Link></td>
+                    <td className="w-64"><Link href={`/${params.year}/teams/${line.opponent.id}`}>{line.opponent.name}</Link></td>
                     <td className="w-8">{line.g}</td>
                     <td className="w-8">{line.a}</td>
                     <td className="w-8">{line.gb}</td>

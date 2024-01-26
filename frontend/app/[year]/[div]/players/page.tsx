@@ -11,7 +11,7 @@ export default async function Page({ params } : { params: HasDivision}) {
     playerRatings.sort((a, b) => a.rank - b.rank);
     const topPlayers = playerRatings.slice(0, 200);
     return <>
-        <PageHeading heading='Top Players' subHeading={div.name} />
-        <PlayersCard players={topPlayers} params={params} />
+        <PageHeading heading='Top Scoring Players' subHeading={div.name} />
+        <PlayersCard players={topPlayers} showTeam params={params} />
     </>
 }

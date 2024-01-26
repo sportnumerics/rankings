@@ -1,7 +1,5 @@
 'use client';
 
-import { useParams, usePathname } from 'next/navigation';
-
 export interface HasYear {
     year: string
 }
@@ -15,30 +13,37 @@ export interface HasType extends HasDivision {
 }
 
 export interface PlayersList extends HasType {
-    type: "players"
+    type: "players";
 }
 
 export interface TeamsList extends HasType {
-    type: "teams"
+    type: "teams";
 }
 
-export interface Game extends HasDivision {
-    game: string
+export interface Game extends HasType {
+    type: "game";
+    game: string;
 }
 
-export interface Player extends HasDivision {
-    player: string
+export interface Player extends HasType {
+    type: "player";
+    player: string;
 }
 
-export interface Team extends HasDivision {
-    team: string
+export interface Team extends HasType {
+    type: "team";
+    team: string;
 }
 
 export interface Home {
 
 }
 
-export type Location = PlayersList | TeamsList | Game | Player | Team | Home;
+export interface Loading {
+    loading: true;
+}
+
+export type Location = PlayersList | TeamsList | Game | Player | Team | Home | Loading;
 
 function isPlayersList(location: Location): location is PlayersList {
     return (location as PlayersList).type === "players";
@@ -91,9 +96,9 @@ export function linkToYear(year: string, location: Location): string | null {
     } else if (isTeamsList(location) || isGame(location)) {
         return `/${year}/${location.div}/teams`;
     } else if (isPlayer(location)) {
-        return `/${year}/${location.div}/players/${location.player}`;
+        return `/${year}/players/${location.player}`;
     } else if (isTeam(location)) {
-        return `/${year}/${location.div}/teams/${location.team}`;
+        return `/${year}/teams/${location.team}`;
     } else {
         return `/${year}`;
     }
@@ -104,7 +109,7 @@ export function linkToDiv(div: string, location: Location, currentYear: string):
         return null;
     } else if (isPlayersList(location)) {
         return `/${location.year}/${div}/players`;
-    } else if (isTeamsList(location)) {
+    } else if (hasYear(location)) {
         return `/${location.year}/${div}/teams`;
     } else {
         return `/${currentYear}/${div}/teams`;
@@ -127,8 +132,8 @@ export function linkToTeams(location: Location, currentYear: string): string | n
     } else if (hasYear(location) && hasDiv(location)) {
         return `/${location.year}/${location.div}/teams`;
     } else if (hasYear(location)) {
-        return `/${location.year}`;
+        return `/${location.year}/teams`;
     } else {
-        return ''
+        return `/${currentYear}/teams`;
     }
 }

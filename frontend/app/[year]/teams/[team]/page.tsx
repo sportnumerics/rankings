@@ -6,6 +6,7 @@ import { GameResult, TeamSummary } from "@/app/server/types";
 import { datetime, twoPlaces } from "@/app/formatting";
 import { Card, ExternalLink, H1, Table, TableHeader, H2 } from "@/app/shared";
 import Link from "@/app/components/Link";
+import PlayersCard from "@/app/components/PlayersCard";
 
 interface Params {
     year: string;
@@ -15,7 +16,6 @@ interface Params {
 
 export default async function Page({ params } : { params: Params}) {
     const schedule = await getTeam(params);
-
     const teamPromise = getRankedTeams({ year: params.year, div: schedule.team.div });
     const playersPromise = getRankedPlayers({ year: params.year, team: schedule.team.id });
     const divPromise = getDiv(schedule.team.div);
@@ -26,7 +26,7 @@ export default async function Page({ params } : { params: Params}) {
 
     function Opponent(summary: TeamSummary) {
         const opponent = teams[summary.id];
-        return <Link href={`/${params.year}/${params.div}/teams/${summary.id}`} className="space-x-1">
+        return <Link href={`/${params.year}/teams/${summary.id}`} className="space-x-1">
             <span className="text-xs">{opponent?.rank <= 25 ? opponent.rank : ""}</span>
             <span>{summary.name}</span>
         </Link>
@@ -43,25 +43,14 @@ export default async function Page({ params } : { params: Params}) {
                 <TableHeader><tr><th>Date</th><th>Opponent</th><th>Result</th></tr></TableHeader>
                 <tbody>
                     {schedule.games.map(game => <tr key={game.id}>
-                        <td className="w-24">{game.result ? <Link href={`/${params.year}/${params.div}/games/${game.id}`}>{datetime(game.date)}</Link> : datetime(game.date)}</td>
+                        <td className="w-24">{game.result ? <Link href={`/${params.year}/games/${game.id}`}>{datetime(game.date)}</Link> : datetime(game.date)}</td>
                         <td className="w-64"><Opponent {...game.opponent}/></td>
                         <td className="w-24"><Result result={game.result} /></td>
                         </tr>)}
                 </tbody>
             </Table>
         </Card>
-        <Card title="Top Scoring Players">
-            <Table>
-                <TableHeader><tr><th>Rank</th><th>Name</th><th>Rating</th></tr></TableHeader>
-                <tbody>
-                    {rankedPlayers.slice(0, 20).map(player => <tr key={player.id}>
-                        <td className="w-24">{player.rank}</td>
-                        <td className="w-64"><Link href={`/${params.year}/${params.div}/players/${player.id}`}>{player.name}</Link></td>
-                        <td className="w-24">{twoPlaces(player.points)}</td>
-                    </tr>)}
-                </tbody>
-            </Table>
-        </Card>
+        <PlayersCard players={rankedPlayers.slice(0, 20)} params={params} />
         </>
 }
 
