@@ -72,6 +72,9 @@ class Ncaa():
       if not opp_match:
         continue
 
+      game['sport'] = team['sport']
+      game['source'] = team['source']
+
       game['opponent'] = {'name': opp_match.group('opponent_name').strip()}
       game['home'] = opp_match.group('away') is None
 

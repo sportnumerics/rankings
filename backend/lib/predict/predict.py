@@ -14,8 +14,8 @@ def predict(args):
   schedules_dir = os.path.join(args.input_dir, year, 'schedules')
   _, _, filenames = next(os.walk(schedules_dir))
 
-  schedules = load_from_files(
-      map(lambda f: os.path.join(schedules_dir, f), filenames))
+  schedules = list(load_from_files(
+      map(lambda f: os.path.join(schedules_dir, f), filenames)))
 
   ratings, _ = calculate_ratings(schedules)
 
@@ -25,9 +25,9 @@ def predict(args):
   with open(os.path.join(out_dir, year, 'team-ratings.json'), 'w') as f:
     json.dump(sorted_ratings, f, indent=2)
 
-  rank_players(args)
+  rank_players(args, schedules)
 
-def rank_players(args):
+def rank_players(args, schedules):
   out_dir = args.out_dir
   year = args.year
 
@@ -36,6 +36,10 @@ def rank_players(args):
 
   games = list(load_from_files(map(lambda f: os.path.join(games_dir, f), filenames)))
 
+  teams_by_id = {}
+  for schedule in schedules:
+    teams_by_id[schedule['team']['id']] = schedule['team']
+
   players = {}
   def add_player_stats(entry, team, opponent, game_id, date):
     player_id = entry['player']['id']
@@ -43,7 +47,7 @@ def rank_players(args):
       player = {
         'id': player_id,
         'name': entry['player']['name'],
-        'team': team,
+        'team': teams_by_id.get(team['id'], team),
         'stats': [],
         'external_link': entry['player']['external_link']
       }
@@ -54,7 +58,7 @@ def rank_players(args):
     line = {
       'game_id': game_id,
       'date': date,
-      'opponent': opponent,
+      'opponent': teams_by_id.get(opponent['id'], opponent),
       'g': entry['g'] if 'g' in entry else 0,
       'a': entry['a'] if 'a' in entry else 0,
       'gb': entry['gb'] if 'gb' in entry else 0

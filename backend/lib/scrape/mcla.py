@@ -60,6 +60,10 @@ class Mcla():
       else:
         game['opponent'] = {'name': opponent_parts[1]}
         game['home'] = False
+
+      game['sport'] = team['sport']
+      game['source'] = team['source']
+
       opp_link = opponent_col.a['href']
       opp_id = self._parse_team_link_into_id(team['sport'], team['source'], opp_link)
       if opp_id:
