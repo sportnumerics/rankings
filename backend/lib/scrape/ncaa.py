@@ -134,8 +134,8 @@ class Ncaa():
       stats = list(filter(lambda p: p.get('player'), map(lambda r: stats(r, keys), header.find_next_siblings('tr'))))
       return stats
 
-    home_score = get_total_score(team_links[0])
-    away_score = get_total_score(team_links[1])
+    away_score = get_total_score(team_links[0])
+    home_score = get_total_score(team_links[1])
     result = {'home_score': home_score, 'away_score': away_score} if home_score and away_score else None
 
     return {

@@ -71,6 +71,8 @@ class TestMcla(unittest.TestCase):
                 'points_for': 11,
                 'points_against': 16
             },
+            'source': 'mcla',
+            'sport': 'ml',
             'details': {
               'url': 'https://mcla.us/game/23539'
             }
@@ -86,7 +88,15 @@ class TestMcla(unittest.TestCase):
   def test_mcla_game_details(self):
     html = fixtures.mcla_game_details()
     m = mcla.Mcla()
-    game_details = m.convert_game_details_html(html, {'url': 'https://mcla.us/games/26005'}, 'ml-mcla-26005', 'ml', 'mcla')
+    home_team = {
+        'name': 'Loyola Marymount',
+        'id': 'ml-mcla-loyola-marymount'
+    }
+    away_team = {
+        'name': 'Air Force',
+        'id': 'ml-mcla-air-force'
+    }
+    game_details = m.convert_game_details_html(html, {'url': 'https://mcla.us/games/26005'}, 'ml-mcla-26005', 'ml', 'mcla', home_team, away_team)
     self.assertEqual(game_details['date'], '2023-02-17T19:00:00-07:00')
     self.assertEqual(game_details['id'], 'ml-mcla-26005')
     self.assertEqual(game_details['external_link'], 'https://mcla.us/games/26005')

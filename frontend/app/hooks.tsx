@@ -29,7 +29,7 @@ export function useLocation(): Location {
     }
     const type = getType(pathname);
     const location = {
-        div: divResult.value,
+        div: divResult.error ? undefined : divResult.value,
         ...params,
         type
     }

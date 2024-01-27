@@ -140,7 +140,7 @@ resource "aws_cloudfront_distribution" "frontend" {
         cached_methods = [ "HEAD", "GET" ]
         target_origin_id = local.lambda_origin
 
-        cache_policy_id = local.aws_managed_caching_optimized_policy_id
+        cache_policy_id = aws_cloudfront_cache_policy.lambda_cache_policy.id
 
         viewer_protocol_policy = "redirect-to-https"
     }
@@ -193,5 +193,30 @@ data "aws_iam_policy_document" "cloudfront_bucket_policy" {
       resources = [
         "arn:aws:s3:::${local.bucket_name}/*"
       ]
+    }
+}
+
+resource "aws_cloudfront_cache_policy" "lambda_cache_policy" {
+    name = "lambda-cache-policy"
+
+    min_ttl = 1
+    default_ttl = 600
+    max_ttl = 86400
+
+    parameters_in_cache_key_and_forwarded_to_origin {
+      cookies_config {
+        cookie_behavior = "none"
+      }
+
+      headers_config {
+        header_behavior = "whitelist"
+        headers {
+          items = ["Accept-Encoding"]
+        }
+      }
+
+      query_strings_config {
+        query_string_behavior = "all"
+      }
     }
 }

@@ -66,6 +66,8 @@ class TestScrape(unittest.TestCase):
                 'points_for': 14,
                 'points_against': 13
             },
+            'source': 'ncaa',
+            'sport': 'ml',
             'details': {
               'url': 'https://stats.ncaa.org/contests/1822151/box_score'
             }
