@@ -1,5 +1,9 @@
 export type RankedTeam = Team & TeamRating & HasRanking;
 
+export interface HasId {
+    id: string;
+}
+
 export interface HasRanking {
     rank: number;
 }
@@ -20,6 +24,10 @@ export interface Location {
 export interface TeamSummary {
     id: string;
     name: string;
+    div: string;
+    schedule: Location;
+    sport: string;
+    source: string;
 }
 
 export interface TeamRating {

@@ -1,7 +1,8 @@
 import 'server-only';
 import source from "./source";
 import { getTeams } from "./teams";
-import { PlayerRating, PlayerRatingMap, PlayerStats, PlayerSummary, RankedPlayerMap, TeamMap } from "./types";
+import { HasId, HasRanking, PlayerRating, PlayerRatingMap, PlayerStats, PlayerSummary, RankedPlayerMap, TeamMap } from "./types";
+import rank from './rank';
 
 export async function getRankedPlayers({ year, team, div }: { year: string, team?: string | null, div?: string | null }): Promise<RankedPlayerMap> {
     const teamsPromise: Promise<TeamMap> = div ? getTeams({year, div}) : Promise.resolve({});
@@ -10,8 +11,11 @@ export async function getRankedPlayers({ year, team, div }: { year: string, team
     const players = Object.values(ratings)
         .filter(player => !div || teams[player.team.id]?.div === div)
         .filter(player => !team || player.team.id === team);
-    players.sort((a, b) => b.points - a.points);
-    return Object.fromEntries(players.map((player, i) => [player.id, {...player, rank: i + 1}]));
+    return rankPlayers(players);
+}
+
+export function rankPlayers(players: PlayerRating[]) {
+    return rank(players, p => p.points);
 }
 
 export async function getPlayerRatings({ year }: {year: string}): Promise<PlayerRatingMap> {

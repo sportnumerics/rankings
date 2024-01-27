@@ -2,6 +2,7 @@ import 'server-only';
 import { DIVS } from "./divs";
 import source, { NotFoundError } from "./source";
 import { RankedTeamMap, RatingMap, Team, TeamMap, TeamRating, TeamSchedule } from "./types";
+import rank from './rank';
 
 export async function getRankedTeams({ year, div }: { year: string, div: string }): Promise<RankedTeamMap> {
     const teamsPromise = getTeams({year, div});
@@ -10,8 +11,7 @@ export async function getRankedTeams({ year, div }: { year: string, div: string 
     const teamRatings = Object.values(teams)
         .filter(team => team.div === div)
         .map(team => ({...team, ...ratings[team.id]}));
-    teamRatings.sort((a, b) => (b.overall ?? -Infinity) - (a.overall ?? -Infinity));
-    return Object.fromEntries(teamRatings.map((team, i) => [team.id, {...team, rank: i + 1}]));
+    return rank(teamRatings, t => -t.overall ?? Infinity);
 }
 
 export async function getTeams({ year, div }: { year: string, div: string }): Promise<TeamMap> {

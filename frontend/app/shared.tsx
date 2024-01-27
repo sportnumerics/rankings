@@ -36,6 +36,10 @@ export function H2({ children }: PropsWithChildren<{}>) {
     return <h2 className="text-l font-bold tracking-wider my-2">{ children }</h2>;
 }
 
+export function H3({ children }: PropsWithChildren<{}>) {
+    return <h3 className="text font-bold tracking-wider my-2">{ children }</h3>;
+}
+
 export function Error() {
     return <div>
         <H1>Oops</H1>
