@@ -78,10 +78,11 @@ class Ncaa():
       game['opponent'] = {'name': opp_match.group('opponent_name').strip()}
       game['home'] = opp_match.group('away') is None
 
-      opp_link_parts = opp_link['href'].split('/')
-      if len(opp_link_parts) > 2:
-        game['opponent']['id'] = '-'.join(
-            [team['sport'], team['source'], opp_link_parts[2]])
+      if opp_link:
+        opp_link_parts = opp_link['href'].split('/')
+        if len(opp_link_parts) > 2:
+          game['opponent']['id'] = '-'.join(
+              [team['sport'], team['source'], opp_link_parts[2]])
 
       result_str = ' '.join(result_col.stripped_strings)
       score_match = re.match(

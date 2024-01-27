@@ -90,7 +90,8 @@ class ScrapeRunner():
       try:
         yield from self.scraper.convert_team_list_html(html, url)
       except Exception as e:
-        print(f'Unable to convert team list html from {url}: {e}')
+        LOGGER.error(f'Unable to convert team list html from {url}: {e}')
+        traceback.print_exception(e)
         with open(os.path.join(self.out_dir, 'error.html'), 'w') as f:
           f.write(html)
 
@@ -100,14 +101,15 @@ class ScrapeRunner():
     try:
       return self.scraper.convert_schedule_html(html, team)
     except Exception as e:
-      print(f'Unable to convert schedule html from {schedule}: {e}')
+      LOGGER.error(f'Unable to convert schedule html from {schedule}: {e}')
+      traceback.print_exception(e)
 
   def scrape_game_details(self, location, game_id, sport, source, home_team, away_team):
     html = self.fetch(location)
     try:
       return self.scraper.convert_game_details_html(html, location, game_id, sport, source, home_team, away_team)
     except Exception as e:
-      print(f'Unable to convert game details html from {location}:')
+      LOGGER.error(f'Unable to convert game details html from {location}:')
       traceback.print_exception(e)
 
   def fetch(self, location):

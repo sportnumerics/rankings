@@ -23,4 +23,7 @@ def add_parsers(parsers):
   schedule_parser.add_argument(
       '--team-list-file',
       help='File to read team list from (will scrape them by default)')
+  schedule_parser.add_argument(
+      '--url',
+      help='Scrape one team url')
   schedule_parser.set_defaults(func=scrape.scrape_schedules)
