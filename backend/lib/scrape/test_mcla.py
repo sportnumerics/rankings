@@ -4,6 +4,7 @@ from . import fixtures
 
 
 class TestMcla(unittest.TestCase):
+
   def test_mcla_urls(self):
     m = mcla.Mcla()
     self.assertEqual(
@@ -74,7 +75,7 @@ class TestMcla(unittest.TestCase):
             'source': 'mcla',
             'sport': 'ml',
             'details': {
-              'url': 'https://mcla.us/game/23539'
+                'url': 'https://mcla.us/game/23539'
             }
         })
     self.assertEqual(
@@ -88,18 +89,15 @@ class TestMcla(unittest.TestCase):
   def test_mcla_game_details(self):
     html = fixtures.mcla_game_details()
     m = mcla.Mcla()
-    home_team = {
-        'name': 'Loyola Marymount',
-        'id': 'ml-mcla-loyola-marymount'
-    }
-    away_team = {
-        'name': 'Air Force',
-        'id': 'ml-mcla-air-force'
-    }
-    game_details = m.convert_game_details_html(html, {'url': 'https://mcla.us/games/26005'}, 'ml-mcla-26005', 'ml', 'mcla', home_team, away_team)
+    home_team = {'name': 'Loyola Marymount', 'id': 'ml-mcla-loyola-marymount'}
+    away_team = {'name': 'Air Force', 'id': 'ml-mcla-air-force'}
+    game_details = m.convert_game_details_html(
+        html, {'url': 'https://mcla.us/games/26005'}, 'ml-mcla-26005', 'ml',
+        'mcla', home_team, away_team)
     self.assertEqual(game_details['date'], '2023-02-17T19:00:00-07:00')
     self.assertEqual(game_details['id'], 'ml-mcla-26005')
-    self.assertEqual(game_details['external_link'], 'https://mcla.us/games/26005')
+    self.assertEqual(game_details['external_link'],
+                     'https://mcla.us/games/26005')
     self.assertEqual(game_details['home_team'], {
         'name': 'Loyola Marymount',
         'id': 'ml-mcla-loyola-marymount'
@@ -112,27 +110,30 @@ class TestMcla(unittest.TestCase):
         'home_score': 12,
         'away_score': 24
     })
-    self.assertEqual(game_details['home_stats'][0], {
-        'player': {
-            'name': 'Ben Taylor',
-            'id': 'ml-mcla-56639',
-            'external_link': 'https://mcla.us/player/56639/ben_taylor.html'
-        },
-        'number': 5,
-        'position': 'M',
-        'gb': 2,
-        'g': 1,
-        'a': 1
-    })
-    self.assertEqual(game_details['away_stats'][0], {
-      'player': {
-        'name': 'Aden Extrand',
-        'id': 'ml-mcla-59796',
-        'external_link': 'https://mcla.us/player/59796/aden_extrand.html'
-      },
-      'number': 32,
-      'position': 'DM',
-      'gb': 0,
-      'g': 0,
-      'a': 0
-    })
+    self.assertEqual(
+        game_details['home_stats'][0], {
+            'player': {
+                'name': 'Ben Taylor',
+                'id': 'ml-mcla-56639',
+                'external_link': 'https://mcla.us/player/56639/ben_taylor.html'
+            },
+            'number': 5,
+            'position': 'M',
+            'gb': 2,
+            'g': 1,
+            'a': 1
+        })
+    self.assertEqual(
+        game_details['away_stats'][0], {
+            'player': {
+                'name': 'Aden Extrand',
+                'id': 'ml-mcla-59796',
+                'external_link':
+                'https://mcla.us/player/59796/aden_extrand.html'
+            },
+            'number': 32,
+            'position': 'DM',
+            'gb': 0,
+            'g': 0,
+            'a': 0
+        })

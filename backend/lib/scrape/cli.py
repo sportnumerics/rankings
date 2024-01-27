@@ -1,6 +1,7 @@
 from . import scrape
 from datetime import datetime
 
+
 def add_parsers(parsers):
   scrape_parser = parsers.add_parser('scrape',
                                      help='scrape stats from league websites')
@@ -23,7 +24,5 @@ def add_parsers(parsers):
   schedule_parser.add_argument(
       '--team-list-file',
       help='File to read team list from (will scrape them by default)')
-  schedule_parser.add_argument(
-      '--url',
-      help='Scrape one team url')
+  schedule_parser.add_argument('--team', help='Scrape by team id')
   schedule_parser.set_defaults(func=scrape.scrape_schedules)

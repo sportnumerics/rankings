@@ -14,8 +14,9 @@ def predict(args):
   schedules_dir = os.path.join(args.input_dir, year, 'schedules')
   _, _, filenames = next(os.walk(schedules_dir))
 
-  schedules = list(load_from_files(
-      map(lambda f: os.path.join(schedules_dir, f), filenames)))
+  schedules = list(
+      load_from_files(map(lambda f: os.path.join(schedules_dir, f),
+                          filenames)))
 
   ratings, _ = calculate_ratings(schedules)
 
@@ -27,6 +28,7 @@ def predict(args):
 
   rank_players(args, schedules)
 
+
 def rank_players(args, schedules):
   out_dir = args.out_dir
   year = args.year
@@ -34,34 +36,36 @@ def rank_players(args, schedules):
   games_dir = os.path.join(args.input_dir, year, 'games')
   _, _, filenames = next(os.walk(games_dir))
 
-  games = list(load_from_files(map(lambda f: os.path.join(games_dir, f), filenames)))
+  games = list(
+      load_from_files(map(lambda f: os.path.join(games_dir, f), filenames)))
 
   teams_by_id = {}
   for schedule in schedules:
     teams_by_id[schedule['team']['id']] = schedule['team']
 
   players = {}
+
   def add_player_stats(entry, team, opponent, game_id, date):
     player_id = entry['player']['id']
     if player_id not in players:
       player = {
-        'id': player_id,
-        'name': entry['player']['name'],
-        'team': teams_by_id.get(team['id'], team),
-        'stats': [],
-        'external_link': entry['player']['external_link']
+          'id': player_id,
+          'name': entry['player']['name'],
+          'team': teams_by_id.get(team['id'], team),
+          'stats': [],
+          'external_link': entry['player']['external_link']
       }
       players[player_id] = player
     else:
       player = players[player_id]
 
     line = {
-      'game_id': game_id,
-      'date': date,
-      'opponent': teams_by_id.get(opponent['id'], opponent),
-      'g': entry['g'] if 'g' in entry else 0,
-      'a': entry['a'] if 'a' in entry else 0,
-      'gb': entry['gb'] if 'gb' in entry else 0
+        'game_id': game_id,
+        'date': date,
+        'opponent': teams_by_id.get(opponent['id'], opponent),
+        'g': entry['g'] if 'g' in entry else 0,
+        'a': entry['a'] if 'a' in entry else 0,
+        'gb': entry['gb'] if 'gb' in entry else 0
     }
     if 'face_offs' in entry:
       line['face_offs'] = entry['face_offs']
@@ -72,9 +76,11 @@ def rank_players(args, schedules):
 
   for game in games:
     for entry in game.get('home_stats', []):
-      add_player_stats(entry, game['home_team'], game['away_team'], game['id'], game['date'])
+      add_player_stats(entry, game['home_team'], game['away_team'], game['id'],
+                       game['date'])
     for entry in game.get('away_stats', []):
-      add_player_stats(entry, game['away_team'], game['home_team'], game['id'], game['date'])
+      add_player_stats(entry, game['away_team'], game['home_team'], game['id'],
+                       game['date'])
 
   # To get a player ranking we can have pts / assists / goals ranking
   # lets start with pts
@@ -88,8 +94,15 @@ def rank_players(args, schedules):
   # a very good player does not play independently of his/her team
   # so possibly it should be
   # Player_rating + Offense_rating - Defense_rating = Points_actual
-  player_id_to_idx, player_idx_to_id = index_ids([entry['player']['id'] for game in games for stats in [game.get('home_stats', []), game.get('away_stats', [])] for entry in stats])
-  team_id_to_idx, team_idx_to_id = index_ids([id for game in games for id in [game['away_team']['id'], game['home_team']['id']]])
+  player_id_to_idx, player_idx_to_id = index_ids([
+      entry['player']['id'] for game in games
+      for stats in [game.get('home_stats', []),
+                    game.get('away_stats', [])] for entry in stats
+  ])
+  team_id_to_idx, team_idx_to_id = index_ids([
+      id for game in games
+      for id in [game['away_team']['id'], game['home_team']['id']]
+  ])
 
   data = []
   i = []
@@ -97,26 +110,41 @@ def rank_players(args, schedules):
   constants = []
   n_players = len(player_id_to_idx)
   n_teams = len(team_id_to_idx)
+
   def get_coefficients(stats):
     for (player, team, opponent, pts) in stats:
-      yield ([1, 1, -1], [player_id_to_idx[player], n_players + team_id_to_idx[team], n_players + n_teams + team_id_to_idx[opponent]], pts)
+      yield ([1, 1, -1], [
+          player_id_to_idx[player], n_players + team_id_to_idx[team],
+          n_players + n_teams + team_id_to_idx[opponent]
+      ], pts)
 
   def get_ratings(stat):
     for game in games:
-      for d, jx, c in get_coefficients([(entry['player']['id'], game['home_team']['id'], game['away_team']['id'], stat(entry)) for entry in game.get('home_stats', [])]):
+      for d, jx, c in get_coefficients([
+          (entry['player']['id'], game['home_team']['id'],
+           game['away_team']['id'], stat(entry))
+          for entry in game.get('home_stats', [])
+      ]):
         data.extend(d)
         i.extend([len(constants)] * len(jx))
         j.extend(jx)
         constants.append(c)
-      for d, jx, c in get_coefficients([(entry['player']['id'], game['away_team']['id'], game['home_team']['id'], stat(entry)) for entry in game.get('away_stats', [])]):
+      for d, jx, c in get_coefficients([
+          (entry['player']['id'], game['away_team']['id'],
+           game['home_team']['id'], stat(entry))
+          for entry in game.get('away_stats', [])
+      ]):
         data.extend(d)
         i.extend([len(constants)] * len(jx))
         j.extend(jx)
         constants.append(c)
 
-    coefficients = coo_matrix((data, (i, j)), shape=(len(constants), n_players + 2 * n_teams))
+    coefficients = coo_matrix((data, (i, j)),
+                              shape=(len(constants), n_players + 2 * n_teams))
 
-    ratings, _, _, _, _, _, _, _, _, _ = linalg.lsqr(coefficients, constants, damp=1.0)
+    ratings, _, _, _, _, _, _, _, _, _ = linalg.lsqr(coefficients,
+                                                     constants,
+                                                     damp=1.0)
 
     return ratings
 
@@ -129,25 +157,25 @@ def rank_players(args, schedules):
     player_id = player_idx_to_id[i]
     player = players[player_id]
     player_ratings.append({
-      'id': player['id'],
-      'name': player['name'],
-      'team': player['team'],
-      'points': pts_ratings[i],
-      'goals': goal_ratings[i],
-      'assists': assist_ratings[i]
+        'id': player['id'],
+        'name': player['name'],
+        'team': player['team'],
+        'points': pts_ratings[i],
+        'goals': goal_ratings[i],
+        'assists': assist_ratings[i]
     })
 
   teams = []
   for i in range(0, n_teams):
     team = team_idx_to_id[i]
     teams.append({
-      'team': team,
-      'points_off': pts_ratings[n_players + i],
-      'points_def': pts_ratings[n_players + n_teams + i],
-      'goals_off': goal_ratings[n_players + i],
-      'goals_def': goal_ratings[n_players + n_teams + i],
-      'assists_off': assist_ratings[n_players + i],
-      'assists_def': assist_ratings[n_players + n_teams + i]
+        'team': team,
+        'points_off': pts_ratings[n_players + i],
+        'points_def': pts_ratings[n_players + n_teams + i],
+        'goals_off': goal_ratings[n_players + i],
+        'goals_def': goal_ratings[n_players + n_teams + i],
+        'assists_off': assist_ratings[n_players + i],
+        'assists_def': assist_ratings[n_players + n_teams + i]
     })
 
   sorted_players = sorted(player_ratings, key=lambda r: -r['points'])
@@ -160,9 +188,11 @@ def rank_players(args, schedules):
   with open(os.path.join(out_dir, year, 'team-player-ratings.json'), 'w') as f:
     json.dump(sorted_teams, f, indent=2)
 
-  pathlib.Path(os.path.join(out_dir, year, 'players')).mkdir(parents=True, exist_ok=True)
+  pathlib.Path(os.path.join(out_dir, year, 'players')).mkdir(parents=True,
+                                                             exist_ok=True)
   for player in players.values():
-    with open(os.path.join(out_dir, year, 'players', player['id'] + '.json'), 'w') as f:
+    with open(os.path.join(out_dir, year, 'players', player['id'] + '.json'),
+              'w') as f:
       json.dump(player, f, indent=2)
 
 
@@ -173,6 +203,7 @@ def index_ids(ids):
     id_to_idx[id] = i
     idx_to_id[i] = id
   return id_to_idx, idx_to_id
+
 
 def load_from_files(filenames):
   for file in filenames:
@@ -200,7 +231,8 @@ def calculate_ratings(schedules):
 
   games = game_map.values()
 
-  id_to_idx, idx_to_id = index_ids([id for game in games for id in [game['opponent'], game['team']]])
+  id_to_idx, idx_to_id = index_ids(
+      [id for game in games for id in [game['opponent'], game['team']]])
   n_teams = len(idx_to_id)
   offset = len(id_to_idx)
 
@@ -208,8 +240,9 @@ def calculate_ratings(schedules):
 
   constants = build_offensive_defensive_constants(games)
 
-  raw_ratings, _, _, _, _, _, _, _, _, _ = linalg.lsqr(
-      coefficients, constants, damp=0.2)
+  raw_ratings, _, _, _, _, _, _, _, _, _ = linalg.lsqr(coefficients,
+                                                       constants,
+                                                       damp=0.2)
 
   overall = raw_ratings[0:n_teams] + raw_ratings[offset:n_teams + offset]
   hfa = raw_ratings[2 * n_teams]

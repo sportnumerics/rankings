@@ -4,6 +4,7 @@ from .. import testing
 
 
 class TestPredict(unittest.TestCase):
+
   def test_calculate_ratings(self):
     schedules = [
         testing.create_schedule(testing.create_team('1'), [
