@@ -5,11 +5,21 @@ export function twoPlaces(rating?: number): string {
 }
 
 export function datetime(date: string): string {
-    return moment(date).format('M/D ha');
+    const m = moment(date);
+    if (date.includes('T')) {
+        return m.format('M/D ha');
+    } else {
+        return m.format('M/D');
+    }
 }
 
 export function longDatetime(date: string): string {
-    return moment(date).format('MMMM Do, h:mma');
+    const m = moment(date);
+    if (date.includes('T')) {
+        return m.format('MMMM Do, h:mma');
+    } else {
+        return m.format('MMMM Do');
+    }
 }
 
 export function date(date: string): string {
