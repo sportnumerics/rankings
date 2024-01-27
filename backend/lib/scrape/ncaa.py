@@ -23,7 +23,7 @@ class Ncaa():
 
   def convert_team_list_html(self, html, location):
     soup = BeautifulSoup(html, 'html.parser')
-    team_links = soup.table.table.find_all('a')
+    team_links = soup.table.find_all('a')
     params = {k: v for (k, v) in parse_qsl(urlparse(location['url']).query)}
     sport = SPORT_MAP[params['sport_code']]
     for link in team_links:
