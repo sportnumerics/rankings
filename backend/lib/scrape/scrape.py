@@ -1,7 +1,6 @@
 from . import ncaa, mcla
-import requests
 import requests_cache
-from datetime import datetime, timedelta
+from datetime import timedelta
 import json
 import os
 import pathlib

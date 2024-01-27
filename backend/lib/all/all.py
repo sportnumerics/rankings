@@ -3,8 +3,10 @@ from dataclasses import dataclass
 from ..scrape import scrape
 from ..predict import predict
 from ..sync import sync
+import logging
 
 ALL_SOURCES = ['mcla', 'ncaa']
+LOGGER = logging.getLogger(__name__)
 
 
 def run(args):
@@ -25,7 +27,7 @@ def run(args):
                  bucket_url=args.bucket_url,
                  dry_run=False))
   else:
-    print("Skipping sync with S3 since no bucket url was specified")
+    LOGGER.info("Skipping sync with S3 since no bucket url was specified")
 
 
 @dataclass
@@ -33,6 +35,7 @@ class ScrapeArgs:
   source: str
   year: str
   out_dir: str
+  team: str = None
 
 
 @dataclass
