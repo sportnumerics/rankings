@@ -2,9 +2,12 @@ import os
 import json
 from datetime import datetime
 import pathlib
+import logging
 import numpy as np
 from scipy.sparse import coo_matrix
 from scipy.sparse import linalg
+
+LOGGER = logging.getLogger(__name__)
 
 
 def predict(args):
@@ -18,6 +21,7 @@ def predict(args):
       load_from_files(map(lambda f: os.path.join(schedules_dir, f),
                           filenames)))
 
+  LOGGER.info(f'Calculating team ratings for {len(schedules)} teams in {year}')
   ratings, _ = calculate_ratings(schedules)
 
   sorted_ratings = sorted(ratings.values(), key=lambda r: -r['overall'])
@@ -81,6 +85,10 @@ def rank_players(args, schedules):
     for entry in game.get('away_stats', []):
       add_player_stats(entry, game['away_team'], game['home_team'], game['id'],
                        game['date'])
+
+  LOGGER.info(
+      f'Calculating player ratings for {len(players)} players from {len(games)} games in {year}'
+  )
 
   # To get a player ranking we can have pts / assists / goals ranking
   # lets start with pts
