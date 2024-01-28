@@ -11,7 +11,7 @@ export async function getRankedTeams({ year, div }: { year: string, div: string 
     const teamRatings = Object.values(teams)
         .filter(team => team.div === div)
         .map(team => ({...team, ...ratings[team.id]}));
-    return rank(teamRatings, t => -t.overall ?? Infinity);
+    return rank(teamRatings, t => t.overall ?? -Infinity);
 }
 
 export async function getTeams({ year, div }: { year: string, div: string }): Promise<TeamMap> {
