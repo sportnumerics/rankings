@@ -4,7 +4,6 @@ import Link from '@/app/components/Link';
 import { HasDivision } from '../navigation';
 import { RankedTeam } from '../server/types';
 import EmptyCard from './EmptyCard';
-import classNames from 'classnames';
 
 export function TeamsCard({ teams, params }: { teams: RankedTeam[], params: HasDivision }) {
     if (teams.length === 0) {

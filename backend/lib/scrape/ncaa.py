@@ -109,11 +109,11 @@ class Ncaa():
   def convert_game_details_html(self, html, location, game_id, sport, source,
                                 home_team, away_team):
     soup = BeautifulSoup(html, 'html.parser')
+    game_date = soup.find('td', string='Game Date:')
+    if not game_date:
+      return None
     date = self._to_iso_format(
-        next(
-            soup.find(
-                'td',
-                string='Game Date:').find_next_sibling('td').stripped_strings))
+        next(game_date.find_next_sibling('td').stripped_strings))
 
     def is_team_href(href):
       m = self.TEAM_HREF_REGEX.match(href)

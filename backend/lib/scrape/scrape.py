@@ -1,5 +1,6 @@
 from . import ncaa, mcla
-import requests_cache
+from requests_cache import CacheMixin
+from requests_ratelimiter import LimiterSession
 from datetime import timedelta
 import json
 import os
@@ -34,6 +35,10 @@ def scrape_schedules(args):
   runner.scrape_and_write_schedules(team_list_file)
 
 
+class LimitedCachedSession(CacheMixin, LimiterSession):
+  pass
+
+
 class ScrapeRunner():
 
   def __init__(self, source, year, out_dir, team=None):
@@ -49,9 +54,10 @@ class ScrapeRunner():
 
     self.out_dir = out_dir
 
-    self.cache = requests_cache.CachedSession(cache_name=os.path.join(
+    self.cache = LimitedCachedSession(cache_name=os.path.join(
         self.out_dir, 'cache'),
-                                              expire_after=timedelta(days=1))
+                                      expire_after=timedelta(days=1),
+                                      per_minute=5)
 
     self.team = team
 
@@ -82,6 +88,7 @@ class ScrapeRunner():
       LOGGER.info(f'scraping schedule for {team["name"]}')
       schedule = self.scrape_schedule(team)
       if not schedule:
+        LOGGER.warn(f'No schedule for {team["name"]}')
         continue
       with open(os.path.join(schedule_dir, team['id'] + '.json'), 'w') as f:
         json.dump(schedule, f, indent=2)
@@ -98,6 +105,9 @@ class ScrapeRunner():
                                                   team['source'], home_team,
                                                   away_team)
           if not game_details:
+            LOGGER.warn(
+                f'no game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}'
+            )
             continue
           with open(os.path.join(games_dir, game_details['id'] + '.json'),
                     'w') as f:
@@ -135,11 +145,15 @@ class ScrapeRunner():
       traceback.print_exception(e)
 
   def fetch(self, location):
-    return self.cache.get(location['url'],
-                          params=location.get('params'),
-                          headers={
-                              'user-agent': USER_AGENT
-                          }).text
+    response = self.cache.get(location['url'],
+                              params=location.get('params'),
+                              headers={'user-agent': USER_AGENT})
+    if response.status_code != 200:
+      LOGGER.warn(
+          f'Issue fetching {location["url"]}, status code: {response.status_code}'
+      )
+      return None
+    return response.text
 
   def get_team_list_filename(self):
     return os.path.join(self.out_dir, self.year, f'{self.source}-teams.json')

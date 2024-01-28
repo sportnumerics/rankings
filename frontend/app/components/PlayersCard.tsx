@@ -1,5 +1,5 @@
 import { twoPlaces } from '@/app/formatting';
-import { Card, LoadingRow, LoadingRows, Skeleton, Table, TableHeader } from '@/app/shared';
+import { Card, LoadingRows, Table, TableHeader } from '@/app/shared';
 import Link from '@/app/components/Link';
 import { HasDivision } from '../navigation';
 import { RankedPlayer } from '../server/types';

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "221fa9a526b11b3558fae2d685b249efbe422993d70406905f05e087fa39882c"
+            "sha256": "f35bf25075719d2d9b1c19066e02e4776d72060136b7c717fd171a681e0ce0e5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -161,11 +161,11 @@
         },
         "dill": {
             "hashes": [
-                "sha256:76b122c08ef4ce2eedcd4d1abd8e641114bfc6c2867f49f3c41facf65bf19f5e",
-                "sha256:cc1c8b182eb3013e24bd475ff2e9295af86c1a38eb1aff128dac8962a9ce3c03"
+                "sha256:3ebe3c479ad625c4553aca177444d89b486b1d84982eeacded644afc0cf797ca",
+                "sha256:c36ca9ffb54365bdd2f8eb3eff7d2a21237f8452b57ace88b1ac615b7e815bd7"
             ],
-            "markers": "python_version >= '3.7'",
-            "version": "==0.3.7"
+            "markers": "python_version >= '3.8'",
+            "version": "==0.3.8"
         },
         "exceptiongroup": {
             "hashes": [
@@ -414,6 +414,14 @@
             "index": "pypi",
             "version": "==3.0.3"
         },
+        "pyrate-limiter": {
+            "hashes": [
+                "sha256:98cc52cdbe058458e945ae87d4fd5a73186497ffa545ee6e98372f8599a5bd34",
+                "sha256:a99e52159f5ed5eb58118bed8c645e30818e7c0e0d127a0585c8277c776b0f7f"
+            ],
+            "markers": "python_version >= '3.7' and python_version < '4.0'",
+            "version": "==2.10.0"
+        },
         "python-dateutil": {
             "hashes": [
                 "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86",
@@ -494,6 +502,14 @@
             ],
             "index": "pypi",
             "version": "==0.9.8"
+        },
+        "requests-ratelimiter": {
+            "hashes": [
+                "sha256:1cf68b02cca692f8dfa8eca12653a3ee177bea3208f8dd7533bb52a3ab14d16c",
+                "sha256:7b804c9484617e3e7c372eba81b9dedfe6d34904d1ceb8b7c4a4f3b864dc0dbd"
+            ],
+            "index": "pypi",
+            "version": "==0.4.2"
         },
         "scipy": {
             "hashes": [

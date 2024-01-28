@@ -17,6 +17,7 @@ python-dateutil = "*"
 exceptiongroup = "*"
 typing-extensions = "*"
 pulumi = "*"
+requests-ratelimiter = "*"
 
 [dev-packages]
 
