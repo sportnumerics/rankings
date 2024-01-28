@@ -40,7 +40,7 @@ export default function Header({ years, divs, currentYear }: Props) {
 }
 
 function NavBar({ children }: { children: React.ReactNode }) {
-    return <div className="bg-gradient-to-r from-red-800 to-red-900 mb-8 shadow-xl text-white">
+    return <div className="bg-gradient-to-r from-red-800 to-red-900 mb-8 shadow-xl text-white z-50 relative">
         <div className="hidden md:flex">
             {children}
         </div>
