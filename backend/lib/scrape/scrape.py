@@ -24,7 +24,8 @@ def scrape_schedules(args):
   runner = ScrapeRunner(source=args.source,
                         year=args.year,
                         out_dir=args.out_dir,
-                        team=args.team)
+                        team=args.team,
+                        div=args.div)
 
   if not hasattr(args, 'team_list_file') or not args.team_list_file:
     runner.scrape_and_write_team_lists()
@@ -41,7 +42,7 @@ class LimitedCachedSession(CacheMixin, LimiterSession):
 
 class ScrapeRunner():
 
-  def __init__(self, source, year, out_dir, team=None):
+  def __init__(self, source, year, out_dir, team=None, div=None):
     if source == 'ncaa':
       self.scraper = ncaa.Ncaa()
     elif source == 'mcla':
@@ -60,6 +61,7 @@ class ScrapeRunner():
                                       per_minute=5)
 
     self.team = team
+    self.div = div
 
   def scrape_and_write_team_lists(self):
     LOGGER.info(
@@ -82,36 +84,48 @@ class ScrapeRunner():
     pathlib.Path(schedule_dir).mkdir(parents=True, exist_ok=True)
     games_dir = os.path.join(self.out_dir, self.year, 'games')
     pathlib.Path(games_dir).mkdir(parents=True, exist_ok=True)
+    schedules = []
     for team in teams:
       if self.team and self.team != team['id']:
+        continue
+      if self.div and self.div != team['div']:
         continue
       LOGGER.info(f'scraping schedule for {team["name"]}')
       schedule = self.scrape_schedule(team)
       if not schedule:
         LOGGER.warn(f'No schedule for {team["name"]}')
         continue
-      with open(os.path.join(schedule_dir, team['id'] + '.json'), 'w') as f:
+      schedules.append(schedule)
+
+    self.cross_link_schedules(schedules)
+    for schedule in schedules:
+      file_name = os.path.join(schedule_dir, schedule['team']['id'] + '.json')
+      with open(file_name, 'w') as f:
         json.dump(schedule, f, indent=2)
+
+    for schedule in schedules:
+      team = schedule['team']
       for game in schedule['games']:
-        if 'details' in game:
-          LOGGER.info(
-              f'scraping game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}'
+        if 'details' not in game:
+          continue
+
+        LOGGER.info(
+            f'scraping game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}'
+        )
+        opponent = game['opponent']
+        (home_team,
+         away_team) = (team, opponent) if game['home'] else (opponent, team)
+        game_details = self.scrape_game_details(game['details'], game['id'],
+                                                team['sport'], team['source'],
+                                                home_team, away_team)
+        if not game_details:
+          LOGGER.warn(
+              f'no game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}'
           )
-          opponent = game['opponent']
-          (home_team,
-           away_team) = (team, opponent) if game['home'] else (opponent, team)
-          game_details = self.scrape_game_details(game['details'], game['id'],
-                                                  team['sport'],
-                                                  team['source'], home_team,
-                                                  away_team)
-          if not game_details:
-            LOGGER.warn(
-                f'no game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}'
-            )
-            continue
-          with open(os.path.join(games_dir, game_details['id'] + '.json'),
-                    'w') as f:
-            json.dump(game_details, f, indent=2)
+          continue
+        with open(os.path.join(games_dir, game_details['id'] + '.json'),
+                  'w') as f:
+          json.dump(game_details, f, indent=2)
 
   def scrape_teams(self):
     for url in self.scraper.get_team_list_urls(self.year):
@@ -132,6 +146,9 @@ class ScrapeRunner():
     except Exception as e:
       LOGGER.error(f'Unable to convert schedule html from {schedule}: {e}')
       traceback.print_exception(e)
+
+  def cross_link_schedules(self, schedules):
+    self.scraper.cross_link_schedules(schedules)
 
   def scrape_game_details(self, location, game_id, sport, source, home_team,
                           away_team):

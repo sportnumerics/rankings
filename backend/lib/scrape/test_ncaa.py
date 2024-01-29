@@ -121,28 +121,58 @@ class TestScrape(unittest.TestCase):
             'a': 0
         })
 
-  def test_non_divisional(self):
+  def test_non_divisional_and_alt_id(self):
     html = fixtures.malone_game_by_game()
     n = ncaa.Ncaa()
     team = {'name': 'Malone', 'sport': 'ml', 'source': 'ncaa'}
     schedule = n.convert_schedule_html(html, team)
-    self.assertEqual(schedule['team'], team)
+    self.assertEqual(team['alt_id'], '571523')
     self.assertEqual(
-        schedule['games'][6], {
-            'id': 'ml-ncaa-2359598',
-            'date': '2023-03-15',
+        schedule['games'][0], {
+            'date': '2024-02-08',
             'opponent': {
-                'name': 'Mt. Vernon Naz.',
-                'id': 'ml-ncaa-nd-mt-vernon-naz'
+                'name': 'SCAD Savannah',
+                'id': 'ml-ncaa-nd-scad-savannah'
             },
-            'home': True,
-            'result': {
-                'points_for': 15,
-                'points_against': 11
-            },
+            'home': False,
             'source': 'ncaa',
-            'sport': 'ml',
-            'details': {
-                'url': 'https://stats.ncaa.org/contests/2359598/box_score'
-            }
+            'sport': 'ml'
         })
+    self.assertEqual(
+        schedule['games'][1], {
+            'date': '2024-02-10',
+            'opponent': {
+                'name': 'Shorter',
+                'alt_id': '571497'
+            },
+            'home': False,
+            'source': 'ncaa',
+            'sport': 'ml'
+        })
+
+  def test_cross_linking(self):
+    n = ncaa.Ncaa()
+    schedules = [{
+        'team': {
+            'id': 'ml-ncaa-1',
+            'alt_id': 'alt1'
+        },
+        'games': [{
+            'opponent': {
+                'alt_id': 'alt2'
+            }
+        }]
+    }, {
+        'team': {
+            'id': 'ml-ncaa-2',
+            'alt_id': 'alt2'
+        },
+        'games': [{
+            'opponent': {
+                'alt_id': 'alt1'
+            }
+        }]
+    }]
+    n.cross_link_schedules(schedules)
+    self.assertEqual(schedules[0]['games'][0]['opponent']['id'], 'ml-ncaa-2')
+    self.assertEqual(schedules[1]['games'][0]['opponent']['id'], 'ml-ncaa-1')

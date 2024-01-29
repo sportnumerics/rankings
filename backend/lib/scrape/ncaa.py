@@ -41,8 +41,20 @@ class Ncaa():
           'source': 'ncaa'
       }
 
+  OPPONENT_NAME_REGEX = re.compile(
+      r'(?P<away>\@)?\s*(?P<opponent_name>[^\@]+)(\@(?P<neutral_site>.*))?')
+  OPPONENT_ID_REGEX = re.compile(r'/team/(?P<id>\d+)/(?P<yearcode>\d+)')
+  OPPONENT_ALT_ID_REGEX = re.compile(r'/teams/(?P<alt_id>\d+)')
+  SCORE_REGEX = re.compile(
+      r'(?P<outcome>[WL])?\s*(?P<points_for>\d+)\s*\-\s*(?P<points_against>\d+)'
+  )
+  DETAILS_URL_REGEX = re.compile(r'/contests/(?P<id>\d+)/box_score')
+
   def convert_schedule_html(self, html, team):
     soup = BeautifulSoup(html, 'html.parser')
+    alt_id = soup.find(id='year_list').find('option', attrs={'selected':'selected'}).attrs['value']
+    if alt_id:
+      team['alt_id'] = alt_id
     game_breakdown_div = soup.find(id='game_breakdown_div')
     rows = game_breakdown_div.table.table.find_all(
         'tr') if game_breakdown_div else []
@@ -61,9 +73,7 @@ class Ncaa():
       opp_link = opp_col.find(
           lambda tag: tag.name == 'a' and not tag.has_attr('class'))
       opp_string = ' '.join(opp_col.stripped_strings)
-      opp_match = re.match(
-          r'(?P<away>\@)?\s*(?P<opponent_name>[^\@]+)(\@(?P<neutral_site>.*))?',
-          opp_string)
+      opp_match = self.OPPONENT_NAME_REGEX.match(opp_string)
       if not opp_match:
         continue
 
@@ -74,18 +84,20 @@ class Ncaa():
       game['home'] = opp_match.group('away') is None
 
       if opp_link:
-        opp_link_parts = opp_link['href'].split('/')
-        if len(opp_link_parts) > 2:
+        id_match = self.OPPONENT_ID_REGEX.match(opp_link['href'])
+        if id_match:
           game['opponent']['id'] = '-'.join(
-              [team['sport'], team['source'], opp_link_parts[2]])
+              [team['sport'], team['source'],
+               id_match.group('id')])
+        alt_id_match = self.OPPONENT_ALT_ID_REGEX.match(opp_link['href'])
+        if alt_id_match:
+          game['opponent']['alt_id'] = alt_id_match.group('alt_id')
       else:
         game['opponent']['id'] = self._foreign_opponent_id(
             team['sport'], team['source'], game['opponent']['name'])
 
       result_str = ' '.join(result_col.stripped_strings)
-      score_match = re.match(
-          r'(?P<outcome>[WL])?\s*(?P<points_for>\d+)\s*\-\s*(?P<points_against>\d+)',
-          result_str)
+      score_match = self.SCORE_REGEX.match(result_str)
       if score_match:
         game['result'] = {
             'points_for': int(score_match.group('points_for')),
@@ -93,8 +105,7 @@ class Ncaa():
         }
       if hasattr(result_col, 'a') and hasattr(result_col.a, 'href'):
         game_details_url = result_col.a['href']
-        url_match = re.match(r'/contests/(?P<id>\d+)/box_score',
-                             game_details_url)
+        url_match = self.DETAILS_URL_REGEX.match(game_details_url)
         if url_match:
           game['details'] = {'url': self.base_url + game_details_url}
           game['id'] = 'ml-ncaa-' + url_match.group('id')
@@ -105,6 +116,18 @@ class Ncaa():
   TEAM_HREF_REGEX = re.compile(r'/teams/(?P<id>\d+)')
   TEAM_NAME_REGEX = re.compile(
       r'(#\d+ )?(?P<name>[a-zA-Z0-9\-_&\' .()]+) \(\d+-\d+\)')
+
+  def cross_link_schedules(self, schedules):
+    ids_by_alt_ids = {
+        schedule['team']['alt_id']: schedule['team']['id']
+        for schedule in schedules
+    }
+    for schedule in schedules:
+      if not 'games' in schedule:
+        continue
+      for game in schedule['games']:
+        if 'id' not in game['opponent'] and 'alt_id' in game['opponent'] and game['opponent']['alt_id'] in ids_by_alt_ids:
+          game['opponent']['id'] = ids_by_alt_ids[game['opponent']['alt_id']]
 
   def convert_game_details_html(self, html, location, game_id, sport, source,
                                 home_team, away_team):
