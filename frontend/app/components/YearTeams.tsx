@@ -19,18 +19,24 @@ export default async function YearTeams({ params: { year } }: { params: HasYear 
     const players = Object.values(playerMap);
     return <>
     <PageHeading heading={year} subHeading=""/>
-    { divisions.map(div => (div.teams.length > 0 && <Card key={div.id}>
-        <H2>{div.name}</H2>
-        <div className="flex flex-row">
-            <div>
-                <H3><Link href={`/${year}/${div.id}/teams`}>Top Teams</Link></H3>
-                <TeamsTable teams={div.teams.slice(0, 5)} params={{year, div: div.id}}/>
-            </div>
-            {players.length > 0 && <div className="hidden md:block">
-                <H3><Link href={`/${year}/${div.id}/players`}>Top Scoring Players</Link></H3>
-                <PlayersTable players={Object.values(rankPlayers(players.filter(p => p.team.div === div.id).slice(0, 5)))} showTeam hideRank params={{ year, div: div.id }}/>
-            </div>}
-        </div>
-    </Card>)).filter(Boolean)}
+    { divisions.map(div => {
+        if (div.teams.length === 0) {
+            return null;
+        }
+        const divPlayers = Object.values(rankPlayers(players.filter(p => p.team.div === div.id).slice(0, 5)));
+        return <Card key={div.id}>
+                <H2>{div.name}</H2>
+                <div className="flex flex-row">
+                    <div>
+                        <H3><Link href={`/${year}/${div.id}/teams`}>Top Teams</Link></H3>
+                        <TeamsTable teams={div.teams.slice(0, 5)} params={{year, div: div.id}}/>
+                    </div>
+                    {divPlayers.length > 0 && <div className="hidden md:block">
+                        <H3><Link href={`/${year}/${div.id}/players`}>Top Scoring Players</Link></H3>
+                        <PlayersTable players={divPlayers} showTeam hideRank params={{ year, div: div.id }}/>
+                    </div>}
+                </div>
+            </Card>
+        }).filter(Boolean)}
     </>
 }
