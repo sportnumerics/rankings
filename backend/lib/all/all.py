@@ -36,6 +36,7 @@ class ScrapeArgs:
   year: str
   out_dir: str
   team: str = None
+  div: str = None
 
 
 @dataclass
