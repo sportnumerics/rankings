@@ -154,9 +154,14 @@ def rank_players(args, schedules):
                                                      constants,
                                                      damp=1.0)
 
+    min_rating = min(ratings)
+    # normalize by subtracting min rating from player ratings
+    ratings[0:n_players] -= min_rating
+    # and adding min rating to defensive ratings
+    ratings[n_players+n_teams:] += min_rating
+
     return ratings
 
-  pts_ratings = get_ratings(lambda e: e['g'] + e['a'])
   goal_ratings = get_ratings(lambda e: e['g'])
   assist_ratings = get_ratings(lambda e: e['a'])
 
@@ -168,7 +173,7 @@ def rank_players(args, schedules):
         'id': player['id'],
         'name': player['name'],
         'team': player['team'],
-        'points': pts_ratings[i],
+        'points': goal_ratings[i] + assist_ratings[i],
         'goals': goal_ratings[i],
         'assists': assist_ratings[i]
     })
@@ -178,8 +183,6 @@ def rank_players(args, schedules):
     team = team_idx_to_id[i]
     teams.append({
         'team': team,
-        'points_off': pts_ratings[n_players + i],
-        'points_def': pts_ratings[n_players + n_teams + i],
         'goals_off': goal_ratings[n_players + i],
         'goals_def': goal_ratings[n_players + n_teams + i],
         'assists_off': assist_ratings[n_players + i],
@@ -187,7 +190,7 @@ def rank_players(args, schedules):
     })
 
   sorted_players = sorted(player_ratings, key=lambda r: -r['points'])
-  sorted_teams = sorted(teams, key=lambda r: -r['points_def'])
+  sorted_teams = sorted(teams, key=lambda r: -r['goals_def']-r['assists_def'])
 
   pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True, exist_ok=True)
   with open(os.path.join(out_dir, year, 'player-ratings.json'), 'w') as f:
