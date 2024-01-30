@@ -85,7 +85,7 @@ function hasDiv(location: Location, div?: string): location is HasDivision {
     }
 }
 
-export type LinkComponentProps = {isActive?: boolean}
+export type LinkComponentProps = { isActive?: boolean }
 export type LinkComponent = React.FunctionComponent<LinkComponentProps>
 
 export function linkToYear(year: string, location: Location): string | null {
@@ -116,9 +116,9 @@ export function linkToDiv(div: string, location: Location, currentYear: string):
     }
 }
 
-export function linkToPlayers(location: Location, currentYear: string): string | null {
+export function linkToPlayers(location: Location, currentYear: string): string | undefined {
     if (isPlayersList(location)) {
-        return null;
+        return undefined;
     } else if (hasYear(location) && hasDiv(location)) {
         return `/${location.year}/${location.div}/players`;
     } else {
@@ -126,9 +126,9 @@ export function linkToPlayers(location: Location, currentYear: string): string |
     }
 }
 
-export function linkToTeams(location: Location, currentYear: string): string | null {
+export function linkToTeams(location: Location, currentYear: string): string | undefined {
     if (isTeamsList(location)) {
-        return null;
+        return undefined;
     } else if (hasYear(location) && hasDiv(location)) {
         return `/${location.year}/${location.div}/teams`;
     } else if (hasYear(location)) {

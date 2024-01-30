@@ -2,11 +2,12 @@
 import { getDiv } from "@/app/server/divs";
 import { getRankedPlayers } from "@/app/server/players";
 import { getRankedTeams, getTeam } from "@/app/server/teams";
-import { GameResult, TeamSummary } from "@/app/server/types";
-import { datetime, twoPlaces } from "@/app/formatting";
+import { GameResult } from "@/app/server/types";
+import { datetime } from "@/app/formatting";
 import { Card, ExternalLink, H1, Table, TableHeader, H2 } from "@/app/shared";
 import Link from "@/app/components/Link";
 import PlayersCard from "@/app/components/PlayersCard";
+import Opponent from "@/app/components/Opponent";
 
 interface Params {
     year: string;
@@ -14,7 +15,7 @@ interface Params {
     team: string;
 }
 
-export default async function Page({ params } : { params: Params}) {
+export default async function Page({ params }: { params: Params }) {
     const schedule = await getTeam(params);
     const teamPromise = getRankedTeams({ year: params.year, div: schedule.team.div });
     const playersPromise = getRankedPlayers({ year: params.year, team: schedule.team.id });
@@ -23,14 +24,6 @@ export default async function Page({ params } : { params: Params}) {
 
     const rankedPlayers = Object.values(players);
     rankedPlayers.sort((a, b) => a.rank - b.rank);
-
-    function Opponent(summary: TeamSummary) {
-        const opponent = teams[summary.id];
-        return <Link href={`/${params.year}/teams/${summary.id}`} className="space-x-1">
-            <span className="text-xs">{opponent?.rank <= 25 ? opponent.rank : ""}</span>
-            <span>{summary.name}</span>
-        </Link>
-    }
 
     return <>
         <div>
@@ -44,14 +37,14 @@ export default async function Page({ params } : { params: Params}) {
                 <tbody>
                     {schedule.games.map(game => <tr key={game.id}>
                         <td className="w-24">{game.result ? <Link href={`/${params.year}/games/${game.id}`}>{datetime(game.date)}</Link> : datetime(game.date)}</td>
-                        <td className="w-64"><Opponent {...game.opponent}/></td>
+                        <td className="w-64"><Opponent id={game.opponent.id} name={game.opponent.name} teams={teams} year={params.year} /></td>
                         <td className="w-24"><Result result={game.result} /></td>
-                        </tr>)}
+                    </tr>)}
                 </tbody>
             </Table>
         </Card>
         <PlayersCard players={rankedPlayers.slice(0, 20)} params={params} />
-        </>
+    </>
 }
 
 function Result({ result }: { result?: GameResult }) {

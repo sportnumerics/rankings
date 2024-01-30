@@ -36,18 +36,18 @@ export function useLocation(): Location {
     return location;
 }
 
-function fetchDiv(params: { div?: string, year?: string, team?: string, player?: string }): Promise<Result<string | undefined>> {
+function fetchDiv(params: { div?: string, year?: string, team?: string, player?: string }): Promise<string | undefined> {
     if (params.div) {
-        return Promise.resolve(success(params.div));
+        return Promise.resolve(params.div);
     }
     const url = getUrl(params);
     if (!url) {
-        return Promise.resolve(success(undefined));
+        return Promise.resolve(undefined);
     }
     return fetch(url).then(response => response.json());
 }
 
-function getUrl({ year, team, player }: { year?: string, team?: string, player?: string }): string | undefined {
+function getUrl({ year, team, player, game }: { year?: string, team?: string, player?: string, game?: string }): string | undefined {
     if (!year) {
         return undefined;
     }
@@ -56,6 +56,8 @@ function getUrl({ year, team, player }: { year?: string, team?: string, player?:
         return `${baseUrl}?team=${team}`;
     } else if (player) {
         return `${baseUrl}?player=${player}`;
+    } else if (game) {
+        return `${baseUrl}?game=${game}`
     } else {
         return undefined;
     }
