@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { Location } from "./navigation";
-import { Result, loading, success } from "./Result";
+import { Result, error, loading, success } from "./Result";
 
 export function useClickOutside(ref: React.RefObject<HTMLElement>, onClickOutside: VoidFunction) {
     useEffect(() => {
@@ -85,7 +85,7 @@ export function usePromise<T>(get: () => Promise<T>): Result<T> {
     useEffect(() => {
         get()
             .then(value => setResult(success(value)))
-            .catch(error => setResult(error(error)))
+            .catch(err => setResult(error(err)))
     }, [get]);
 
     return result;

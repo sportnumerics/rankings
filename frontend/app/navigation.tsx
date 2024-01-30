@@ -132,8 +132,8 @@ export function linkToTeams(location: Location, currentYear: string): string | u
     } else if (hasYear(location) && hasDiv(location)) {
         return `/${location.year}/${location.div}/teams`;
     } else if (hasYear(location)) {
-        return `/${location.year}/teams`;
+        return `/${location.year}`;
     } else {
-        return `/${currentYear}/teams`;
+        return `/${currentYear}`;
     }
 }
