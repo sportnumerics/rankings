@@ -55,10 +55,10 @@ class ScrapeRunner():
 
     self.out_dir = out_dir
 
-    self.cache = LimitedCachedSession(cache_name=os.path.join(
-        self.out_dir, 'cache'),
+    cache_name = os.path.join(self.out_dir, 'cache')
+    self.cache = LimitedCachedSession(cache_name=cache_name,
                                       expire_after=timedelta(days=1),
-                                      per_minute=5)
+                                      **self.scraper.get_session_args())
 
     self.team = team
     self.div = div

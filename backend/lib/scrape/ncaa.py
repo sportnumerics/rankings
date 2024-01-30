@@ -190,6 +190,11 @@ class Ncaa():
         'home_stats': get_stats(stats_headers[1])
     }
 
+  def get_session_args(self):
+    return {
+      'per_minute': 20
+    }
+
   PLAYER_HREF_REGEX = re.compile(
       r'/player/index\?game_sport_year_ctl_id=(?P<gsycid>\d+)&(amp;)?org_id=(?P<org_id>\d+)&(amp;)?stats_player_seq=(?P<spseq>\d+)'
   )

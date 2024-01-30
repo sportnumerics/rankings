@@ -134,6 +134,9 @@ class Mcla():
 
     return result
 
+  def get_session_args(self):
+    pass
+
   def _parse_stats_tables(self, tables, sport, source):
     stats = []
     for table in tables:
