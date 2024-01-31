@@ -4,9 +4,9 @@ export function twoPlaces(rating?: number): string {
     return rating ? (Math.round(rating * 100) / 100.0).toString() : '--';
 }
 
-export function datetime(date: string): string {
+export function datetime(date: string, hideTime: boolean = true): string {
     const m = moment(date);
-    if (date.includes('T')) {
+    if (!hideTime && date.includes('T')) {
         return m.format('M/D ha');
     } else {
         return m.format('M/D');

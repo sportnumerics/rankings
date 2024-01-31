@@ -9,6 +9,7 @@ import Link from "@/app/components/Link";
 import PlayersCard from "@/app/components/PlayersCard";
 import Opponent from "@/app/components/Opponent";
 import Rank from "@/app/components/Rank";
+import GameDate from "@/app/components/GameLink";
 
 interface Params {
     year: string;
@@ -38,7 +39,7 @@ export default async function Page({ params }: { params: Params }) {
                 <TableHeader><tr><th>Date</th><th>Opponent</th><th>Result</th></tr></TableHeader>
                 <tbody>
                     {schedule.games.map(game => <tr key={game.id}>
-                        <td className="w-24">{game.result ? <Link href={`/${params.year}/games/${game.id}`}>{datetime(game.date)}</Link> : datetime(game.date)}</td>
+                        <td className="w-24"><GameDate id={game.id} link={Boolean(game.result)} date={game.date} year={params.year} /></td>
                         <td className="w-64"><Opponent id={game.opponent.id} name={game.opponent.name} teams={teams} year={params.year} /></td>
                         <td className="w-24"><Result result={game.result} /></td>
                     </tr>)}
