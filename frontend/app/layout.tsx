@@ -16,14 +16,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [ years, divs ] = await Promise.all([getYears(), getDivs()]);
+  const [years, divs] = await Promise.all([getYears(), getDivs()]);
   return (
     <html lang="en">
       <body className={inter.className}>
         <div>
           <Header years={years} divs={divs} currentYear={latestYear(years)} />
           <div className="mx-auto container px-4">
-              {children}
+            {children}
           </div>
         </div>
       </body>
