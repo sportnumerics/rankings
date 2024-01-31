@@ -190,7 +190,7 @@ class Ncaa():
         'home_stats': get_stats(stats_headers[1])
     }
 
-  def get_session_args(self):
+  def get_limiter_session_args(self):
     return {
       'per_minute': 20
     }

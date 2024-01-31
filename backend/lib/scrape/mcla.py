@@ -134,8 +134,8 @@ class Mcla():
 
     return result
 
-  def get_session_args(self):
-    pass
+  def get_limiter_session_args(self):
+    return {}
 
   def _parse_stats_tables(self, tables, sport, source):
     stats = []
