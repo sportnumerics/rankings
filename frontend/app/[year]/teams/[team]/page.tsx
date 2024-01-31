@@ -8,6 +8,7 @@ import { Card, ExternalLink, H1, Table, TableHeader, H2 } from "@/app/shared";
 import Link from "@/app/components/Link";
 import PlayersCard from "@/app/components/PlayersCard";
 import Opponent from "@/app/components/Opponent";
+import Rank from "@/app/components/Rank";
 
 interface Params {
     year: string;
@@ -24,10 +25,11 @@ export default async function Page({ params }: { params: Params }) {
 
     const rankedPlayers = Object.values(players);
     rankedPlayers.sort((a, b) => a.rank - b.rank);
+    const team = teams[schedule.team.id];
 
     return <>
         <div>
-            <H1>{schedule.team.name} ({params.year})</H1>
+            <H1><Rank rank={team?.rank} />{schedule.team.name} ({params.year})</H1>
             <H2>{div.name}</H2>
             <ExternalLink href={schedule.team.schedule.url} />
         </div>
