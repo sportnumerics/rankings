@@ -4,6 +4,7 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
+
 def sync(args):
   dry_run = ['--dryrun'] if args.dry_run else []
   input_path = os.path.join(args.input_dir, args.year)

@@ -9,7 +9,6 @@ import logging
 import traceback
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
-LOGGER = logging.getLogger(__name__)
 
 
 def scrape_team_list(args):
@@ -64,9 +63,10 @@ class ScrapeRunner():
 
     self.team = team
     self.div = div
+    self.log = logging.getLogger(self.scraper.__name__)
 
   def scrape_and_write_team_lists(self):
-    LOGGER.info(
+    self.log.info(
         f'scraping teams for {self.source} ({self.year}) into {self.out_dir}')
     teams = self.scrape_teams()
 
@@ -76,7 +76,7 @@ class ScrapeRunner():
       json.dump(list(teams), f, indent=2)
 
   def scrape_and_write_schedules(self, team_list_file):
-    LOGGER.info(
+    self.log.info(
         f'scraping schedules for {self.source} ({self.year}) into {self.out_dir}'
     )
     with open(team_list_file) as f:
@@ -92,10 +92,10 @@ class ScrapeRunner():
         continue
       if self.div and self.div != team['div']:
         continue
-      LOGGER.info(f'scraping schedule for {team["name"]}')
+      self.log.info(f'scraping schedule for {team["name"]}')
       schedule = self.scrape_schedule(team)
       if not schedule:
-        LOGGER.warn(f'No schedule for {team["name"]}')
+        self.log.warn(f'No schedule for {team["name"]}')
         continue
       schedules.append(schedule)
 
@@ -111,7 +111,7 @@ class ScrapeRunner():
         if 'details' not in game:
           continue
 
-        LOGGER.info(
+        self.log.info(
             f'scraping game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}'
         )
         opponent = game['opponent']
@@ -121,7 +121,7 @@ class ScrapeRunner():
                                                 team['sport'], team['source'],
                                                 home_team, away_team)
         if not game_details:
-          LOGGER.warn(
+          self.log.warn(
               f'no game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}'
           )
           continue
@@ -135,7 +135,7 @@ class ScrapeRunner():
       try:
         yield from self.scraper.convert_team_list_html(html, url)
       except Exception as e:
-        LOGGER.error(f'Unable to convert team list html from {url}: {e}')
+        self.log.error(f'Unable to convert team list html from {url}: {e}')
         traceback.print_exception(e)
         with open(os.path.join(self.out_dir, 'error.html'), 'w') as f:
           f.write(html)
@@ -146,7 +146,7 @@ class ScrapeRunner():
     try:
       return self.scraper.convert_schedule_html(html, team)
     except Exception as e:
-      LOGGER.error(f'Unable to convert schedule html from {schedule}: {e}')
+      self.log.error(f'Unable to convert schedule html from {schedule}: {e}')
       traceback.print_exception(e)
 
   def cross_link_schedules(self, schedules):
@@ -160,7 +160,7 @@ class ScrapeRunner():
                                                     sport, source, home_team,
                                                     away_team)
     except Exception as e:
-      LOGGER.error(f'Unable to convert game details html from {location}:')
+      self.log.error(f'Unable to convert game details html from {location}:')
       traceback.print_exception(e)
 
   def fetch(self, location):
@@ -168,7 +168,7 @@ class ScrapeRunner():
                               params=location.get('params'),
                               headers={'user-agent': USER_AGENT})
     if response.status_code != 200:
-      LOGGER.warn(
+      self.log.warn(
           f'Issue fetching {location["url"]}, status code: {response.status_code}'
       )
       return None

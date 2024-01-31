@@ -52,7 +52,10 @@ class Ncaa():
 
   def convert_schedule_html(self, html, team):
     soup = BeautifulSoup(html, 'html.parser')
-    alt_id = soup.find(id='year_list').find('option', attrs={'selected':'selected'}).attrs['value']
+    alt_id = soup.find(id='year_list').find('option',
+                                            attrs={
+                                                'selected': 'selected'
+                                            }).attrs['value']
     if alt_id:
       team['alt_id'] = alt_id
     game_breakdown_div = soup.find(id='game_breakdown_div')
@@ -126,7 +129,8 @@ class Ncaa():
       if not 'games' in schedule:
         continue
       for game in schedule['games']:
-        if 'id' not in game['opponent'] and 'alt_id' in game['opponent'] and game['opponent']['alt_id'] in ids_by_alt_ids:
+        if 'id' not in game['opponent'] and 'alt_id' in game[
+            'opponent'] and game['opponent']['alt_id'] in ids_by_alt_ids:
           game['opponent']['id'] = ids_by_alt_ids[game['opponent']['alt_id']]
 
   def convert_game_details_html(self, html, location, game_id, sport, source,
@@ -191,9 +195,7 @@ class Ncaa():
     }
 
   def get_limiter_session_args(self):
-    return {
-      'per_minute': 20
-    }
+    return {'per_minute': 20}
 
   PLAYER_HREF_REGEX = re.compile(
       r'/player/index\?game_sport_year_ctl_id=(?P<gsycid>\d+)&(amp;)?org_id=(?P<org_id>\d+)&(amp;)?stats_player_seq=(?P<spseq>\d+)'

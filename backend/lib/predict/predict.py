@@ -158,7 +158,7 @@ def rank_players(args, schedules):
     # normalize by subtracting min rating from player ratings
     ratings[0:n_players] -= min_rating
     # and adding min rating to defensive ratings
-    ratings[n_players+n_teams:] += min_rating
+    ratings[n_players + n_teams:] += min_rating
 
     return ratings
 
@@ -190,7 +190,8 @@ def rank_players(args, schedules):
     })
 
   sorted_players = sorted(player_ratings, key=lambda r: -r['points'])
-  sorted_teams = sorted(teams, key=lambda r: -r['goals_def']-r['assists_def'])
+  sorted_teams = sorted(teams,
+                        key=lambda r: -r['goals_def'] - r['assists_def'])
 
   pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True, exist_ok=True)
   with open(os.path.join(out_dir, year, 'player-ratings.json'), 'w') as f:
