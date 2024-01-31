@@ -3,7 +3,7 @@ import { getGame } from "@/app/server/games";
 import { GameStatLine } from "@/app/server/types";
 import { longDatetime } from "@/app/formatting";
 import { Card, ExternalLink, H1, H2, Table, TableHeader } from "@/app/shared";
-import Link from "next/link";
+import Link from "@/app/components/Link";
 
 interface Params {
     year: string;
