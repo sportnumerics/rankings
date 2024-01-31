@@ -1,5 +1,5 @@
-export default function Rank({ rank, threshold }: { rank: number, threshold?: number }) {
-    if (!rank || (threshold && rank > threshold)) {
+export default function Rank({ rank }: { rank: number }) {
+    if (!rank || rank > 25) {
         return null;
     }
     return <span className="text-xs pr-1">{rank}</span>

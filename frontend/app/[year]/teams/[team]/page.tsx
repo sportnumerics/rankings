@@ -30,7 +30,7 @@ export default async function Page({ params }: { params: Params }) {
 
     return <>
         <div>
-            <H1><Rank rank={team?.rank} />{schedule.team.name} ({params.year})</H1>
+            <H1><Rank rank={team?.rank} threshold={25} />{schedule.team.name} ({params.year})</H1>
             <H2>{div.name}</H2>
             <ExternalLink href={schedule.team.schedule.url} />
         </div>
