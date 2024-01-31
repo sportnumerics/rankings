@@ -63,7 +63,7 @@ class ScrapeRunner():
 
         self.team = team
         self.div = div
-        self.log = logging.getLogger(self.scraper.__name__)
+        self.log = logging.getLogger(type(self.scraper).__name__)
 
     def scrape_and_write_team_lists(self):
         self.log.info(
