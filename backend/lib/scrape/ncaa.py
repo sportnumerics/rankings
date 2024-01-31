@@ -205,7 +205,7 @@ class Ncaa():
         }
 
     def get_limiter_session_args(self):
-        return {'per_minute': 20}
+        return {'per_minute': 30}
 
     PLAYER_HREF_REGEX = re.compile(
         r'/player/index\?game_sport_year_ctl_id=(?P<gsycid>\d+)&(amp;)?org_id=(?P<org_id>\d+)&(amp;)?stats_player_seq=(?P<spseq>\d+)'
