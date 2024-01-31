@@ -30,7 +30,7 @@ export default async function Page({ params }: { params: Params }) {
 
     return <>
         <div>
-            <H1><Rank rank={team?.rank} threshold={25} />{schedule.team.name} ({params.year})</H1>
+            <H1><Rank rank={team?.rank} />{schedule.team.name} ({params.year})</H1>
             <H2>{div.name}</H2>
             <ExternalLink href={schedule.team.schedule.url} />
         </div>
@@ -46,7 +46,7 @@ export default async function Page({ params }: { params: Params }) {
                 </tbody>
             </Table>
         </Card>
-        <PlayersCard players={rankedPlayers.slice(0, 20)} params={params} />
+        <PlayersCard title="Top Scoring Players" players={rankedPlayers.slice(0, 20)} params={params} />
     </>
 }
 
