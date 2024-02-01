@@ -201,7 +201,7 @@ data "aws_iam_policy_document" "cloudfront_bucket_policy" {
 resource "aws_cloudfront_cache_policy" "lambda_cache_policy" {
   name = "lambda-cache-policy"
 
-  min_ttl     = 1
+  min_ttl     = 600
   default_ttl = 600
   max_ttl     = 86400
 
