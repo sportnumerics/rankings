@@ -213,7 +213,7 @@ resource "aws_cloudfront_cache_policy" "lambda_cache_policy" {
     headers_config {
       header_behavior = "whitelist"
       headers {
-        items = ["Accept-Encoding"]
+        items = ["Accept-Encoding", "Next-Router-Prefetch", "Next-Router-State-Tree", "Next-Url", "Rsc"]
       }
     }
 
