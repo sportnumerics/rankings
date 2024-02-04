@@ -1,8 +1,12 @@
 locals {
-  bucket_name                             = "${var.data_bucket_prefix}-${var.environment}"
+  data_bucket_prefix                      = "sportnumerics-rankings-bucket"
+  bucket_name                             = "${local.data_bucket_prefix}-${var.environment}"
   lambda_origin                           = "lambda-origin"
   s3_bucket_origin                        = "s3-bucket-origin"
   aws_managed_caching_optimized_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  route53_zone_id                         = "Z3R2RGFTVSSJXN"
+  s3_website_domain                       = "s3.us-west-2.amazonaws.com"
+  sportnumerics_certificate_arn           = "arn:aws:acm:us-east-1:265978616089:certificate/02636181-f1d6-4cf9-8fe6-c99976b2b78a"
 }
 
 data "archive_file" "package" {
@@ -127,7 +131,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   origin {
     origin_id                = local.s3_bucket_origin
     origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
-    domain_name              = "${local.bucket_name}.${var.website_domain}"
+    domain_name              = "${local.bucket_name}.${local.s3_website_domain}"
   }
 
   restrictions {
@@ -159,7 +163,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = local.sportnumerics_certificate_arn
   }
 
   enabled = true
@@ -222,3 +226,20 @@ resource "aws_cloudfront_cache_policy" "lambda_cache_policy" {
     }
   }
 }
+
+# resource "aws_route53_record" "root" {
+#   count   = var.environment == "prod" ? 1 : 0
+#   name    = "sportnumerics.com"
+#   zone_id = local.route53_zone_id
+#   type    = "A"
+# }
+
+# resource "aws_route53_record" "dev" {
+#   count   = var.environment == "dev" ? 1 : 0
+#   name    = "dev.sportnumerics.com"
+#   zone_id = local.route53_zone_id
+#   type    = "A"
+#   records = [
+#     aws_cloudfront_distribution.frontend.domain_name
+#   ]
+# }
