@@ -7,6 +7,7 @@ locals {
   route53_zone_id                         = "Z3R2RGFTVSSJXN"
   s3_website_domain                       = "s3.us-west-2.amazonaws.com"
   sportnumerics_certificate_arn           = "arn:aws:acm:us-east-1:265978616089:certificate/02636181-f1d6-4cf9-8fe6-c99976b2b78a"
+  prod                                    = var.environment == "prod"
 }
 
 data "archive_file" "package" {
@@ -116,6 +117,8 @@ resource "aws_s3_object" "static_files" {
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
+  aliases = flatten(["${var.environment}.sportnumerics.com", local.prod ? ["sportnumerics.com", "www.sportnumerics.com"] : []])
+
   origin {
     origin_id   = local.lambda_origin
     domain_name = split("/", aws_lambda_function_url.lambda.function_url)[2]
@@ -164,6 +167,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   viewer_certificate {
     acm_certificate_arn = local.sportnumerics_certificate_arn
+    ssl_support_method  = "sni-only"
   }
 
   enabled = true
@@ -228,15 +232,14 @@ resource "aws_cloudfront_cache_policy" "lambda_cache_policy" {
 }
 
 # resource "aws_route53_record" "root" {
-#   count   = var.environment == "prod" ? 1 : 0
+#   count   = var.prod ? 1 : 0
 #   name    = "sportnumerics.com"
 #   zone_id = local.route53_zone_id
 #   type    = "A"
 # }
 
-# resource "aws_route53_record" "dev" {
-#   count   = var.environment == "dev" ? 1 : 0
-#   name    = "dev.sportnumerics.com"
+# resource "aws_route53_record" "domain" {
+#   name    = "${var.environment}.sportnumerics.com"
 #   zone_id = local.route53_zone_id
 #   type    = "A"
 #   records = [
