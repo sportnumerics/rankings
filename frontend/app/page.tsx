@@ -1,6 +1,7 @@
-'use server'
 import YearTeams from "./components/YearTeams";
 import { getCurrentYear } from "./server/years";
+
+export const revalidate = 600;
 
 export default async function Home() {
   const year = await getCurrentYear();
