@@ -235,14 +235,15 @@ resource "aws_cloudfront_cache_policy" "lambda_cache_policy" {
 #   count   = var.prod ? 1 : 0
 #   name    = "sportnumerics.com"
 #   zone_id = local.route53_zone_id
-#   type    = "A"
+#   type    = "CNAME"
 # }
 
-# resource "aws_route53_record" "domain" {
-#   name    = "${var.environment}.sportnumerics.com"
-#   zone_id = local.route53_zone_id
-#   type    = "A"
-#   records = [
-#     aws_cloudfront_distribution.frontend.domain_name
-#   ]
-# }
+resource "aws_route53_record" "domain" {
+  name    = "${var.environment}.sportnumerics.com"
+  zone_id = local.route53_zone_id
+  type    = "CNAME"
+  records = [
+    aws_cloudfront_distribution.frontend.domain_name
+  ]
+  ttl = 600
+}
