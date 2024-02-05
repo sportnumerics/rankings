@@ -1,3 +1,4 @@
+import { GoogleAnalytics } from '@next/third-parties/google';
 import Header from './components/Header';
 import './globals.css'
 import { Fira_Code } from 'next/font/google'
@@ -27,6 +28,7 @@ export default async function RootLayout({
           </div>
         </div>
       </body>
+      <GoogleAnalytics gaId="G-EP0CT5LECX" />
     </html>
   )
 }
