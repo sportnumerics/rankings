@@ -117,8 +117,7 @@ resource "aws_s3_object" "static_files" {
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
-  # aliases = flatten(["${var.environment}.sportnumerics.com", local.prod ? ["sportnumerics.com", "www.sportnumerics.com"] : []])
-  aliases = flatten(["${var.environment}.sportnumerics.com"])
+  aliases = flatten(["${var.environment}.sportnumerics.com", local.prod ? ["sportnumerics.com", "www.sportnumerics.com"] : []])
 
   origin {
     origin_id   = local.lambda_origin
@@ -232,19 +231,37 @@ resource "aws_cloudfront_cache_policy" "lambda_cache_policy" {
   }
 }
 
-# resource "aws_route53_record" "root" {
-#   count   = var.prod ? 1 : 0
-#   name    = "sportnumerics.com"
-#   zone_id = local.route53_zone_id
-#   type    = "CNAME"
-# }
+resource "aws_route53_record" "root" {
+  count   = local.prod ? 1 : 0
+  name    = "sportnumerics.com"
+  zone_id = local.route53_zone_id
+  type    = "A"
+  alias {
+    name                   = aws_cloudfront_distribution.frontend.domain_name
+    zone_id                = aws_cloudfront_distribution.frontend.hosted_zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "www" {
+  count   = local.prod ? 1 : 0
+  name    = "www.sportnumerics.com"
+  zone_id = local.route53_zone_id
+  type    = "A"
+  alias {
+    name                   = aws_cloudfront_distribution.frontend.domain_name
+    zone_id                = aws_cloudfront_distribution.frontend.hosted_zone_id
+    evaluate_target_health = true
+  }
+}
 
 resource "aws_route53_record" "domain" {
   name    = "${var.environment}.sportnumerics.com"
   zone_id = local.route53_zone_id
-  type    = "CNAME"
-  records = [
-    aws_cloudfront_distribution.frontend.domain_name
-  ]
-  ttl = 600
+  type    = "A"
+  alias {
+    name                   = aws_cloudfront_distribution.frontend.domain_name
+    zone_id                = aws_cloudfront_distribution.frontend.hosted_zone_id
+    evaluate_target_health = true
+  }
 }
