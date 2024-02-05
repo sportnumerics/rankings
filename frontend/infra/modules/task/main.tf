@@ -117,7 +117,8 @@ resource "aws_s3_object" "static_files" {
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
-  aliases = flatten(["${var.environment}.sportnumerics.com", local.prod ? ["sportnumerics.com", "www.sportnumerics.com"] : []])
+  # aliases = flatten(["${var.environment}.sportnumerics.com", local.prod ? ["sportnumerics.com", "www.sportnumerics.com"] : []])
+  aliases = flatten(["${var.environment}.sportnumerics.com"])
 
   origin {
     origin_id   = local.lambda_origin
@@ -207,7 +208,7 @@ data "aws_iam_policy_document" "cloudfront_bucket_policy" {
 }
 
 resource "aws_cloudfront_cache_policy" "lambda_cache_policy" {
-  name = "lambda-cache-policy"
+  name = "lambda-cache-policy-${var.environment}"
 
   min_ttl     = 600
   default_ttl = 600

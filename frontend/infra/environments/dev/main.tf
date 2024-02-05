@@ -2,13 +2,13 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.33"
+      version = "~> 5.0"
     }
   }
 
   backend "s3" {
     bucket = "sportnumerics-rankings-terraform-state"
-    key = "frontend/dev.tfstate"
+    key    = "frontend/dev.tfstate"
     region = "us-west-2"
   }
 
@@ -16,7 +16,7 @@ terraform {
 }
 
 provider "aws" {
-  region  = "us-west-2"
+  region = "us-west-2"
 }
 
 module "task" {

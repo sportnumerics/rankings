@@ -1,8 +1,7 @@
+output "cloudfront_domain" {
+  value = module.task.cloudfront_domain
+}
 
-# output "rankings_backend_repository" {
-#     value = module.task.rankings_backend_repository
-# }
-
-# output "rankings_backend_image_url" {
-#     value = module.task.rankings_backend_image_url
-# }
+output "cloudfront_distribution_id" {
+  value = module.task.cloudfront_distribution_id
+}
