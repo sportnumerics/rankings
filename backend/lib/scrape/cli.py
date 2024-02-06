@@ -27,4 +27,6 @@ def add_parsers(parsers):
         help='File to read team list from (will scrape them by default)')
     schedule_parser.add_argument('--team', help='Scrape by team id')
     schedule_parser.add_argument('--div', help='Scrape by div id')
+    schedule_parser.add_argument(
+        '--limit', help='Limit number of teams scraped')
     schedule_parser.set_defaults(func=scrape.scrape_schedules)

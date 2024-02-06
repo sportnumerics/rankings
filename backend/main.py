@@ -1,4 +1,5 @@
-import os, datetime
+import os
+import datetime
 import argparse
 import logging
 import lib.scrape.cli
@@ -13,8 +14,7 @@ def main():
     parser.add_argument(
         '--year',
         default=get_default_year(),
-        help=
-        'year to fetch (defaults to environment variable YEAR or current year)'
+        help='year(s) to fetch (defaults to environment variable YEAR or current year). Range expression e.g. 2008-2022 is possible'
     )
     subparsers = parser.add_subparsers()
     parser.set_defaults(func=lambda args: parser.print_help())

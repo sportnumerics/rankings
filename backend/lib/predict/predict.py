@@ -4,6 +4,7 @@ from datetime import datetime
 import pathlib
 import logging
 import numpy as np
+from ..shared import shared
 from scipy.sparse import coo_matrix
 from scipy.sparse import linalg
 
@@ -12,27 +13,26 @@ LOGGER = logging.getLogger(__name__)
 
 def predict(args):
     out_dir = args.out_dir
-    year = args.year
+    for year in shared.years(args.year):
+        schedules_dir = os.path.join(args.input_dir, year, 'schedules')
+        _, _, filenames = next(os.walk(schedules_dir))
 
-    schedules_dir = os.path.join(args.input_dir, year, 'schedules')
-    _, _, filenames = next(os.walk(schedules_dir))
+        schedules = list(
+            load_from_files(
+                map(lambda f: os.path.join(schedules_dir, f), filenames)))
 
-    schedules = list(
-        load_from_files(
-            map(lambda f: os.path.join(schedules_dir, f), filenames)))
+        LOGGER.info(
+            f'Calculating team ratings for {len(schedules)} teams in {year}')
+        ratings, _ = calculate_ratings(schedules)
 
-    LOGGER.info(
-        f'Calculating team ratings for {len(schedules)} teams in {year}')
-    ratings, _ = calculate_ratings(schedules)
+        sorted_ratings = sorted(ratings.values(), key=lambda r: -r['overall'])
 
-    sorted_ratings = sorted(ratings.values(), key=lambda r: -r['overall'])
+        pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True,
+                                                        exist_ok=True)
+        with open(os.path.join(out_dir, year, 'team-ratings.json'), 'w') as f:
+            json.dump(sorted_ratings, f, indent=2)
 
-    pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True,
-                                                    exist_ok=True)
-    with open(os.path.join(out_dir, year, 'team-ratings.json'), 'w') as f:
-        json.dump(sorted_ratings, f, indent=2)
-
-    rank_players(args, schedules)
+        rank_players(args, schedules)
 
 
 def rank_players(args, schedules):

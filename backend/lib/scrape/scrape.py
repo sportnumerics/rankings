@@ -1,4 +1,5 @@
 from . import ncaa, mcla
+from ..shared import shared
 from requests_cache import CacheMixin, CachedSession
 from requests_ratelimiter import LimiterSession
 from datetime import timedelta
@@ -12,27 +13,30 @@ USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36
 
 
 def scrape_team_list(args):
-    runner = ScrapeRunner(source=args.source,
-                          year=args.year,
-                          out_dir=args.out_dir)
+    for year in shared.years(args.year):
+        runner = ScrapeRunner(source=args.source,
+                              year=year,
+                              out_dir=args.out_dir)
 
-    runner.scrape_and_write_team_lists()
+        runner.scrape_and_write_team_lists()
 
 
 def scrape_schedules(args):
-    runner = ScrapeRunner(source=args.source,
-                          year=args.year,
-                          out_dir=args.out_dir,
-                          team=args.team,
-                          div=args.div)
+    for year in shared.years(args.year):
+        runner = ScrapeRunner(source=args.source,
+                              year=year,
+                              out_dir=args.out_dir,
+                              team=args.team,
+                              div=args.div,
+                              limit=args.limit)
 
-    if not hasattr(args, 'team_list_file') or not args.team_list_file:
-        runner.scrape_and_write_team_lists()
-        team_list_file = runner.get_team_list_filename()
-    else:
-        team_list_file = args.team_list_file
+        if not hasattr(args, 'team_list_file') or not args.team_list_file:
+            runner.scrape_and_write_team_lists()
+            team_list_file = runner.get_team_list_filename()
+        else:
+            team_list_file = args.team_list_file
 
-    runner.scrape_and_write_schedules(team_list_file)
+        runner.scrape_and_write_schedules(team_list_file)
 
 
 class LimitedCachedSession(CacheMixin, LimiterSession):
@@ -41,7 +45,7 @@ class LimitedCachedSession(CacheMixin, LimiterSession):
 
 class ScrapeRunner():
 
-    def __init__(self, source, year, out_dir, team=None, div=None):
+    def __init__(self, source, year, out_dir, team=None, div=None, limit=None):
         if source == 'ncaa':
             self.scraper = ncaa.Ncaa()
         elif source == 'mcla':
@@ -63,6 +67,7 @@ class ScrapeRunner():
 
         self.team = team
         self.div = div
+        self.limit = int(limit) if limit else None
         self.log = logging.getLogger(type(self.scraper).__name__)
 
     def scrape_and_write_team_lists(self):
@@ -83,6 +88,9 @@ class ScrapeRunner():
         )
         with open(team_list_file) as f:
             teams = json.load(f)
+
+        if self.limit:
+            teams = teams[:self.limit]
 
         schedule_dir = os.path.join(self.out_dir, self.year, 'schedules')
         pathlib.Path(schedule_dir).mkdir(parents=True, exist_ok=True)
