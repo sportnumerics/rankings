@@ -5,7 +5,7 @@ export interface HasId {
 }
 
 export interface HasRanking {
-    rank: number;
+    rank?: number;
 }
 
 export interface Team {

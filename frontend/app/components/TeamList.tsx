@@ -7,7 +7,7 @@ import EmptyCard from './EmptyCard';
 
 export function TeamsCard({ teams, params }: { teams: RankedTeam[], params: HasDivision }) {
     if (teams.length === 0) {
-        return <EmptyCard text='No team rankings yet...'/>
+        return <EmptyCard text='No team rankings yet...' />
     }
 
     return <Card>
@@ -19,10 +19,10 @@ export function TeamsTable({ teams, params }: { teams: RankedTeam[], params: Has
     return <Table>
         <Header />
         <tbody>{teams.map(team => <tr key={team.id}>
-                <td className="w-16">{team.rank}</td>
-                <td className="w-64"><Link href={`/${params.year}/teams/${team.id}`}>{team.name}</Link></td>
-                <td className="w-24">{twoPlaces(team.overall)}</td>
-            </tr>)}
+            <td className="w-16">{team.rank ?? '--'}</td>
+            <td className="w-64"><Link href={`/${params.year}/teams/${team.id}`}>{team.name}</Link></td>
+            <td className="w-24">{twoPlaces(team.overall)}</td>
+        </tr>)}
         </tbody>
     </Table>
 }

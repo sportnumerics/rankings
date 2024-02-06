@@ -72,3 +72,9 @@ export function Error() {
         <p>This page has an issue. Please go back.</p>
     </div>
 }
+
+export function by<T>(fn: (t: T) => number | undefined, direction: 'asc' | 'desc' = 'desc'): (a: T, b: T) => number {
+    return direction === 'asc' ?
+        (a, b) => (fn(b) ?? -Infinity) - (fn(a) ?? -Infinity) :
+        (a, b) => (fn(a) ?? Infinity) - (fn(b) ?? Infinity);
+}

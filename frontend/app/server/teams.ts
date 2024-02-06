@@ -5,13 +5,13 @@ import { RankedTeamMap, RatingMap, Team, TeamMap, TeamRating, TeamSchedule } fro
 import rank from './rank';
 
 export async function getRankedTeams({ year, div }: { year: string, div: string }): Promise<RankedTeamMap> {
-    const teamsPromise = getTeams({year, div});
+    const teamsPromise = getTeams({ year, div });
     const ratingsPromise = getTeamRatings({ year });
     const [teams, ratings] = await Promise.all([teamsPromise, ratingsPromise]);
     const teamRatings = Object.values(teams)
         .filter(team => team.div === div)
-        .map(team => ({...team, ...ratings[team.id]}));
-    return rank(teamRatings, t => t.overall ?? -Infinity);
+        .map(team => ({ ...team, ...ratings[team.id] }));
+    return rank(teamRatings, t => t.overall);
 }
 
 export async function getTeams({ year, div }: { year: string, div: string }): Promise<TeamMap> {
@@ -24,7 +24,7 @@ export async function getTeams({ year, div }: { year: string, div: string }): Pr
     return Object.fromEntries(teams.map(team => [team.id, team]));
 }
 
-export async function getTeamRatings({ year }: { year: string}): Promise<RatingMap> {
+export async function getTeamRatings({ year }: { year: string }): Promise<RatingMap> {
     const response = await source.get(`${year}/team-ratings.json`);
     const ratings: TeamRating[] = JSON.parse(response);
     return Object.fromEntries(ratings.map(rating => [rating.team, rating]));

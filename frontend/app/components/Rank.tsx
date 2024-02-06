@@ -1,4 +1,4 @@
-export default function Rank({ rank }: { rank: number }) {
+export default function Rank({ rank }: { rank?: number }) {
     if (!rank || rank > 25) {
         return null;
     }

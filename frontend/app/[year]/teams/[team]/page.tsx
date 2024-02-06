@@ -4,7 +4,7 @@ import { getRankedPlayers } from "@/app/server/players";
 import { getRankedTeams, getTeam } from "@/app/server/teams";
 import { GameResult } from "@/app/server/types";
 import { datetime } from "@/app/formatting";
-import { Card, ExternalLink, H1, Table, TableHeader, H2 } from "@/app/shared";
+import { Card, ExternalLink, H1, Table, TableHeader, H2, by } from "@/app/shared";
 import Link from "@/app/components/Link";
 import PlayersCard from "@/app/components/PlayersCard";
 import Opponent from "@/app/components/Opponent";
@@ -25,7 +25,7 @@ export default async function Page({ params }: { params: Params }) {
     const [teams, players, div] = await Promise.all([teamPromise, playersPromise, divPromise]);
 
     const rankedPlayers = Object.values(players);
-    rankedPlayers.sort((a, b) => a.rank - b.rank);
+    rankedPlayers.sort(by(t => t.rank));
     const team = teams[schedule.team.id];
 
     return <>

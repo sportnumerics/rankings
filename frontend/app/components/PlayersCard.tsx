@@ -20,7 +20,7 @@ export function PlayersTable({ players, showTeam = false, hideRank = false, para
         <Header hideRank={hideRank} />
         <tbody>
             {players.map(player => <tr key={player.id}>
-                {!hideRank && <td className="w-24">{player.rank}</td>}
+                {!hideRank && player.rank && <td className="w-24">{player.rank}</td>}
                 <td className={showTeam ? "w-96" : "w-64"}><Link href={`/${params.year}/players/${player.id}`}>{player.name}</Link>{showTeam && ` (${player.team.name})`}</td>
                 <td className="w-24">{twoPlaces(player.points)}</td></tr>)}
         </tbody>
