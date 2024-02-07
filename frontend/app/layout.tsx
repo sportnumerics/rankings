@@ -4,6 +4,7 @@ import './globals.css'
 import { Fira_Code } from 'next/font/google'
 import { getYears, latestYear } from './server/years';
 import { getDivs } from './server/divs';
+import Footer from './components/Footer';
 
 const inter = Fira_Code({ subsets: ['latin'] })
 
@@ -26,6 +27,7 @@ export default async function RootLayout({
           <div className="mx-auto container px-4">
             {children}
           </div>
+          <Footer />
         </div>
       </body>
       <GoogleAnalytics gaId="G-EP0CT5LECX" />

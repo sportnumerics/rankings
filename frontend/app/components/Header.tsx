@@ -1,6 +1,6 @@
 'use client';
 import { useContext, useMemo } from "react";
-import { default as NextLink } from "next/link";
+import { LinkProps, default as NextLink } from "next/link";
 import { useLocation } from "../hooks";
 import { HasDivision, HasType, HasYear, Location, linkToDiv, linkToPlayers, linkToTeams, linkToYear } from "../navigation";
 import { Bars3Icon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
@@ -30,7 +30,7 @@ export default function Header({ years, divs, currentYear }: Props) {
 function HeaderPresenter({ years, divs, location, division, currentYear, type, teamsHref, playersHref }: { years: Year[], divs: Division[], location: Location, division?: Division, currentYear: string, type: string, teamsHref?: string, playersHref?: string }) {
     return <NavBar>
         <Nav>
-            <div className="text-2xl font-black tracking-widest italic"><NextLink href="/">S#</NextLink></div>
+            <div className="text-2xl font-black tracking-widest italic"><NavLink href="/">S#</NavLink></div>
         </Nav>
         <DropdownNav content={`${(location as HasYear)?.year ?? "Years"}`}>
             {years.map(year => {
@@ -48,7 +48,15 @@ function HeaderPresenter({ years, divs, location, division, currentYear, type, t
             <DropdownItem isActive={!teamsHref} href={teamsHref}>Teams</DropdownItem>
             <DropdownItem isActive={!playersHref} href={playersHref}>Players</DropdownItem>
         </DropdownNav>}
+        <Nav>
+            <NavLink href="/about">About</NavLink>
+        </Nav>
     </NavBar>;
+}
+
+function NavLink(props: Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps> & LinkProps & { children?: React.ReactNode }) {
+    const overlay = useContext(OverlayContext);
+    return <NextLink onClick={e => overlay.close(true)} {...props}>{props.children}</NextLink>
 }
 
 function NavBar({ children }: { children: React.ReactNode }) {
@@ -77,8 +85,8 @@ function Nav({ children, isActive }: { children: React.ReactNode, isActive?: boo
 function DropdownNav({ content, children }: { content: React.ReactNode, children: React.ReactNode }) {
     const MemoizedDropdownControl = useMemo(() => function DropdownControl({ toggle, isOpen }: OverlayControlProps) {
         const Icon = isOpen ? ChevronDownIcon : ChevronRightIcon;
-        return <button className="w-full text-left" onClick={toggle} >
-            <div className={`leading-8 flex px-8 py-6 ${activeOrHover(isOpen, "bg-black/10")}`}><Icon className="w-6 h-6 m-auto mr-3" />{content}</div>
+        return <button className={`w-full ${activeOrHover(isOpen, "bg-black/10")}`} onClick={toggle} >
+            <div className={`w-fit leading-8 flex px-8 py-6`}><Icon className="w-6 h-6 m-auto mr-3" />{content}</div>
         </button>;
     }, [content]);
 

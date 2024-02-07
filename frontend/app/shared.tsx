@@ -49,6 +49,10 @@ export function H3({ children }: PropsWithChildren<{}>) {
     return <h3 className="text font-bold tracking-wider my-2">{children}</h3>;
 }
 
+export function P({ children }: PropsWithChildren<{}>) {
+    return <div className="py-2">{children}</div>;
+}
+
 export function LoadingText() {
     return <Skeleton className="h-4 w-80 my-1" />
 }
