@@ -1,12 +1,12 @@
 import os
 import json
-from datetime import datetime
 import pathlib
 import logging
 import numpy as np
 from ..shared import shared
 from scipy.sparse import coo_matrix
 from scipy.sparse import linalg
+from dataclasses import dataclass
 
 LOGGER = logging.getLogger(__name__)
 
@@ -248,6 +248,8 @@ def calculate_ratings(schedules):
 
     games = game_map.values()
 
+    team_groups = group_teams_by_games(games)
+
     id_to_idx, idx_to_id = index_ids(
         [id for game in games for id in [game['opponent'], game['team']]])
     n_teams = len(idx_to_id)
@@ -273,6 +275,7 @@ def calculate_ratings(schedules):
             'offense': raw_ratings[i],
             'defense': raw_ratings[i + offset],
             'overall': overall[i],
+            'group': group_for_team(team_groups, team).id
         }
 
     return results, hfa
@@ -337,3 +340,47 @@ def game_id(team_id, opponent_id, date):
         return f'{team_id}_{opponent_id}_{date}'
     else:
         return f'{opponent_id}_{team_id}_{date}'
+
+
+@dataclass
+class Group:
+    id: str
+    games: list
+    team_ids: set[str]
+
+
+def group_teams_by_games(games):
+    groups = []
+
+    for game in games:
+        team_id = game['team']
+        opponent_id = game['opponent']
+        team_group = group_for_team(groups, team_id)
+        opponent_group = group_for_team(groups, opponent_id)
+        if (team_group is None and opponent_group is None):
+            groups.append(Group(
+                id=len(groups),
+                games=[game],
+                team_ids=set([team_id, opponent_id])))
+        elif (team_group is None):
+            opponent_group.games.append(game)
+            opponent_group.team_ids.add(team_id)
+        elif (opponent_group is None):
+            team_group.games.append(game)
+            team_group.team_ids.add(opponent_id)
+        elif (team_group == opponent_group):
+            team_group.games.append(game)
+        else:
+            groups.remove(opponent_group)
+            team_group.games.append(game)
+            team_group.games.extend(opponent_group.games)
+            team_group.team_ids.update(opponent_group.team_ids)
+
+    return groups
+
+
+def group_for_team(groups: list[Group], team_id: str):
+    for group in groups:
+        if team_id in group.team_ids:
+            return group
+    return None
