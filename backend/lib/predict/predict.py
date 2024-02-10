@@ -352,6 +352,7 @@ class Group:
 def group_teams_by_games(games):
     groups = []
 
+    idx = 0
     for game in games:
         team_id = game['team']
         opponent_id = game['opponent']
@@ -359,9 +360,10 @@ def group_teams_by_games(games):
         opponent_group = group_for_team(groups, opponent_id)
         if (team_group is None and opponent_group is None):
             groups.append(Group(
-                id=len(groups),
+                id=idx,
                 games=[game],
                 team_ids=set([team_id, opponent_id])))
+            idx += 1
         elif (team_group is None):
             opponent_group.games.append(game)
             opponent_group.team_ids.add(team_id)

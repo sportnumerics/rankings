@@ -35,6 +35,7 @@ export interface TeamRating {
     offense: number;
     defense: number;
     overall: number;
+    group?: number;
 }
 
 export interface PlayerRating {
@@ -75,14 +76,14 @@ export interface ScheduleGame {
     home: boolean;
     date: string;
     details: GameDetailsLink;
-    result: GameResult;
+    result: ScheduleGameResult;
 }
 
 export interface GameDetailsLink {
     url: string;
 }
 
-export interface GameResult {
+export interface ScheduleGameResult {
     points_for: number;
     points_against: number;
 }

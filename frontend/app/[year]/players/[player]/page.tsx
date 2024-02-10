@@ -16,6 +16,16 @@ export default async function Page({ params }: { params: Params }) {
     const player = await getPlayerStats(params);
     const teams = await getRankedTeams({ div: player.team.div, ...params });
 
+    const stats = player.stats.map(line => {
+        const rankedOpponent = teams[line.opponent.id];
+        const opponent = rankedOpponent ?? line.opponent;
+        return {
+            ...line,
+            knownOpponent: Boolean(rankedOpponent),
+            opponent
+        }
+    })
+
     return <>
         <H1>{player.name}</H1>
         <H2><Link href={`/${params.year}/teams/${player.team.id}`}>{player.team.name}</Link></H2>
@@ -24,9 +34,9 @@ export default async function Page({ params }: { params: Params }) {
             <Table>
                 <TableHeader><tr><th>Date</th><th>Opponent</th><th>G</th><th>A</th><th>GB</th></tr></TableHeader>
                 <tbody>
-                    {player.stats.map(line => <tr key={line.game_id}>
+                    {stats.map(line => <tr key={line.game_id}>
                         <td className="w-16"><GameDate id={line.game_id} date={line.date} link={Boolean(line.g || line.a || line.gb)} year={params.year} hideTime /></td>
-                        <td className="w-64"><Opponent id={line.opponent.id} name={line.opponent.name} teams={teams} year={params.year} /></td>
+                        <td className="w-64"><Opponent opponent={line.opponent} link={line.knownOpponent} year={params.year} /></td>
                         <td className="w-8">{line.g}</td>
                         <td className="w-8">{line.a}</td>
                         <td className="w-8">{line.gb}</td>

@@ -1,7 +1,7 @@
 import moment from "moment";
 
 export function twoPlaces(rating?: number): string {
-    return rating ? (Math.round(rating * 100) / 100.0).toString() : '--';
+    return rating ? rating.toFixed(2) : '--';
 }
 
 export function datetime(date: string, hideTime: boolean = true): string {
