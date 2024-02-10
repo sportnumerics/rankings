@@ -57,7 +57,7 @@ export default async function Page({ params }: { params: Params }) {
                     </tr>)}
                 </tbody>
             </Table>
-            {games.find(game => game.prediction) ? <div className="text-slate-300 italic p-2 text-end"><sup>*</sup>projection</div> : null}
+            {games.find(game => !game.result && game.prediction) ? <div className="text-slate-300 italic p-2 text-end"><sup>*</sup>projection</div> : null}
         </Card>
         <PlayersCard title="Top Scoring Players" players={rankedPlayers.slice(0, 20)} params={params} />
     </>
