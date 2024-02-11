@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import 'server-only';
 import { GetObjectCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { promises } from "fs";
@@ -56,58 +57,23 @@ class LocalFileSource implements Source {
 class CachedSource implements Source {
     readonly origin: Source;
     readonly ttl: number;
-    objectCache: Cache<string>;
-    listCache: Cache<string[]>;
+    objectCache: (key: string) => Promise<string>;
+    listCache: (key: string) => Promise<string[]>;
 
     constructor(origin: Source, ttl: number) {
         this.origin = origin;
         this.ttl = ttl;
-        this.objectCache = new Cache(k => origin.get(k), ttl);
-        this.listCache = new Cache(k => origin.list(k), ttl);
+        this.objectCache = cache(k => origin.get(k))
+        this.listCache = cache(k => origin.list(k));
     }
 
     async get(key: string) {
-        return this.objectCache.get(key);
+        return this.objectCache(key);
     }
 
     async list(key: string) {
-        return this.listCache.get(key);
+        return this.listCache(key);
     }
-}
-
-type Loader<T> = (key: string) => Promise<T>;
-
-class Cache<T> {
-    readonly loader: Loader<T>;
-    readonly ttl: number;
-    objects: {[key: string]: Entry<T>} = {}
-
-    constructor(loader: (key: string) => Promise<T>, ttl: number) {
-        this.loader = loader;
-        this.ttl = ttl;
-    }
-
-    async get(key: string) {
-        const obj = this.objects[key]
-        const now = new Date();
-        if (obj && obj.expires > now) {
-            return obj.value;
-        }
-        const value = await this.loader(key)
-        this.objects[key] = { value, expires: getExpires(this.ttl) };
-        return value;
-    }
-}
-
-function getExpires(ttl: number) {
-    const now = new Date();
-    now.setSeconds(now.getSeconds() + ttl);
-    return now;
-}
-
-interface Entry<T> {
-    value: T
-    expires: Date
 }
 
 export class NotFoundError extends Error {
