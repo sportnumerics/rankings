@@ -3,11 +3,13 @@ import 'server-only';
 import { GetObjectCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { promises } from "fs";
 import { join } from "path";
+import Data, { create } from './Data';
 
 interface Source {
-    get(key: string): Promise<string>
+    get(key: string): Promise<Data<any>>
     list(key: string): Promise<string[]>
 }
+
 
 class S3Source implements Source {
     readonly client = new S3Client({});
@@ -22,8 +24,10 @@ class S3Source implements Source {
         if (!response.Body) {
             throw new NotFoundError();
         }
-        const body = await response.Body?.transformToString()
-        return body;
+        return create(
+            JSON.parse(await response.Body?.transformToString()),
+            response.LastModified
+        );
     }
 
     async list(key: string): Promise<string[]> {
@@ -46,7 +50,12 @@ class LocalFileSource implements Source {
     readonly basePath = process.env.DATA_PATH || '';
 
     async get(key: string) {
-        return await promises.readFile(join(this.basePath, key), 'utf8');
+        const filename = join(this.basePath, key);
+        const [stats, file] = await Promise.all([promises.stat(filename), promises.readFile(filename, 'utf8')]);
+        return create(
+            JSON.parse(file),
+            stats.mtime
+        );
     }
 
     async list(key: string) {
@@ -57,7 +66,7 @@ class LocalFileSource implements Source {
 class CachedSource implements Source {
     readonly origin: Source;
     readonly ttl: number;
-    objectCache: (key: string) => Promise<string>;
+    objectCache: (key: string) => Promise<Data<any>>;
     listCache: (key: string) => Promise<string[]>;
 
     constructor(origin: Source, ttl: number) {

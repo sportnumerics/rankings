@@ -9,15 +9,15 @@ export async function GET(request: NextRequest, { params: { year } }: { params: 
     const game = request.nextUrl.searchParams.get('game');
 
     if (team) {
-        const schedule = await getTeam({ year, team });
+        const { body: schedule } = await getTeam({ year, team });
         return Response.json(schedule.team.div);
     } else if (player) {
-        const stats = await getPlayerStats({ year, player });
-        const schedule = await getTeam({ year, team: stats.team.id });
+        const { body: stats } = await getPlayerStats({ year, player });
+        const { body: schedule } = await getTeam({ year, team: stats.team.id });
         return Response.json(schedule.team.div)
     } else if (game) {
-        const g = await getGame({ year, game });
-        return Response.json(g.home_team.div);
+        const { body } = await getGame({ year, game });
+        return Response.json(body.home_team.div);
     } else {
         return Response.json({ error: 'Must supply either a `team` or `player` search parameter.' }, { status: 400 });
     }

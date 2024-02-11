@@ -6,6 +6,7 @@ import Link from "@/app/components/Link";
 import Opponent from "@/app/components/Opponent";
 import { getRankedTeams } from "@/app/server/teams";
 import GameDate from "@/app/components/GameLink";
+import LastUpdated from "@/app/components/LastModified";
 
 interface Params {
     year: string;
@@ -13,8 +14,8 @@ interface Params {
 }
 
 export default async function Page({ params }: { params: Params }) {
-    const player = await getPlayerStats(params);
-    const teams = await getRankedTeams({ div: player.team.div, ...params });
+    const { body: player, lastModified } = await getPlayerStats(params);
+    const { body: teams } = await getRankedTeams({ div: player.team.div, ...params });
 
     const stats = player.stats.map(line => {
         const rankedOpponent = teams[line.opponent.id];
@@ -44,5 +45,6 @@ export default async function Page({ params }: { params: Params }) {
                 </tbody>
             </Table>
         </Card>
+        <LastUpdated lastModified={lastModified} />
     </>
 }

@@ -8,6 +8,7 @@ import PlayersCard from "@/app/components/PlayersCard";
 import Opponent from "@/app/components/Opponent";
 import Rank from "@/app/components/Rank";
 import GameDate from "@/app/components/GameLink";
+import LastUpdated from "@/app/components/LastModified";
 
 interface Params {
     year: string;
@@ -16,11 +17,11 @@ interface Params {
 }
 
 export default async function Page({ params }: { params: Params }) {
-    const schedule = await getTeam(params);
+    const { body: schedule, lastModified } = await getTeam(params);
     const teamPromise = getRankedTeams({ year: params.year, div: schedule.team.div });
     const playersPromise = getRankedPlayers({ year: params.year, team: schedule.team.id });
     const divPromise = getDiv(schedule.team.div);
-    const [teams, players, div] = await Promise.all([teamPromise, playersPromise, divPromise]);
+    const [{ body: teams }, { body: players }, div] = await Promise.all([teamPromise, playersPromise, divPromise]);
 
     const rankedPlayers = Object.values(players);
     rankedPlayers.sort(by(t => t.rank));
@@ -60,6 +61,7 @@ export default async function Page({ params }: { params: Params }) {
             {games.find(game => !game.result && game.prediction) ? <div className="text-slate-300 italic p-2 text-end"><sup>*</sup>projection</div> : null}
         </Card>
         <PlayersCard title="Top Scoring Players" players={rankedPlayers.slice(0, 20)} params={params} />
+        <LastUpdated lastModified={lastModified} />
     </>
 }
 

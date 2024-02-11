@@ -4,6 +4,7 @@ import { GameStatLine } from "@/app/server/types";
 import { longDatetime } from "@/app/formatting";
 import { Card, ExternalLink, H1, H2, Table, TableHeader } from "@/app/shared";
 import Link from "@/app/components/Link";
+import LastUpdated from "@/app/components/LastModified";
 
 interface Params {
     year: string;
@@ -12,7 +13,7 @@ interface Params {
 }
 
 export default async function Page({ params }: { params: Params }) {
-    const game = await getGame(params);
+    const { body: game, lastModified } = await getGame(params);
 
     function StatLines({ stats }: { stats: GameStatLine[] }) {
         const sortedStats = stats.slice();
@@ -50,5 +51,6 @@ export default async function Page({ params }: { params: Params }) {
         <Card title={game.home_team.name}>
             <StatLines stats={game.home_stats} />
         </Card>
+        <LastUpdated lastModified={lastModified} />
     </>
 }
