@@ -5,7 +5,7 @@ def parse_table(table, extractor):
     rows = []
     for raw_row in table.tbody.find_all('tr'):
         rows.append({row[0]: row[1] for row in _parse_row(
-            raw_row, col_mapping, extractor) if row})
+            raw_row, col_mapping, extractor) if row and row[0] and row[1]})
     return rows
 
 
