@@ -120,7 +120,7 @@ class Ncaa():
                     game['id'] = 'ml-ncaa-' + url_match.group('id')
 
             games.append(game)
-        return {'team': team, 'games': games}
+        return games
 
     TEAM_HREF_REGEX = re.compile(r'/teams/(?P<id>\d+)')
     TEAM_NAME_REGEX = re.compile(
@@ -206,6 +206,9 @@ class Ncaa():
 
     def get_limiter_session_args(self):
         return {'per_minute': 30}
+
+    def convert_roster(self, html, team):
+        return None
 
     PLAYER_HREF_REGEX = re.compile(
         r'/player/index\?game_sport_year_ctl_id=(?P<gsycid>\d+)&(amp;)?org_id=(?P<org_id>\d+)&(amp;)?stats_player_seq=(?P<spseq>\d+)'

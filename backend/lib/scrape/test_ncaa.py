@@ -43,10 +43,9 @@ class TestScrape(unittest.TestCase):
         html = fixtures.ncaa_game_by_game()
         n = ncaa.Ncaa()
         team = {'name': 'Air Force', 'sport': 'ml', 'source': 'ncaa'}
-        schedule = n.convert_schedule_html(html, team)
-        self.assertEqual(schedule['team'], team)
+        games = n.convert_schedule_html(html, team)
         self.assertEqual(
-            schedule['games'][0], {
+            games[0], {
                 'id': 'ml-ncaa-1822151',
                 'date': '2020-02-01',
                 'opponent': {
@@ -65,7 +64,7 @@ class TestScrape(unittest.TestCase):
                 }
             })
         self.assertEqual(
-            list(map(lambda g: g['opponent']['name'], schedule['games'])), [
+            list(map(lambda g: g['opponent']['name'], games)), [
                 'Duke', 'Denver', 'Utah', 'Cleveland St.', 'St. Bonaventure',
                 'Virginia', 'Canisius', 'Furman'
             ])
@@ -125,10 +124,10 @@ class TestScrape(unittest.TestCase):
         html = fixtures.malone_game_by_game()
         n = ncaa.Ncaa()
         team = {'name': 'Malone', 'sport': 'ml', 'source': 'ncaa'}
-        schedule = n.convert_schedule_html(html, team)
+        games = n.convert_schedule_html(html, team)
         self.assertEqual(team['alt_id'], '571523')
         self.assertEqual(
-            schedule['games'][0], {
+            games[0], {
                 'date': '2024-02-08',
                 'opponent': {
                     'name': 'SCAD Savannah',
@@ -139,7 +138,7 @@ class TestScrape(unittest.TestCase):
                 'sport': 'ml'
             })
         self.assertEqual(
-            schedule['games'][1], {
+            games[1], {
                 'date': '2024-02-10',
                 'opponent': {
                     'name': 'Shorter',

@@ -23,6 +23,9 @@ class TestMcla(unittest.TestCase):
                 'schedule': {
                     'url': 'https://mcla.us/team/alabama/2020/schedule.html'
                 },
+                'roster': {
+                    'url': 'https://mcla.us/team/alabama/2020/roster.html'
+                },
                 'year': '2020',
                 'div': 'mcla1',
                 'id': 'ml-mcla-alabama',
@@ -42,6 +45,9 @@ class TestMcla(unittest.TestCase):
                     'url':
                     'https://mcla.us/team/arizona_state/2020/schedule.html'
                 },
+                'roster': {
+                    'url': 'https://mcla.us/team/arizona_state/2020/roster.html'
+                },
                 'year': '2020',
                 'div': 'mcla1',
                 'id': 'ml-mcla-arizona-state',
@@ -58,10 +64,9 @@ class TestMcla(unittest.TestCase):
             'sport': 'ml',
             'source': 'mcla'
         }
-        schedule = m.convert_schedule_html(html, team)
-        self.assertEqual(schedule['team'], team)
+        games = m.convert_schedule_html(html, team)
         self.assertEqual(
-            schedule['games'][0], {
+            games[0], {
                 'id': 'ml-mcla-23539',
                 'date': '2020-02-09T13:00:00',
                 'opponent': {
@@ -80,7 +85,7 @@ class TestMcla(unittest.TestCase):
                 }
             })
         self.assertEqual(
-            list(map(lambda t: t['opponent']['name'], schedule['games'])), [
+            list(map(lambda t: t['opponent']['name'], games)), [
                 'Dominican', 'USC', 'California', 'Cal Poly', 'Santa Clara',
                 'Georgia Tech', 'Texas A&M', 'San Diego State', 'UCLA',
                 'Brigham Young', 'Concordia-Irvine', 'Chapman', 'Grand Canyon',
@@ -116,13 +121,13 @@ class TestMcla(unittest.TestCase):
         })
         self.assertEqual(
             game_details['home_stats'][0], {
+                'number': 5,
                 'player': {
                     'name': 'Ben Taylor',
                     'id': 'ml-mcla-56639',
                     'external_link':
                     'https://mcla.us/player/56639/ben_taylor.html'
                 },
-                'number': 5,
                 'position': 'M',
                 'gb': 2,
                 'g': 1,
@@ -144,3 +149,39 @@ class TestMcla(unittest.TestCase):
                 'g': 0,
                 'a': 0
             })
+
+    def test_mcla_roster(self):
+        html = fixtures.mcla_roster()
+        m = mcla.Mcla()
+        team = {
+            'name': 'Alabama',
+            'year': '2024',
+            'sport': 'ml',
+            'source': 'mcla'
+        }
+        roster = m.convert_roster(html, team)
+
+        self.assertEqual(roster['coach']['name'], 'Shane Ryan')
+        self.assertEqual(roster['coach']['id'], 'ml-mcla-2417')
+        self.assertEqual(roster['coach']['external_link'],
+                         'https://mcla.us/coach/2417/shane_ryan')
+        self.assertEqual(roster['conference']['name'],
+                         'SouthEastern Lacrosse Conference')
+        self.assertEqual(roster['conference']['id'], 'ml-mcla-selc')
+        self.assertEqual(roster['conference']['external_link'],
+                         'https://mcla.us/conference/selc')
+        self.assertEqual(len(roster['players']), 48)
+        first_player = roster['players'][0]
+        self.assertEqual(first_player['number'], 2)
+        self.assertEqual(first_player['player'], {
+            'id': 'ml-mcla-56433',
+            'name': 'Jack Swartwood',
+            'external_link': 'https://mcla.us/player/56433/jack_swartwood.html'
+        })
+        self.assertEqual(first_player['class'], 'Jr')
+        self.assertEqual(first_player['eligibility'], 'Jr')
+        self.assertEqual(first_player['position'], 'Mid')
+        self.assertEqual(first_player['height'], '5\' 8"')
+        self.assertEqual(first_player['weight'], '160')
+        self.assertEqual(first_player['high_school'], 'Knoxville Catholic')
+        self.assertEqual(first_player['hometown'], 'Knoxville, TN')

@@ -1,8 +1,8 @@
-import requests
 import re
 from bs4 import BeautifulSoup
 import datetime
 import dateutil.parser as parser
+from .tables import parse_table
 
 TIMEZONES = {
     'PDT': -7 * 3600,
@@ -36,6 +36,9 @@ class Mcla():
                     'schedule': {
                         'url':
                         f'https://mcla.us/team/{slug}/{year}/schedule.html'
+                    },
+                    'roster': {
+                        'url': f'https://mcla.us/team/{slug}/{year}/roster.html'
                     },
                     'year': location['year'],
                     'id': f'ml-mcla-{self._normalize_slug(slug)}',
@@ -96,7 +99,7 @@ class Mcla():
 
             games.append(game)
 
-        return {'team': team, 'games': games}
+        return games
 
     def cross_link_schedules(self, schedules):
         pass
@@ -138,55 +141,101 @@ class Mcla():
 
         return result
 
-    def get_limiter_session_args(self):
-        return {}
-
     def _parse_stats_tables(self, tables, sport, source):
         stats = []
         for table in tables:
-            col_mapping = {}
-            for i, heading in enumerate(table.thead.find_all('th')):
-                col_mapping[i] = ''.join(heading.stripped_strings)
-            for raw_row in table.tbody.find_all('tr'):
-                row = {}
-                for i, cell in enumerate(raw_row.find_all('td')):
-                    if cell.string == "No recorded player stats":
-                        break
-                    col_name = col_mapping[i]
-                    if col_name == '#':
-                        row['number'] = int(cell.string)
-                    if col_name == 'Field Player' or col_name == 'Goalie':
-                        row['player'] = {
-                            'id':
-                            self._parse_player_link_into_id(
-                                sport, source, cell.a['href']),
-                            'name':
-                            cell.a.string,
-                            'external_link':
-                            cell.a['href']
-                        }
-                    if col_name == 'Pos':
-                        row['position'] = cell.string
-                    if col_name == 'FO':
-                        won, lost = cell.string.split('-')
-                        if won or lost:
-                            row['face_offs'] = {
-                                'won': won or 0,
-                                'lost': lost or 0
-                            }
-                    if col_name == 'GB':
-                        row['gb'] = int(cell.string)
-                    if col_name == 'G':
-                        row['g'] = int(cell.string)
-                    if col_name == 'A':
-                        row['a'] = int(cell.string)
-                    if col_name == 'S':
-                        row['s'] = int(cell.string)
-                    if col_name == 'GA':
-                        row['ga'] = int(cell.string)
-                if row:
-                    stats.append(row)
+            rows = parse_table(table, lambda col, cell: self._parse_stats_table_row(
+                sport, source, col, cell))
+            stats.extend(rows)
         return stats
+
+    def get_limiter_session_args(self):
+        return {}
+
+    def convert_roster(self, html, team):
+        soup = BeautifulSoup(html, 'html.parser')
+        result = {
+            'team': team
+        }
+        head_coach = soup.find(class_='head-coach')
+        result['coach'] = {
+            'name': next(head_coach.stripped_strings),
+            'id': self._parse_coach_link_into_id(team['sport'], team['source'], head_coach.a['href']),
+            'external_link': 'https://mcla.us' + head_coach.a['href']
+        }
+        conference = soup.find(class_='conference')
+        result['conference'] = {
+            'name': next(conference.stripped_strings),
+            'id': self._parse_conference_link_into_id(team['sport'], team['source'], conference.a['href']),
+            'external_link': 'https://mcla.us' + conference.a['href']
+        }
+        table = soup.find(class_='team-roster')
+        result['players'] = parse_table(table, lambda col, cell: self._parse_roster_table_row(
+            team['sport'], team['source'], col, cell))
+        return result
+
+    def _parse_roster_table_row(self, sport, source, col_name, cell):
+        if col_name == '#':
+            return ['number', int(cell.string)]
+        if col_name == 'Player':
+            last, first = ''.join(cell.a.stripped_strings).split(',')
+            return ['player', {
+                'id':
+                self._parse_player_link_into_id(
+                    sport, source, cell.a['href']),
+                'name': f'{first.strip()} {last.strip()}',
+                'external_link':
+                'https://mcla.us' + cell.a['href']
+            }]
+        if col_name == 'Yr':
+            return ['class', cell.string]
+        if col_name == 'El':
+            return ['eligibility', cell.string]
+        if col_name == 'Pos':
+            return ['position', cell.string]
+        if col_name == 'HT':
+            return ['height', cell.string]
+        if col_name == 'WT':
+            return ['weight', cell.string]
+        if col_name == 'High School':
+            return ['high_school', cell.string]
+        if col_name == 'Hometown':
+            return ['hometown', cell.string]
+
+    def _parse_stats_table_row(self, sport, source, col_name, cell):
+        if col_name == '#':
+            return ['number', int(cell.string)]
+        if col_name == 'Field Player' or col_name == 'Goalie':
+            return ['player', {
+                'id':
+                self._parse_player_link_into_id(
+                    sport, source, cell.a['href']),
+                'name':
+                cell.a.string,
+                'external_link':
+                cell.a['href']
+            }]
+        if col_name == 'Pos':
+            return ['position', cell.string]
+        if col_name == 'FO':
+            won, lost = cell.string.split('-')
+            if won or lost:
+                return ['face_offs', {
+                    'won': won or 0,
+                    'lost': lost or 0
+                }]
+            else:
+                return None
+        if col_name == 'GB':
+            return ['gb', int(cell.string)]
+        if col_name == 'G':
+            return ['g', int(cell.string)]
+        if col_name == 'A':
+            return ['a', int(cell.string)]
+        if col_name == 'S':
+            return ['s', int(cell.string)]
+        if col_name == 'GA':
+            return ['ga', int(cell.string)]
 
     def _normalize_slug(self, slug):
         return re.sub(r'\_', '-', slug)
@@ -199,9 +248,20 @@ class Mcla():
         else:
             return None
 
+    PLAYER_REGEX = re.compile(r'^(https://mcla.us)?/player/(?P<id>\d+)/.*')
+
     def _parse_player_link_into_id(self, sport, source, link):
+        link_match = self.PLAYER_REGEX.match(link)
+        return '-'.join([sport, source, link_match.group('id')])
+
+    def _parse_conference_link_into_id(self, sport, source, link):
         link_parts = link.split('/')
-        id = link_parts[4]
+        id = link_parts[2]
+        return '-'.join([sport, source, id])
+
+    def _parse_coach_link_into_id(self, sport, source, link):
+        link_parts = link.split('/')
+        id = link_parts[2]
         return '-'.join([sport, source, id])
 
 

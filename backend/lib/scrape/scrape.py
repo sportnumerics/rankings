@@ -103,10 +103,14 @@ class ScrapeRunner():
             if self.div and self.div != team['div']:
                 continue
             self.log.info(f'scraping schedule for {team["name"]}')
-            schedule = self.scrape_schedule(team)
-            if not schedule:
+            games = self.scrape_schedule(team)
+            if not games:
                 self.log.warn(f'No schedule for {team["name"]}')
                 continue
+            schedule = {'team': team, 'games': games}
+            roster = self.scrape_roster(team)
+            if roster:
+                schedule['roster'] = roster
             schedules.append(schedule)
 
         self.cross_link_schedules(schedules)
@@ -155,13 +159,25 @@ class ScrapeRunner():
                     f.write(html)
 
     def scrape_schedule(self, team):
-        schedule = team['schedule']
-        html = self.fetch(schedule)
+        schedule_location = team['schedule']
+        html = self.fetch(schedule_location)
         try:
             return self.scraper.convert_schedule_html(html, team)
         except Exception as e:
             self.log.error(
-                f'Unable to convert schedule html from {schedule}: {e}')
+                f'Unable to convert schedule html from {schedule_location}: {e}')
+            traceback.print_exception(e)
+
+    def scrape_roster(self, team):
+        if 'roster' not in team:
+            return None
+        roster_location = team['roster']
+        html = self.fetch(roster_location)
+        try:
+            return self.scraper.convert_roster(html, team)
+        except Exception as e:
+            self.log.error(
+                f'Unable to convert roster html from {roster_location}: {e}')
             traceback.print_exception(e)
 
     def cross_link_schedules(self, schedules):
