@@ -81,12 +81,15 @@ def rank_players(args, schedules):
         player['stats'].sort(key=lambda x: x['date'])
 
     for game in games:
-        for entry in game.get('home_stats', []):
-            add_player_stats(entry, game['home_team'], game['away_team'],
-                             game['id'], game['date'])
-        for entry in game.get('away_stats', []):
-            add_player_stats(entry, game['away_team'], game['home_team'],
-                             game['id'], game['date'])
+        try:
+            for entry in game.get('home_stats', []):
+                add_player_stats(entry, game['home_team'], game['away_team'],
+                                 game['id'], game['date'])
+            for entry in game.get('away_stats', []):
+                add_player_stats(entry, game['away_team'], game['home_team'],
+                                 game['id'], game['date'])
+        except Exception as e:
+            LOGGER.error(f'Error adding stats from game {game}')
 
     LOGGER.info(
         f'Calculating player ratings for {len(players)} players from {len(games)} games in {year}'
@@ -164,8 +167,8 @@ def rank_players(args, schedules):
 
         return ratings
 
-    goal_ratings = get_ratings(lambda e: e['g'])
-    assist_ratings = get_ratings(lambda e: e['a'])
+    goal_ratings = get_ratings(lambda e: e.get('g', 0))
+    assist_ratings = get_ratings(lambda e: e.get('a', 0))
 
     player_ratings = []
     for i in range(0, n_players):

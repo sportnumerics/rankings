@@ -4,8 +4,10 @@ def parse_table(table, extractor):
         col_mapping[i] = ''.join(heading.stripped_strings)
     rows = []
     for raw_row in table.tbody.find_all('tr'):
-        rows.append({row[0]: row[1] for row in _parse_row(
-            raw_row, col_mapping, extractor) if row and row[0] and row[1]})
+        parsed_row = {row[0]: row[1] for row in _parse_row(
+            raw_row, col_mapping, extractor) if row and row[0] and row[1]}
+        if parsed_row:
+            rows.append(parsed_row)
     return rows
 
 
