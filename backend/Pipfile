@@ -18,6 +18,7 @@ exceptiongroup = "*"
 typing-extensions = "*"
 pulumi = "*"
 requests-ratelimiter = "*"
+dataclasses-json = "*"
 
 [dev-packages]
 

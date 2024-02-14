@@ -1,8 +1,10 @@
+from collections.abc import Iterator
 import re
 from bs4 import BeautifulSoup
 import datetime
 import dateutil.parser as parser
 from .tables import parse_table
+from .types import Team, Location, ScheduleGame, TeamSummary, Game, ScheduleGameResult, GameResult, GameStatLine, Roster, RosterPlayer, Coach, Conference, PlayerSummary
 
 TIMEZONES = {
     'PDT': -7 * 3600,
@@ -15,45 +17,44 @@ TIMEZONES = {
     'EST': -5 * 3600
 }
 
+DIVISION_MAP = {'Division I': '1', 'Division II': '2', 'Division III': '3'}
+
 
 class Mcla():
 
-    def get_team_list_urls(self, year):
-        yield {'url': f'https://mcla.us/teams/{year}', 'year': year}
+    def get_team_list_urls(self, year: str) -> Location:
+        yield Location(url=f'https://mcla.us/teams/{year}')
 
-    def convert_team_list_html(self, html, location):
+    def convert_team_list_html(self, html: str, year: str,
+                               location: Location) -> Iterator[Team]:
         soup = BeautifulSoup(html, 'html.parser')
         division_tables = soup.find_all('table', class_='team-roster')
         for table in division_tables:
-            divison_text = next(table.parent.header.stripped_strings)
+            division_text = next(table.parent.header.stripped_strings)
             for row in table.find_all('tr'):
                 link = row.find('a')
                 link_parts = link['href'].split('/')
                 slug = link_parts[2]
-                year = location['year']
-                yield {
-                    'name': next(link.stripped_strings),
-                    'schedule': {
-                        'url':
-                        f'https://mcla.us/team/{slug}/{year}/schedule.html'
-                    },
-                    'roster': {
-                        'url': f'https://mcla.us/team/{slug}/{year}/roster.html'
-                    },
-                    'year': location['year'],
-                    'id': f'ml-mcla-{self._normalize_slug(slug)}',
-                    'div': 'mcla' + DIVISON_MAP[divison_text],
-                    'sport': 'ml',
-                    'source': 'mcla'
-                }
+                yield Team(
+                    name=next(link.stripped_strings),
+                    schedule=Location(
+                        url=f'https://mcla.us/team/{slug}/{year}/schedule.html'
+                    ),
+                    roster=Location(
+                        url=f'https://mcla.us/team/{slug}/{year}/roster.html'),
+                    year=year,
+                    id=f'ml-mcla-{self._normalize_slug(slug)}',
+                    div='mcla' + DIVISION_MAP[division_text],
+                    sport='ml',
+                    source='mcla')
 
-    def convert_schedule_html(self, html, team):
+    def convert_schedule_html(self, html: str,
+                              team: Team) -> Iterator[ScheduleGame]:
         soup = BeautifulSoup(html, 'html.parser')
         team_schedule = soup.find('table', class_='team-schedule')
         rows = team_schedule.tbody.find_all('tr') if team_schedule else []
         games = []
         for row in rows:
-            game = {}
             cols = list(row.find_all('td'))
             opponent_col = cols[0]
             date_col = cols[2]
@@ -61,134 +62,142 @@ class Mcla():
 
             opponent_parts = list(opponent_col.stripped_strings)
             if len(opponent_parts) == 1:
-                game['opponent'] = {'name': opponent_parts[0]}
-                game['home'] = True
+                opponent = TeamSummary(name=opponent_parts[0])
+                home = True
             else:
-                game['opponent'] = {'name': opponent_parts[1]}
-                game['home'] = False
-
-            game['sport'] = team['sport']
-            game['source'] = team['source']
+                opponent = TeamSummary(name=opponent_parts[1])
+                home = False
 
             opp_link = opponent_col.a['href']
-            opp_id = self._parse_team_link_into_id(team['sport'],
-                                                   team['source'], opp_link)
-            if opp_id:
-                game['opponent']['id'] = opp_id
+            opponent.id = self._parse_team_link_into_id(
+                team.sport, team.source, opp_link)
 
-            date = ' '.join([team['year']] + list(date_col.stripped_strings))
-            game['date'] = datetime.datetime.strptime(
+            date = ' '.join([team.year] + list(date_col.stripped_strings))
+            date = datetime.datetime.strptime(
                 date, '%Y %a %b %d %I:%M%p').isoformat()
             game_details_url = date_col.a['href']
-            game['details'] = {'url': game_details_url}
-            game['id'] = '-'.join([
-                team['sport'], team['source'],
-                game_details_url.split('/')[4]
-            ])
+            details = Location(url=game_details_url)
+            id = '-'.join(
+                [team.sport, team.source,
+                 game_details_url.split('/')[4]])
 
             score = score_col.string
             score_match = re.match(
                 r'(?P<result>Won|Lost)?\s+\((?P<points_for>\d+)-(?P<points_against>\d+)\)',
                 score)
 
-            if score_match:
-                game['result'] = {
-                    'points_for': int(score_match.group('points_for')),
-                    'points_against': int(score_match.group('points_against'))
-                }
+            result = ScheduleGameResult(
+                points_for=int(score_match.group('points_for')),
+                points_against=int(score_match.group(
+                    'points_against'))) if score_match else None
 
-            games.append(game)
+            games.append(
+                ScheduleGame(id=id,
+                             date=date,
+                             details=details,
+                             opponent=opponent,
+                             sport=team.sport,
+                             source=team.source,
+                             result=result,
+                             home=home))
 
         return games
 
     def cross_link_schedules(self, schedules):
         pass
 
-    def convert_game_details_html(self, html, location, game_id, sport, source,
-                                  home_team, away_team):
+    def convert_game_details_html(self, html: str, location: Location,
+                                  game_id: str, sport: str, source: str,
+                                  home_team: Team, away_team: Team) -> Game:
         soup = BeautifulSoup(html, 'html.parser')
-        result = {'id': game_id, 'external_link': location['url']}
         header = soup.find(class_='name-and-info').h1
-        teams, date = header.string.rsplit('on', maxsplit=1)
+        teams, date_tag = header.string.rsplit('on', maxsplit=1)
         away_name, home_name = map(lambda x: x.strip(), teams.split('vs'))
         time = header.next_sibling.replace('@', '')
-        date_time = parser.parse(date.strip() + ' ' + time.strip(),
-                                 tzinfos=TIMEZONES).isoformat()
-        result['date'] = date_time
+        date = parser.parse(date_tag.strip() + ' ' + time.strip(),
+                            tzinfos=TIMEZONES).isoformat()
         game_score = soup.find('div', class_='game-score')
-        away_team = game_score.find(class_='team-away')
-        home_team = game_score.find(class_='team-home')
+        away_team_tag = game_score.find(class_='team-away')
+        home_team_tag = game_score.find(class_='team-home')
         away_id = self._parse_team_link_into_id(sport, source,
-                                                away_team.a['href'])
+                                                away_team_tag.a['href'])
         home_id = self._parse_team_link_into_id(sport, source,
-                                                home_team.a['href'])
-        result['home_team'] = {'id': home_id, 'name': home_name}
-        result['away_team'] = {'id': away_id, 'name': away_name}
-        away_score = int(away_team.find(class_='score').string)
-        home_score = int(home_team.find(class_='score').string)
-        result['result'] = {'home_score': home_score, 'away_score': away_score}
+                                                home_team_tag.a['href'])
+        home_team = TeamSummary(id=home_id, name=home_name)
+        away_team = TeamSummary(id=away_id, name=away_name)
+        away_score = int(away_team_tag.find(class_='score').string)
+        home_score = int(home_team_tag.find(class_='score').string)
+        result = GameResult(home_score=home_score, away_score=away_score)
         away_header = soup.find('header', attrs={'title': 'Away Team'})
         if away_header:
             away_tables = away_header.find_next_siblings('table')
-            result['away_stats'] = self._parse_stats_tables(
-                away_tables, sport, source)
+            away_stats = self._parse_stats_tables(away_tables, sport, source)
+        else:
+            away_stats = None
 
         home_header = soup.find('header', attrs={'title': 'Home Team'})
         if home_header:
             home_tables = home_header.find_next_siblings('table')
-            result['home_stats'] = self._parse_stats_tables(
-                home_tables, sport, source)
+            home_stats = self._parse_stats_tables(home_tables, sport, source)
+        else:
+            home_stats = None
 
-        return result
+        return Game(id=game_id,
+                    external_link=location.url,
+                    date=date,
+                    home_team=home_team,
+                    away_team=away_team,
+                    result=result,
+                    home_stats=home_stats,
+                    away_stats=away_stats)
 
-    def _parse_stats_tables(self, tables, sport, source):
-        stats = []
-        for table in tables:
-            rows = parse_table(table, lambda col, cell: self._parse_stats_table_row(
-                sport, source, col, cell))
-            stats.extend(rows)
-        return stats
+    def convert_roster(self, html: str, team: TeamSummary) -> Roster:
+        soup = BeautifulSoup(html, 'html.parser')
+        head_coach_tag = soup.find(class_='head-coach')
+        coach = Coach(
+            name=next(head_coach_tag.stripped_strings),
+            id=self._parse_coach_link_into_id(team['sport'], team['source'],
+                                              head_coach_tag.a['href']),
+            external_link='https://mcla.us' + head_coach_tag.a['href'])
+        conference_tag = soup.find(class_='conference')
+        conference = Conference(
+            name=next(conference_tag.stripped_strings),
+            id=self._parse_conference_link_into_id(team['sport'],
+                                                   team['source'],
+                                                   conference_tag.a['href']),
+            external_link='https://mcla.us' + conference_tag.a['href'])
+        table = soup.find(class_='team-roster')
+        players = parse_table(
+            table, lambda col, cell: self._parse_roster_table_row(
+                team['sport'], team['source'], col, cell), RosterPlayer)
+        return Roster(coach=coach, conference=conference, players=players)
 
     def get_limiter_session_args(self):
         return {}
 
-    def convert_roster(self, html, team):
-        soup = BeautifulSoup(html, 'html.parser')
-        result = {
-            'team': team
-        }
-        head_coach = soup.find(class_='head-coach')
-        result['coach'] = {
-            'name': next(head_coach.stripped_strings),
-            'id': self._parse_coach_link_into_id(team['sport'], team['source'], head_coach.a['href']),
-            'external_link': 'https://mcla.us' + head_coach.a['href']
-        }
-        conference = soup.find(class_='conference')
-        result['conference'] = {
-            'name': next(conference.stripped_strings),
-            'id': self._parse_conference_link_into_id(team['sport'], team['source'], conference.a['href']),
-            'external_link': 'https://mcla.us' + conference.a['href']
-        }
-        table = soup.find(class_='team-roster')
-        result['players'] = parse_table(table, lambda col, cell: self._parse_roster_table_row(
-            team['sport'], team['source'], col, cell))
-        return result
+    def _parse_stats_tables(self, tables, sport, source):
+        stats = []
+        for table in tables:
+            rows = parse_table(
+                table, lambda col, cell: self._parse_stats_table_row(
+                    sport, source, col, cell), GameStatLine)
+            stats.extend(rows)
+        return stats
 
     def _parse_roster_table_row(self, sport, source, col_name, cell):
         if col_name == '#':
             return ['number', int(cell.string)]
         if col_name == 'Player':
             last, first = ''.join(cell.a.stripped_strings).split(',')
-            return ['player', {
-                'id':
-                self._parse_player_link_into_id(
+            return [
+                'player',
+                PlayerSummary(id=self._parse_player_link_into_id(
                     sport, source, cell.a['href']),
-                'name': f'{first.strip()} {last.strip()}',
-                'external_link':
-                'https://mcla.us' + cell.a['href']
-            }]
+                              name=f'{first.strip()} {last.strip()}',
+                              external_link='https://mcla.us' + cell.a['href'])
+            ]
         if col_name == 'Yr':
-            return ['class', cell.string]
+            return ['class_year', cell.string]
         if col_name == 'El':
             return ['eligibility', cell.string]
         if col_name == 'Pos':
@@ -206,24 +215,19 @@ class Mcla():
         if col_name == '#':
             return ['number', int(cell.string)]
         if col_name == 'Field Player' or col_name == 'Goalie':
-            return ['player', {
-                'id':
-                self._parse_player_link_into_id(
+            return [
+                'player',
+                PlayerSummary(id=self._parse_player_link_into_id(
                     sport, source, cell.a['href']),
-                'name':
-                cell.a.string,
-                'external_link':
-                cell.a['href']
-            }]
+                              name=cell.a.string,
+                              external_link=cell.a['href'])
+            ]
         if col_name == 'Pos':
             return ['position', cell.string]
         if col_name == 'FO':
             won, lost = cell.string.split('-')
             if won or lost:
-                return ['face_offs', {
-                    'won': won or 0,
-                    'lost': lost or 0
-                }]
+                return ['face_offs', {'won': won or 0, 'lost': lost or 0}]
             else:
                 return None
         if col_name == 'GB':
@@ -263,6 +267,3 @@ class Mcla():
         link_parts = link.split('/')
         id = link_parts[2]
         return '-'.join([sport, source, id])
-
-
-DIVISON_MAP = {'Division I': '1', 'Division II': '2', 'Division III': '3'}

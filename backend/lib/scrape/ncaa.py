@@ -2,11 +2,12 @@ from urllib.parse import urlparse, parse_qsl
 import datetime
 import re
 from bs4 import BeautifulSoup
+from .types import Scraper
 
 SPORT_MAP = {'MLA': 'ml', 'WLA': 'wl'}
 
 
-class Ncaa():
+class Ncaa(Scraper):
     base_url = 'https://stats.ncaa.org'
 
     def __init__(self, sports=['MLA', 'WLA'], divs=['1', '2', '3']):
@@ -21,7 +22,7 @@ class Ncaa():
                     f'{self.base_url}/team/inst_team_list?academic_year={year}&division={div}&sport_code={sport}'
                 }
 
-    def convert_team_list_html(self, html, location):
+    def convert_team_list_html(self, html, year, location):
         soup = BeautifulSoup(html, 'html.parser')
         team_links = soup.table.find_all('a')
         params = {

@@ -1,5 +1,7 @@
+from collections.abc import Iterator
 
-def years(year: str):
+
+def years(year: str) -> Iterator[str]:
     if '-' in year:
         start, end = year.split('-')
     else:

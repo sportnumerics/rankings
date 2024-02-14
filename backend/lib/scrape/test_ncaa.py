@@ -23,7 +23,8 @@ class TestScrape(unittest.TestCase):
         html = fixtures.ncaa_team_list()
         n = ncaa.Ncaa()
         team_list = list(
-            n.convert_team_list_html(html, next(n.get_team_list_urls('2023'))))
+            n.convert_team_list_html(html, '2023',
+                                     next(n.get_team_list_urls('2023'))))
         self.assertEqual(len(team_list), 76)
         self.assertEqual(
             team_list[0], {
@@ -63,11 +64,10 @@ class TestScrape(unittest.TestCase):
                     'url': 'https://stats.ncaa.org/contests/1822151/box_score'
                 }
             })
-        self.assertEqual(
-            list(map(lambda g: g['opponent']['name'], games)), [
-                'Duke', 'Denver', 'Utah', 'Cleveland St.', 'St. Bonaventure',
-                'Virginia', 'Canisius', 'Furman'
-            ])
+        self.assertEqual(list(map(lambda g: g['opponent']['name'], games)), [
+            'Duke', 'Denver', 'Utah', 'Cleveland St.', 'St. Bonaventure',
+            'Virginia', 'Canisius', 'Furman'
+        ])
 
     def test_ncaa_game_details(self):
         html = fixtures.ncaa_game_details()

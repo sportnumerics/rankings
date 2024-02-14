@@ -26,7 +26,7 @@ def main():
     args.func(args)
 
 
-def get_default_year():
+def get_default_year() -> str:
     return os.environ.get("YEAR") or str(datetime.datetime.now().year)
 
 

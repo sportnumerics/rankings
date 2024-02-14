@@ -1,13 +1,19 @@
-def parse_table(table, extractor):
+def parse_table(table, extractor, cls=dict):
     col_mapping = {}
     for i, heading in enumerate(table.thead.find_all('th')):
         col_mapping[i] = ''.join(heading.stripped_strings)
     rows = []
     for raw_row in table.tbody.find_all('tr'):
-        parsed_row = {row[0]: row[1] for row in _parse_row(
-            raw_row, col_mapping, extractor) if row and row[0] and row[1]}
-        if parsed_row:
-            rows.append(parsed_row)
+        try:
+            cols = [
+                col for col in _parse_row(raw_row, col_mapping, extractor)
+                if col and col[0] and col[1]
+            ]
+            if cols:
+                parsed_row = cls(**{col[0]: col[1] for col in cols})
+                rows.append(parsed_row)
+        except Exception as e:
+            raise Exception(f'Unable to parse table row {raw_row}', e)
     return rows
 
 

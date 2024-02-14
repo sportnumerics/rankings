@@ -1,5 +1,7 @@
 from . import ncaa, mcla
 from ..shared import shared
+from .types import Scraper, Team, TeamDetail, Location
+from collections.abc import Iterator
 from requests_cache import CacheMixin, CachedSession
 from requests_ratelimiter import LimiterSession
 from datetime import timedelta
@@ -8,6 +10,7 @@ import os
 import pathlib
 import logging
 import traceback
+import dataclasses
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
 
@@ -44,8 +47,15 @@ class LimitedCachedSession(CacheMixin, LimiterSession):
 
 
 class ScrapeRunner():
+    scraper: Scraper
 
-    def __init__(self, source, year, out_dir, team=None, div=None, limit=None):
+    def __init__(self,
+                 source: str,
+                 year: str,
+                 out_dir: str,
+                 team: str = None,
+                 div: str = None,
+                 limit: int = None):
         if source == 'ncaa':
             self.scraper = ncaa.Ncaa()
         elif source == 'mcla':
@@ -80,14 +90,14 @@ class ScrapeRunner():
                                   self.year)).mkdir(parents=True,
                                                     exist_ok=True)
         with open(self.get_team_list_filename(), 'w') as f:
-            json.dump(list(teams), f, indent=2)
+            f.write(Team.schema().dumps(teams, many=True, indent=2))
 
     def scrape_and_write_schedules(self, team_list_file):
         self.log.info(
             f'scraping schedules for {self.source} ({self.year}) into {self.out_dir}'
         )
         with open(team_list_file) as f:
-            teams = json.load(f)
+            teams = Team.schema().loads(f.read(), many=True)
 
         if self.limit:
             teams = teams[:self.limit]
@@ -96,61 +106,57 @@ class ScrapeRunner():
         pathlib.Path(schedule_dir).mkdir(parents=True, exist_ok=True)
         games_dir = os.path.join(self.out_dir, self.year, 'games')
         pathlib.Path(games_dir).mkdir(parents=True, exist_ok=True)
-        schedules = []
+        schedules: list[TeamDetail] = []
         for team in teams:
-            if self.team and self.team != team['id']:
+            if self.team and self.team != team.id:
                 continue
-            if self.div and self.div != team['div']:
+            if self.div and self.div != team.div:
                 continue
-            self.log.info(f'scraping schedule for {team["name"]}')
+            self.log.info(f'scraping schedule for {team.name}')
             games = self.scrape_schedule(team)
             if not games:
-                self.log.warn(f'No schedule for {team["name"]}')
+                self.log.warn(f'No schedule for {team.name}')
                 continue
-            schedule = {'team': team, 'games': games}
             roster = self.scrape_roster(team)
-            if roster:
-                schedule['roster'] = roster
-            schedules.append(schedule)
+            schedules.append(TeamDetail(team=team, games=games, roster=roster))
 
         self.cross_link_schedules(schedules)
         for schedule in schedules:
-            file_name = os.path.join(schedule_dir,
-                                     schedule['team']['id'] + '.json')
+            file_name = os.path.join(schedule_dir, schedule.team.id + '.json')
             with open(file_name, 'w') as f:
-                json.dump(schedule, f, indent=2)
+                f.write(TeamDetail.schema().dumps(schedule, indent=2))
 
         for schedule in schedules:
-            team = schedule['team']
-            for game in schedule['games']:
-                if 'details' not in game:
+            team = schedule.team
+            for game in schedule.games:
+                if not game.details:
                     continue
 
                 self.log.info(
-                    f'scraping game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}'
+                    f'scraping game details for game {team.name} vs {game.opponent.name} on {game.date}'
                 )
-                opponent = game['opponent']
+                opponent = game.opponent
                 (home_team,
-                 away_team) = (team, opponent) if game['home'] else (opponent,
-                                                                     team)
+                 away_team) = (team, opponent) if game.home else (opponent,
+                                                                  team)
                 game_details = self.scrape_game_details(
-                    game['details'], game['id'], team['sport'], team['source'],
-                    home_team, away_team)
+                    game.details, game.id, team.sport, team.source, home_team,
+                    away_team)
                 if not game_details:
                     self.log.warn(
-                        f'no game details for game {team["name"]} vs {game["opponent"]["name"]} on {game["date"]}'
+                        f'no game details for game {team.name} vs {game.opponent.name} on {game.date}'
                     )
                     continue
-                with open(
-                        os.path.join(games_dir, game_details['id'] + '.json'),
-                        'w') as f:
-                    json.dump(game_details, f, indent=2)
+                with open(os.path.join(games_dir, game_details.id + '.json'),
+                          'w') as f:
+                    json.dump(dataclasses.asdict(game_details), f, indent=2)
 
-    def scrape_teams(self):
+    def scrape_teams(self) -> Iterator[Team]:
         for url in self.scraper.get_team_list_urls(self.year):
             html = self.fetch(url)
             try:
-                yield from self.scraper.convert_team_list_html(html, url)
+                yield from self.scraper.convert_team_list_html(
+                    html, self.year, url)
             except Exception as e:
                 self.log.error(
                     f'Unable to convert team list html from {url}: {e}')
@@ -158,20 +164,21 @@ class ScrapeRunner():
                 with open(os.path.join(self.out_dir, 'error.html'), 'w') as f:
                     f.write(html)
 
-    def scrape_schedule(self, team):
-        schedule_location = team['schedule']
+    def scrape_schedule(self, team: Team):
+        schedule_location = team.schedule
         html = self.fetch(schedule_location)
         try:
             return self.scraper.convert_schedule_html(html, team)
         except Exception as e:
             self.log.error(
-                f'Unable to convert schedule html from {schedule_location}: {e}')
+                f'Unable to convert schedule html from {schedule_location}: {e}'
+            )
             traceback.print_exception(e)
 
-    def scrape_roster(self, team):
-        if 'roster' not in team:
+    def scrape_roster(self, team: Team):
+        if team.roster:
             return None
-        roster_location = team['roster']
+        roster_location = team.roster
         html = self.fetch(roster_location)
         try:
             return self.scraper.convert_roster(html, team)
@@ -180,11 +187,11 @@ class ScrapeRunner():
                 f'Unable to convert roster html from {roster_location}: {e}')
             traceback.print_exception(e)
 
-    def cross_link_schedules(self, schedules):
+    def cross_link_schedules(self, schedules: list[TeamDetail]):
         self.scraper.cross_link_schedules(schedules)
 
-    def scrape_game_details(self, location, game_id, sport, source, home_team,
-                            away_team):
+    def scrape_game_details(self, location: Location, game_id: str, sport: str,
+                            source: str, home_team: Team, away_team: Team):
         html = self.fetch(location)
         try:
             return self.scraper.convert_game_details_html(
@@ -195,12 +202,11 @@ class ScrapeRunner():
             traceback.print_exception(e)
 
     def fetch(self, location):
-        response = self.cache.get(location['url'],
-                                  params=location.get('params'),
+        response = self.cache.get(location.url,
                                   headers={'user-agent': USER_AGENT})
         if response.status_code != 200:
             self.log.warn(
-                f'Issue fetching {location["url"]}, status code: {response.status_code}'
+                f'Issue fetching {location.url}, status code: {response.status_code}'
             )
             return None
         return response.text
