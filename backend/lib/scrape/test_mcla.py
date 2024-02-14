@@ -9,7 +9,7 @@ class TestMcla(unittest.TestCase):
     def test_mcla_urls(self):
         m = mcla.Mcla()
         self.assertEqual(
-            next(m.get_team_list_urls('2020'))['url'],
+            next(m.get_team_list_urls('2020')).url,
             'https://mcla.us/teams/2020')
 
     def test_mcla_team_list_html(self):
@@ -90,13 +90,22 @@ class TestMcla(unittest.TestCase):
     def test_mcla_game_details(self):
         html = fixtures.mcla_game_details()
         m = mcla.Mcla()
-        home_team = {
-            'name': 'Loyola Marymount',
-            'id': 'ml-mcla-loyola-marymount'
-        }
-        away_team = {'name': 'Air Force', 'id': 'ml-mcla-air-force'}
+        home_team = Team(name='Loyola Marymount',
+                         id='ml-mcla-loyola-marymount',
+                         year='2023',
+                         div='mcla1',
+                         sport='ml',
+                         source='mcla',
+                         schedule=Location(url='schedule1'))
+        away_team = Team(name='Air Force',
+                         id='ml-mcla-air-force',
+                         year='2023',
+                         div='mcla1',
+                         sport='ml',
+                         source='mcla',
+                         schedule=Location(url='schedule2'))
         game_details = m.convert_game_details_html(
-            html, {'url': 'https://mcla.us/games/26005'}, 'ml-mcla-26005',
+            html, Location(url='https://mcla.us/games/26005'), 'ml-mcla-26005',
             'ml', 'mcla', home_team, away_team)
         self.assertEqual(game_details.date, '2023-02-17T19:00:00-07:00')
         self.assertEqual(game_details.id, 'ml-mcla-26005')
@@ -139,12 +148,13 @@ class TestMcla(unittest.TestCase):
     def test_mcla_roster(self):
         html = fixtures.mcla_roster()
         m = mcla.Mcla()
-        team = {
-            'name': 'Alabama',
-            'year': '2024',
-            'sport': 'ml',
-            'source': 'mcla'
-        }
+        team = Team(id='ml-mcla-alabama',
+                    name='Alabama',
+                    year='2024',
+                    div='mcla1',
+                    sport='ml',
+                    source='mcla',
+                    schedule=Location(url='schedule1'))
         roster = m.convert_roster(html, team)
 
         self.assertEqual(roster.coach.name, 'Shane Ryan')

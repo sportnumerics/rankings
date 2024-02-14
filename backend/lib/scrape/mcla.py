@@ -151,25 +151,24 @@ class Mcla():
                     home_stats=home_stats,
                     away_stats=away_stats)
 
-    def convert_roster(self, html: str, team: TeamSummary) -> Roster:
+    def convert_roster(self, html: str, team: Team) -> Roster:
         soup = BeautifulSoup(html, 'html.parser')
         head_coach_tag = soup.find(class_='head-coach')
         coach = Coach(
             name=next(head_coach_tag.stripped_strings),
-            id=self._parse_coach_link_into_id(team['sport'], team['source'],
+            id=self._parse_coach_link_into_id(team.sport, team.source,
                                               head_coach_tag.a['href']),
             external_link='https://mcla.us' + head_coach_tag.a['href'])
         conference_tag = soup.find(class_='conference')
         conference = Conference(
             name=next(conference_tag.stripped_strings),
-            id=self._parse_conference_link_into_id(team['sport'],
-                                                   team['source'],
+            id=self._parse_conference_link_into_id(team.sport, team.source,
                                                    conference_tag.a['href']),
             external_link='https://mcla.us' + conference_tag.a['href'])
         table = soup.find(class_='team-roster')
         players = parse_table(
             table, lambda col, cell: self._parse_roster_table_row(
-                team['sport'], team['source'], col, cell), RosterPlayer)
+                team.sport, team.source, col, cell), RosterPlayer)
         return Roster(coach=coach, conference=conference, players=players)
 
     def get_limiter_session_args(self):
@@ -186,30 +185,30 @@ class Mcla():
 
     def _parse_roster_table_row(self, sport, source, col_name, cell):
         if col_name == '#':
-            return ['number', int(cell.string)]
+            return ('number', int(cell.string))
         if col_name == 'Player':
             last, first = ''.join(cell.a.stripped_strings).split(',')
-            return [
-                'player',
-                PlayerSummary(id=self._parse_player_link_into_id(
-                    sport, source, cell.a['href']),
-                              name=f'{first.strip()} {last.strip()}',
-                              external_link='https://mcla.us' + cell.a['href'])
-            ]
+            return ('player',
+                    PlayerSummary(id=self._parse_player_link_into_id(
+                        sport, source, cell.a['href']),
+                                  name=f'{first.strip()} {last.strip()}',
+                                  external_link='https://mcla.us' +
+                                  cell.a['href']))
         if col_name == 'Yr':
-            return ['class_year', cell.string]
+            return ('class_year', cell.string)
         if col_name == 'El':
-            return ['eligibility', cell.string]
+            return ('eligibility', cell.string)
         if col_name == 'Pos':
-            return ['position', cell.string]
+            return ('position', cell.string)
         if col_name == 'HT':
-            return ['height', cell.string]
+            return ('height', cell.string)
         if col_name == 'WT':
-            return ['weight', cell.string]
+            return ('weight', cell.string)
         if col_name == 'High School':
-            return ['high_school', cell.string]
+            return ('high_school', cell.string)
         if col_name == 'Hometown':
-            return ['hometown', cell.string]
+            return ('hometown', cell.string)
+        return None
 
     def _parse_stats_table_row(self, sport, source, col_name, cell):
         if col_name == '#':

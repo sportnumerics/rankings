@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from dataclasses_json import DataClassJsonMixin
 from collections.abc import Iterator
-from typing import Protocol
+from typing import Optional, Protocol
 
 
 @dataclass
@@ -13,18 +13,20 @@ class Location(DataClassJsonMixin):
 class Team(DataClassJsonMixin):
     name: str
     schedule: Location
-    roster: Location
     year: str
     id: str
     div: str
     sport: str
     source: str
+    roster: Location | None = None
+    alt_id: str | None = None
 
 
 @dataclass
 class TeamSummary(DataClassJsonMixin):
     name: str
-    id: str = None
+    id: str | None = None
+    alt_id: str | None = None
 
 
 @dataclass
@@ -35,14 +37,14 @@ class ScheduleGameResult(DataClassJsonMixin):
 
 @dataclass
 class ScheduleGame(DataClassJsonMixin):
-    id: str
     date: str
     opponent: TeamSummary
     sport: str
     source: str
-    result: ScheduleGameResult
     home: bool
-    details: Location = None
+    result: ScheduleGameResult | None = None
+    id: str | None = None
+    details: Location | None = None
 
 
 @dataclass
@@ -67,9 +69,9 @@ class PlayerSummary(DataClassJsonMixin):
 @dataclass
 class GameStatLine(DataClassJsonMixin):
     player: PlayerSummary
-    number: int = None
-    position: str = None
-    face_offs: FaceOffResults = None
+    number: int | None = None
+    position: str | None = None
+    face_offs: FaceOffResults | None = None
     gb: int = 0
     g: int = 0
     a: int = 0
@@ -112,13 +114,12 @@ class RosterPlayer(DataClassJsonMixin):
     position: str
     height: str
     weight: str
-    high_school: str = None
-    hometown: str = None
+    high_school: str | None = None
+    hometown: str | None = None
 
 
 @dataclass
 class Roster(DataClassJsonMixin):
-    team: TeamSummary
     coach: Coach
     conference: Conference
     players: list[RosterPlayer]
@@ -136,7 +137,7 @@ class Scraper(Protocol):
     def get_team_list_urls(self, year: str) -> Iterator[Location]:
         """Get the team list URLs for this source"""
 
-    def convert_team_list_html(self, html: str,
+    def convert_team_list_html(self, html: str, year: str,
                                location: Location) -> Iterator[Team]:
         """Convert the team list html into """
 

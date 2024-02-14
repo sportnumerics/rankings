@@ -176,7 +176,7 @@ class ScrapeRunner():
             traceback.print_exception(e)
 
     def scrape_roster(self, team: Team):
-        if team.roster:
+        if not team.roster:
             return None
         roster_location = team.roster
         html = self.fetch(roster_location)
