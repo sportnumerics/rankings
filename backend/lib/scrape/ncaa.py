@@ -1,7 +1,7 @@
 from typing import Any
 
 from .tables import parse_table
-from .types import Game, GameResult, GameStatLine, PlayerSummary, ScheduleGame, ScheduleGameResult, Scraper, Location, Team, TeamDetail, TeamSummary
+from ..shared.types import Game, GameResult, GameStatLine, PlayerSummary, ScheduleGame, ScheduleGameResult, Scraper, Location, Team, TeamDetail, TeamSummary
 from urllib.parse import urlparse, parse_qsl
 from collections.abc import Iterator
 from bs4 import BeautifulSoup

@@ -1,7 +1,7 @@
 import unittest
 from . import mcla
 from . import fixtures
-from .types import Team, Location, ScheduleGame, ScheduleGameResult, TeamSummary, PlayerSummary, GameResult, GameStatLine
+from ..shared.types import Team, Location, ScheduleGame, ScheduleGameResult, TeamSummary, PlayerSummary, GameResult, GameStatLine
 
 
 class TestMcla(unittest.TestCase):

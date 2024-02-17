@@ -1,16 +1,23 @@
 from dataclasses import dataclass
 from dataclasses_json import DataClassJsonMixin
 from collections.abc import Iterator
-from typing import Optional, Protocol
+from typing import Protocol
+
+import dataclasses_json
+
+
+class BaseType(DataClassJsonMixin):
+    dataclass_json_config = dataclasses_json.config(
+        exclude=lambda f: f is None)["dataclasses_json"]
 
 
 @dataclass
-class Location(DataClassJsonMixin):
+class Location(BaseType):
     url: str
 
 
 @dataclass
-class Team(DataClassJsonMixin):
+class Team(BaseType):
     name: str
     schedule: Location
     year: str
@@ -23,20 +30,20 @@ class Team(DataClassJsonMixin):
 
 
 @dataclass
-class TeamSummary(DataClassJsonMixin):
+class TeamSummary(BaseType):
     name: str
     id: str | None = None
     alt_id: str | None = None
 
 
 @dataclass
-class ScheduleGameResult(DataClassJsonMixin):
+class ScheduleGameResult(BaseType):
     points_for: int
     points_against: int
 
 
 @dataclass
-class ScheduleGame(DataClassJsonMixin):
+class ScheduleGame(BaseType):
     date: str
     opponent: TeamSummary
     sport: str
@@ -48,26 +55,26 @@ class ScheduleGame(DataClassJsonMixin):
 
 
 @dataclass
-class GameResult(DataClassJsonMixin):
+class GameResult(BaseType):
     home_score: int
     away_score: int
 
 
 @dataclass
-class FaceOffResults(DataClassJsonMixin):
+class FaceOffResults(BaseType):
     won: int
     lost: int
 
 
 @dataclass
-class PlayerSummary(DataClassJsonMixin):
+class PlayerSummary(BaseType):
     id: str
     name: str
     external_link: str
 
 
 @dataclass
-class GameStatLine(DataClassJsonMixin):
+class GameStatLine(BaseType):
     player: PlayerSummary
     number: int | None = None
     position: str | None = None
@@ -80,7 +87,7 @@ class GameStatLine(DataClassJsonMixin):
 
 
 @dataclass
-class Game(DataClassJsonMixin):
+class Game(BaseType):
     id: str
     external_link: str
     date: str
@@ -92,21 +99,21 @@ class Game(DataClassJsonMixin):
 
 
 @dataclass
-class Coach(DataClassJsonMixin):
+class Coach(BaseType):
     name: str
     id: str
     external_link: str
 
 
 @dataclass
-class Conference(DataClassJsonMixin):
+class Conference(BaseType):
     name: str
     id: str
     external_link: str
 
 
 @dataclass
-class RosterPlayer(DataClassJsonMixin):
+class RosterPlayer(BaseType):
     number: int
     player: PlayerSummary
     class_year: str
@@ -119,14 +126,14 @@ class RosterPlayer(DataClassJsonMixin):
 
 
 @dataclass
-class Roster(DataClassJsonMixin):
+class Roster(BaseType):
     coach: Coach
     conference: Conference
     players: list[RosterPlayer]
 
 
 @dataclass
-class TeamDetail(DataClassJsonMixin):
+class TeamDetail(BaseType):
     team: Team
     games: list[ScheduleGame]
     roster: Roster = None

@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import datetime
 import dateutil.parser as parser
 from .tables import parse_table
-from .types import Team, Location, ScheduleGame, TeamSummary, Game, ScheduleGameResult, GameResult, GameStatLine, Roster, RosterPlayer, Coach, Conference, PlayerSummary
+from ..shared.types import Team, Location, ScheduleGame, TeamSummary, Game, ScheduleGameResult, GameResult, GameStatLine, Roster, RosterPlayer, Coach, Conference, PlayerSummary
 
 TIMEZONES = {
     'PDT': -7 * 3600,

@@ -1,16 +1,14 @@
 from . import ncaa, mcla
 from ..shared import shared
-from .types import Scraper, Team, TeamDetail, Location
+from ..shared.types import Game, Scraper, Team, TeamDetail, Location
 from collections.abc import Iterator
 from requests_cache import CacheMixin, CachedSession
 from requests_ratelimiter import LimiterSession
 from datetime import timedelta
-import json
 import os
 import pathlib
 import logging
 import traceback
-import dataclasses
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
 
@@ -90,7 +88,7 @@ class ScrapeRunner():
                                   self.year)).mkdir(parents=True,
                                                     exist_ok=True)
         with open(self.get_team_list_filename(), 'w') as f:
-            f.write(Team.schema().dumps(teams, many=True, indent=2))
+            shared.dump(teams, f, many=True)
 
     def scrape_and_write_schedules(self, team_list_file):
         self.log.info(
@@ -124,7 +122,7 @@ class ScrapeRunner():
         for schedule in schedules:
             file_name = os.path.join(schedule_dir, schedule.team.id + '.json')
             with open(file_name, 'w') as f:
-                f.write(TeamDetail.schema().dumps(schedule, indent=2))
+                shared.dump(schedule, f)
 
         for schedule in schedules:
             team = schedule.team
@@ -149,7 +147,7 @@ class ScrapeRunner():
                     continue
                 with open(os.path.join(games_dir, game_details.id + '.json'),
                           'w') as f:
-                    json.dump(dataclasses.asdict(game_details), f, indent=2)
+                    shared.dump(game_details, f)
 
     def scrape_teams(self) -> Iterator[Team]:
         for url in self.scraper.get_team_list_urls(self.year):

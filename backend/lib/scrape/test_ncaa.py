@@ -1,7 +1,7 @@
 from optparse import OptParseError
 import unittest
 
-from .types import GameResult, GameStatLine, Location, PlayerSummary, ScheduleGame, ScheduleGameResult, Team, TeamSummary, TeamDetail
+from ..shared.types import GameResult, GameStatLine, Location, PlayerSummary, ScheduleGame, ScheduleGameResult, Team, TeamSummary, TeamDetail
 from . import ncaa
 from . import fixtures
 
