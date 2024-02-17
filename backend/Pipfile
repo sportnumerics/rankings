@@ -9,18 +9,16 @@ beautifulsoup4 = "~=4.9"
 requests-cache = "~=0.4"
 scipy = "*"
 numpy = "*"
-jinja2 = "*"
-pylint = "*"
-autopep8 = "*"
-watchdog = "*"
 python-dateutil = "*"
 exceptiongroup = "*"
 typing-extensions = "*"
-pulumi = "*"
 requests-ratelimiter = "*"
 dataclasses-json = "*"
 
 [dev-packages]
+yapf = "*"
+watchdog = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.11"
