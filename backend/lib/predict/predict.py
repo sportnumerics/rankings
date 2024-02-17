@@ -362,10 +362,10 @@ def group_teams_by_games(games):
         team_group = group_for_team(groups, team_id)
         opponent_group = group_for_team(groups, opponent_id)
         if (team_group is None and opponent_group is None):
-            groups.append(Group(
-                id=idx,
-                games=[game],
-                team_ids=set([team_id, opponent_id])))
+            groups.append(
+                Group(id=idx,
+                      games=[game],
+                      team_ids=set([team_id, opponent_id])))
             idx += 1
         elif (team_group is None):
             opponent_group.games.append(game)

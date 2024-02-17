@@ -13,7 +13,7 @@ def sync(args):
         output_path = args.bucket_url + '/' + year
         LOGGER.info(f'Syncing {input_path} to {output_path}')
         subprocess.run([
-            'aws', 's3', 'sync', input_path, output_path, '--delete', '--quiet',
-            *dry_run
+            'aws', 's3', 'sync', input_path, output_path, '--delete',
+            '--quiet', *dry_run
         ])
         LOGGER.info('Completed sync successfully.')
