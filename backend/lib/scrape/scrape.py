@@ -1,6 +1,6 @@
 from . import ncaa, mcla
 from ..shared import shared
-from ..shared.types import Game, Scraper, Team, TeamDetail, Location
+from ..shared.types import Game, ScrapeArgs, Scraper, Team, TeamDetail, Location
 from collections.abc import Iterator
 from requests_cache import CacheMixin, CachedSession
 from requests_ratelimiter import LimiterSession
@@ -13,7 +13,7 @@ import traceback
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
 
 
-def scrape_team_list(args):
+def scrape_team_list(args: ScrapeArgs):
     for year in shared.years(args.year):
         runner = ScrapeRunner(source=args.source,
                               year=year,
@@ -22,7 +22,7 @@ def scrape_team_list(args):
         runner.scrape_and_write_team_lists()
 
 
-def scrape_schedules(args):
+def scrape_schedules(args: ScrapeArgs):
     for year in shared.years(args.year):
         runner = ScrapeRunner(source=args.source,
                               year=year,
@@ -90,7 +90,7 @@ class ScrapeRunner():
         with open(self.get_team_list_filename(), 'w') as f:
             shared.dump(teams, f, many=True)
 
-    def scrape_and_write_schedules(self, team_list_file):
+    def scrape_and_write_schedules(self, team_list_file: str):
         self.log.info(
             f'scraping schedules for {self.source} ({self.year}) into {self.out_dir}'
         )

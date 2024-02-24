@@ -3,6 +3,8 @@ import json
 import pathlib
 import logging
 import numpy as np
+
+from ..shared.types import PredictArgs
 from ..shared import shared
 from scipy.sparse import coo_matrix
 from scipy.sparse import linalg
@@ -11,7 +13,7 @@ from dataclasses import dataclass
 LOGGER = logging.getLogger(__name__)
 
 
-def predict(args):
+def predict(args: PredictArgs):
     out_dir = args.out_dir
     for year in shared.years(args.year):
         schedules_dir = os.path.join(args.input_dir, year, 'schedules')

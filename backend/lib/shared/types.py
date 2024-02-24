@@ -139,6 +139,32 @@ class TeamDetail(BaseType):
     roster: Roster = None
 
 
+@dataclass
+class ScrapeArgs:
+    source: str
+    year: str
+    out_dir: str
+    team: str = None
+    div: str = None
+    limit: str = None
+    team_list_file: str = None
+
+
+@dataclass
+class PredictArgs:
+    input_dir: str
+    year: str
+    out_dir: str
+
+
+@dataclass
+class SyncArgs:
+    input_dir: str
+    year: str
+    bucket_url: str
+    dry_run: str
+
+
 class Scraper(Protocol):
 
     def get_team_list_urls(self, year: str) -> Iterator[Location]:

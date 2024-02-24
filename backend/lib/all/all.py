@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from ..shared.types import PredictArgs, ScrapeArgs, SyncArgs
 from ..scrape import scrape
 from ..predict import predict
 from ..sync import sync
@@ -32,28 +33,3 @@ def run(args):
         else:
             LOGGER.info(
                 "Skipping sync with S3 since no bucket url was specified")
-
-
-@dataclass
-class ScrapeArgs:
-    source: str
-    year: str
-    out_dir: str
-    team: str = None
-    div: str = None
-    limit: str = None
-
-
-@dataclass
-class PredictArgs:
-    input_dir: str
-    year: str
-    out_dir: str
-
-
-@dataclass
-class SyncArgs:
-    input_dir: str
-    year: str
-    bucket_url: str
-    dry_run: str
