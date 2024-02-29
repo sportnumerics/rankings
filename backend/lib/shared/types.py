@@ -93,9 +93,9 @@ class Game(BaseType):
     date: str
     home_team: TeamSummary
     away_team: TeamSummary
-    result: GameResult
-    home_stats: list[GameStatLine]
-    away_stats: list[GameStatLine]
+    result: GameResult | None = None
+    home_stats: list[GameStatLine] | None = None
+    away_stats: list[GameStatLine] | None = None
 
 
 @dataclass
@@ -126,6 +126,62 @@ class RosterPlayer(BaseType):
 
 
 @dataclass
+class PlayerStatLine(BaseType):
+    game_id: str
+    date: str
+    opponent: TeamSummary
+    g: int = 0
+    a: int = 0
+    gb: int = 0
+    face_offs: FaceOffResults | None = None
+
+
+@dataclass
+class Player(BaseType):
+    id: str
+    name: str
+    team: TeamSummary
+    external_link: str
+    stats: list[PlayerStatLine]
+    position: str | None = None
+    number: int | None = None
+    class_year: str | None = None
+    eligibility: str | None = None
+    height: str | None = None
+    weight: str | None = None
+    high_school: str | None = None
+    hometown: str | None = None
+
+
+@dataclass
+class PlayerRating(BaseType):
+    id: str
+    name: str
+    team: TeamSummary
+    points: float
+    goals: float
+    assists: float
+
+
+@dataclass
+class TeamPlayersRating(BaseType):
+    team: TeamSummary
+    goals_off: float
+    goals_def: float
+    assists_off: float
+    assists_def: float
+
+
+@dataclass
+class TeamRating(BaseType):
+    team: str
+    offense: float
+    defense: float
+    overall: float
+    group: str
+
+
+@dataclass
 class Roster(BaseType):
     coach: Coach
     conference: Conference
@@ -136,7 +192,7 @@ class Roster(BaseType):
 class TeamDetail(BaseType):
     team: Team
     games: list[ScheduleGame]
-    roster: Roster = None
+    roster: Roster | None = None
 
 
 @dataclass

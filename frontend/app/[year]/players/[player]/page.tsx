@@ -1,6 +1,5 @@
 'use server';
 import { getPlayerStats } from "@/app/server/players";
-import { date } from "@/app/formatting";
 import { Card, ExternalLink, H1, H2, Table, TableHeader } from "@/app/shared";
 import Link from "@/app/components/Link";
 import Opponent from "@/app/components/Opponent";
@@ -31,6 +30,23 @@ export default async function Page({ params }: { params: Params }) {
         <H1>{player.name}</H1>
         <H2><Link href={`/${params.year}/teams/${player.team.id}`}>{player.team.name}</Link></H2>
         {player.external_link && <ExternalLink href={player.external_link} />}
+        <Card title="Profile">
+            <Table>
+                <tbody>
+                    {[
+                        ['Jersey Number', player.number],
+                        ['Position', player.position],
+                        ['High School', player.high_school],
+                        ['Hometown', player.hometown],
+                        ['Class', player.class_year],
+                        ['Eligibility', player.eligibility],
+                        ['Height', player.height],
+                        ['Weight', player.weight]
+                    ].filter(v => v[1])
+                        .map(([k, v], i) => <tr key={i}><td className="w-40 font-bold">{k}</td><td>{v}</td></tr>)}
+                </tbody>
+            </Table>
+        </Card>
         <Card title="Games Played">
             <Table>
                 <TableHeader><tr><th>Date</th><th>Opponent</th><th>G</th><th>A</th><th>GB</th></tr></TableHeader>

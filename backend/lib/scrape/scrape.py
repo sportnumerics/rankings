@@ -95,7 +95,7 @@ class ScrapeRunner():
             f'scraping schedules for {self.source} ({self.year}) into {self.out_dir}'
         )
         with open(team_list_file) as f:
-            teams = Team.schema().loads(f.read(), many=True)
+            teams = shared.load_many(Team, f)
 
         if self.limit:
             teams = teams[:self.limit]

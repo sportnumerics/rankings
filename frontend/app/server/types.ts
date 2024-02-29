@@ -98,6 +98,14 @@ export interface PlayerStats {
     external_link: string;
     team: TeamSummary;
     stats: StatLine[]
+    position: string;
+    number: number;
+    class_year: string;
+    eligibility: string;
+    height: string;
+    weight: string;
+    high_school: string;
+    hometown: string;
 }
 
 export interface StatLine {
