@@ -53,7 +53,7 @@ export default async function Page({ params }: { params: Params }) {
                 <tbody>
                     {games.map(game => <tr key={game.opponent.name + game.date}>
                         <td className="w-24"><GameDate id={game.id} link={Boolean(game.result)} date={game.date} year={params.year} /></td>
-                        <td className="w-64"><Opponent opponent={game.opponent} link={game.knownOpponent} year={params.year} /></td>
+                        <td className="w-64"><Opponent opponent={game.opponent} link={game.knownOpponent} year={params.year} home={game.home} /></td>
                         <td className="w-24"><ResultOrPrediction prediction={game.prediction} result={game.result} /></td>
                     </tr>)}
                 </tbody>
