@@ -71,8 +71,8 @@ export default async function Page({ params }: { params: Params }) {
                         ?
                         <tr>
                             {[0, 1, 2]
-                                .map(i => <td key={i}>{footnotes.filter(fn => fn.col === i)
-                                    .map((fn, j) => <span key={j} className="text-slate-300 italic py-2">{fn.element}</span>)}</td>)}
+                                .map(i => <td className="pt-4" key={i}>{footnotes.filter(fn => fn.col === i)
+                                    .map((fn, j) => <span key={j} className="text-slate-300 italic">{fn.element}</span>)}</td>)}
                         </tr>
                         : null}
                 </tbody>
