@@ -78,7 +78,7 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
         if player_id not in players:
             player = Player(id=player_id,
                             name=entry.player.name,
-                            team=team,
+                            team=teams_by_id.get(team.id, team),
                             stats=[],
                             external_link=entry.player.external_link)
             players[player_id] = player
