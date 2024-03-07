@@ -2,6 +2,7 @@ locals {
   bucket_name = "${var.bucket_prefix}-${var.environment}"
   bucket_url  = "s3://${local.bucket_name}/data"
   image_url   = "${aws_ecr_repository.rankings_backend.repository_url}:${var.image_tag}"
+  prod        = var.environment == "prod"
 }
 
 resource "aws_ecs_task_definition" "rankings_backend" {
@@ -44,7 +45,7 @@ resource "aws_scheduler_schedule" "rankings_backend" {
     mode = "OFF"
   }
 
-  schedule_expression = "rate(12 hours)"
+  schedule_expression = local.prod ? "cron(0 */12 * JAN-MAY ?)" : "cron(0 0 ? JAN-MAY MON)"
 
   target {
     arn      = aws_ecs_cluster.rankings_backend.arn
