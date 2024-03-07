@@ -260,7 +260,7 @@ def calculate_ratings(schedules: Iterable[TeamDetail]):
                 continue
             team_id = schedule.team.id
             opponent_id = game.opponent.id or game.opponent.alt_id
-            if not team_id or opponent_id:
+            if not team_id or not opponent_id:
                 continue
             gid = game_id(team_id, opponent_id, game.date)
             g = GameMapValue(team=team_id,
