@@ -8,7 +8,7 @@ terraform {
 
   backend "s3" {
     bucket = "sportnumerics-rankings-terraform-state"
-    key = "infrastructure/prod.tfstate"
+    key    = "infrastructure/prod.tfstate"
     region = "us-west-2"
   }
 
@@ -16,11 +16,15 @@ terraform {
 }
 
 provider "aws" {
-  region  = "us-west-2"
+  region = "us-west-2"
 }
 
 module "storage" {
   source = "../../modules/storage"
 
   environment = "prod"
+}
+
+module "cicd" {
+  source = "../../modules/cicd"
 }

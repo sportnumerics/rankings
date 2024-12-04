@@ -1,0 +1,29 @@
+name: Deploy Infra
+on:
+  push:
+    branches: [ $default-branch ]
+    paths: [ "infrastructure" ]
+
+defaults:
+  run:
+    working-directory: infrastructure
+
+jobs:
+  deploy:
+    name: Deploy Infra
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-west-2
+        role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role
+        role-session-name: RankingsDeploy
+
+    - name: Deploy
+      run: "./deploy.sh"
