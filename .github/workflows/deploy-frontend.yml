@@ -1,8 +1,8 @@
 name: Deploy Frontend
 on:
   push:
-    branches: [ $default-branch ]
-    paths: [ "frontend" ]
+    branches: [ main ]
+    paths: [ frontend ]
 
 defaults:
   run:
