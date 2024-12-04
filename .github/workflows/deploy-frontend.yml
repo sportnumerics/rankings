@@ -5,6 +5,10 @@ on:
     paths: [ frontend ]
   workflow_dispatch: {}
 
+permissions:
+  id-token: write
+  contents: read
+
 defaults:
   run:
     working-directory: frontend
