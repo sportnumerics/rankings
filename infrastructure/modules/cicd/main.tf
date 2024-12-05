@@ -79,6 +79,7 @@ resource "aws_iam_policy" "deployment_role" {
         Effect = "Allow",
         Action = [
           "iam:CreatePolicy",
+          "iam:GetPolicy",
           "iam:TagPolicy"
         ],
         Resource = [
