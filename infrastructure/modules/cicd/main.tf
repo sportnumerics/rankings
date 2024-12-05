@@ -56,7 +56,8 @@ resource "aws_iam_policy" "deployment_role" {
         Effect = "Allow",
         Action = [
           "iam:CreateRole",
-          "iam:AttachRolePolicy"
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy"
         ],
         Resource = [
           "arn:aws:iam::265978616089:role/rankings-*"
