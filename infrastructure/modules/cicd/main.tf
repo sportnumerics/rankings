@@ -57,8 +57,7 @@ resource "aws_iam_policy" "deployment_role" {
         Action = [
           "iam:CreateRole",
           "iam:AttachRolePolicy",
-          "iam:DetachRolePolicy",
-          "iam:PassRole"
+          "iam:DetachRolePolicy"
         ],
         Resource = [
           "arn:aws:iam::265978616089:role/rankings-*"
@@ -77,7 +76,8 @@ resource "aws_iam_policy" "deployment_role" {
           "iam:ListRolePolicies",
           "iam:ListAttachedRolePolicies",
           "iam:ListInstanceProfilesForRole",
-          "iam:DeleteRole"
+          "iam:DeleteRole",
+          "iam:PassRole"
         ],
         Resource = [
           "arn:aws:iam::265978616089:role/rankings-*"
