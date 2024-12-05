@@ -75,7 +75,8 @@ resource "aws_iam_policy" "deployment_role" {
           "iam:GetRole",
           "iam:ListRolePolicies",
           "iam:ListAttachedRolePolicies",
-          "iam:ListInstanceProfilesForRole"
+          "iam:ListInstanceProfilesForRole",
+          "iam:DeleteRole"
         ],
         Resource = [
           "arn:aws:iam::265978616089:role/rankings-*"
