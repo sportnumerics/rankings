@@ -4,6 +4,8 @@ set -e
 
 environment=${1:-dev}
 
+npm install
+
 npm run build
 
 cp run.sh .next/standalone
