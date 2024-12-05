@@ -47,7 +47,10 @@ resource "aws_iam_policy" "deployment_role" {
           "events:*",
           "logs:*",
           "ecr:*",
-          "scheduler:*"
+          "scheduler:*",
+          "lambda:*",
+          "cloudfront:*",
+          "route53:*"
         ]
         Resource = [
           "*"
