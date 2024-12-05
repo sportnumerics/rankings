@@ -128,7 +128,7 @@ resource "aws_iam_role" "rankings_backend_execution_role" {
   name                 = "rankings-backend-execution-role-${var.environment}"
   assume_role_policy   = data.aws_iam_policy_document.rankings_backend_tasks_assume_role.json
   managed_policy_arns  = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
-  permissions_boundary = locals.permissions_boundary_arn
+  permissions_boundary = local.permissions_boundary_arn
 
   tags = {
     App   = "rankings"
