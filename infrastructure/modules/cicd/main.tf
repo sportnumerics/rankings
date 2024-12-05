@@ -70,7 +70,8 @@ resource "aws_iam_policy" "deployment_role" {
       {
         Effect = "Allow",
         Action = [
-          "iam:TagRole"
+          "iam:TagRole",
+          "iam:GetRole"
         ],
         Resource = [
           "arn:aws:iam::265978616089:role/rankings-*"
