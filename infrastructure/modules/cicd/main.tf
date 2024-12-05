@@ -42,8 +42,76 @@ resource "aws_iam_policy" "deployment_role" {
         Effect = "Allow"
         Action = [
           "ecs:*",
-          "s3:*"
+          "ecr:*",
+          "s3:*",
+          "events:*",
+          "logs:*",
+          "ecr:*"
         ]
+        Resource = [
+          "*"
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "iam:CreateRole"
+        ],
+        Resource = [
+          "*"
+        ],
+        Condition = {
+          StringEquals = {
+            "iam:PermissionsBoundary" = aws_iam_policy.permissions_boundary.arn,
+            "aws:ResourceTag/App"     = "rankings"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    App = "rankings"
+  }
+}
+
+resource "aws_iam_policy" "permissions_boundary" {
+  name = "rankings-permissions-boundary"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          # AWSLambdaBasicExecutionRole
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+
+          # AmazonECSTaskExecutionRolePolicy
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+
+          # backend rankings_backend_task_role
+          "s3:DeleteObject",
+          "s3:GetBucketLocation",
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:PutObject",
+
+          # backend rankings_backend_scheduler_role
+          "ecs:RunTask",
+          "iam:PassRole",
+
+          # frontend lambda_role
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
         Resource = [
           "*"
         ]

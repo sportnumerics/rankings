@@ -7,6 +7,7 @@ locals {
   route53_zone_id                         = "Z3R2RGFTVSSJXN"
   s3_website_domain                       = "s3.us-west-2.amazonaws.com"
   sportnumerics_certificate_arn           = "arn:aws:acm:us-east-1:265978616089:certificate/02636181-f1d6-4cf9-8fe6-c99976b2b78a"
+  permissions_boundary_arn                = "arn:aws:iam::265978616089:policy/rankings-permissions-boundary"
   prod                                    = var.environment == "prod"
 }
 
@@ -51,6 +52,7 @@ resource "aws_iam_role" "lambda_role" {
     aws_iam_policy.lambda_role.arn,
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   ]
+  permissions_boundary = local.permissions_boundary_arn
 
   tags = {
     App   = "rankings"

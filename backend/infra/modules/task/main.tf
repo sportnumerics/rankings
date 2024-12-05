@@ -1,8 +1,9 @@
 locals {
-  bucket_name = "${var.bucket_prefix}-${var.environment}"
-  bucket_url  = "s3://${local.bucket_name}/data"
-  image_url   = "${aws_ecr_repository.rankings_backend.repository_url}:${var.image_tag}"
-  prod        = var.environment == "prod"
+  bucket_name              = "${var.bucket_prefix}-${var.environment}"
+  bucket_url               = "s3://${local.bucket_name}/data"
+  image_url                = "${aws_ecr_repository.rankings_backend.repository_url}:${var.image_tag}"
+  permissions_boundary_arn = "arn:aws:iam::265978616089:policy/rankings-permissions-boundary"
+  prod                     = var.environment == "prod"
 }
 
 resource "aws_ecs_task_definition" "rankings_backend" {
@@ -124,9 +125,10 @@ resource "aws_ecr_repository" "rankings_backend" {
 }
 
 resource "aws_iam_role" "rankings_backend_execution_role" {
-  name                = "rankings-backend-execution-role-${var.environment}"
-  assume_role_policy  = data.aws_iam_policy_document.rankings_backend_tasks_assume_role.json
-  managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+  name                 = "rankings-backend-execution-role-${var.environment}"
+  assume_role_policy   = data.aws_iam_policy_document.rankings_backend_tasks_assume_role.json
+  managed_policy_arns  = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+  permissions_boundary = locals.permissions_boundary_arn
 
   tags = {
     App   = "rankings"
@@ -135,9 +137,10 @@ resource "aws_iam_role" "rankings_backend_execution_role" {
 }
 
 resource "aws_iam_role" "rankings_backend_task_role" {
-  name                = "rankings-backend-task-role-${var.environment}"
-  assume_role_policy  = data.aws_iam_policy_document.rankings_backend_tasks_assume_role.json
-  managed_policy_arns = [aws_iam_policy.rankings_backend_task_role.arn]
+  name                 = "rankings-backend-task-role-${var.environment}"
+  assume_role_policy   = data.aws_iam_policy_document.rankings_backend_tasks_assume_role.json
+  managed_policy_arns  = [aws_iam_policy.rankings_backend_task_role.arn]
+  permissions_boundary = local.permissions_boundary_arn
 
   tags = {
     App   = "rankings"
@@ -185,9 +188,10 @@ data "aws_iam_policy_document" "rankings_backend_task_role" {
 }
 
 resource "aws_iam_role" "rankings_backend_scheduler_role" {
-  name                = "rankings-backend-scheduler-role-${var.environment}"
-  assume_role_policy  = data.aws_iam_policy_document.rankings_backend_scheduler_assume_role.json
-  managed_policy_arns = [aws_iam_policy.rankings_backend_scheduler_role.arn]
+  name                 = "rankings-backend-scheduler-role-${var.environment}"
+  assume_role_policy   = data.aws_iam_policy_document.rankings_backend_scheduler_assume_role.json
+  managed_policy_arns  = [aws_iam_policy.rankings_backend_scheduler_role.arn]
+  permissions_boundary = local.permissions_boundary_arn
 
   tags = {
     App   = "rankings"

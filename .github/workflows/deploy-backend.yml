@@ -31,4 +31,4 @@ jobs:
         role-session-name: RankingsDeploy
 
     - name: Deploy
-      run: "./deploy.sh prod"
+      run: "./deploy.sh"
