@@ -6,6 +6,8 @@ environment=${1:-dev}
 
 npm install
 
+export DATA_BUCKET="sportnumerics-rankings-bucket-$environment"
+
 npm run build
 
 cp run.sh .next/standalone
