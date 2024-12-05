@@ -30,5 +30,8 @@ jobs:
         role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role
         role-session-name: RankingsDeploy
 
+    - name: Setup buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Deploy
       run: "./deploy.sh"
