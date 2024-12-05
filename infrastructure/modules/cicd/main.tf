@@ -80,6 +80,7 @@ resource "aws_iam_policy" "deployment_role" {
         Effect = "Allow",
         Action = [
           "iam:CreatePolicy",
+          "iam:DeletePolicy",
           "iam:GetPolicy",
           "iam:GetPolicyVersion",
           "iam:ListPolicyVersions",
