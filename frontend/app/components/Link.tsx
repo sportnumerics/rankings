@@ -6,5 +6,5 @@ interface LinkProps {
 
 export default function Link(props: Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof NextLinkProps> & NextLinkProps & { children?: React.ReactNode } & LinkProps) {
     const { nounderline: _, ...passedProps } = props;
-    return <NextLink {...passedProps} className={`${props.className ?? ""} ${props.nounderline ? "" : "underline"}`}>{props.children}</NextLink>
+    return <NextLink {...passedProps} className={`${props.className ?? ""} ${props.nounderline ? "" : "underline"}`} prefetch={false}>{props.children}</NextLink>
 }
