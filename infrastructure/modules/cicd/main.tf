@@ -80,6 +80,7 @@ resource "aws_iam_policy" "deployment_role" {
         Action = [
           "iam:CreatePolicy",
           "iam:GetPolicy",
+          "iam:GetPolicyVersion",
           "iam:TagPolicy"
         ],
         Resource = [
