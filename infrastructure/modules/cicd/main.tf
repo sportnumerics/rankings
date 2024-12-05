@@ -55,8 +55,7 @@ resource "aws_iam_policy" "deployment_role" {
       {
         Effect = "Allow",
         Action = [
-          "iam:CreateRole",
-          "iam:TagRole"
+          "iam:CreateRole"
         ],
         Resource = [
           "arn:aws:iam::265978616089:role/rankings-*"
@@ -66,6 +65,15 @@ resource "aws_iam_policy" "deployment_role" {
             "iam:PermissionsBoundary" = aws_iam_policy.permissions_boundary.arn
           }
         }
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "iam:TagRole"
+        ],
+        Resource = [
+          "arn:aws:iam::265978616089:role/rankings-*"
+        ]
       },
       {
         Effect = "Allow",
