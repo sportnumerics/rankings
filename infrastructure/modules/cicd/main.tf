@@ -72,7 +72,8 @@ resource "aws_iam_policy" "deployment_role" {
         Action = [
           "iam:TagRole",
           "iam:GetRole",
-          "iam:ListRolePolicies"
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies"
         ],
         Resource = [
           "arn:aws:iam::265978616089:role/rankings-*"
