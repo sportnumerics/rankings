@@ -55,17 +55,26 @@ resource "aws_iam_policy" "deployment_role" {
       {
         Effect = "Allow",
         Action = [
-          "iam:CreateRole"
+          "iam:CreateRole",
+          "iam:TagRole",
         ],
         Resource = [
-          "*"
+          "arn:aws:iam::265978616089:role/rankings-*"
         ],
         Condition = {
           StringEquals = {
-            "iam:PermissionsBoundary" = aws_iam_policy.permissions_boundary.arn,
-            "aws:ResourceTag/App"     = "rankings"
+            "iam:PermissionsBoundary" = aws_iam_policy.permissions_boundary.arn
           }
         }
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "iam:CreatePolicy"
+        ],
+        Resource = [
+          "arn:aws:iam::265978616089:policy/rankings-*"
+        ]
       }
     ]
   })
