@@ -32,5 +32,10 @@ jobs:
         role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role
         role-session-name: RankingsDeploy
 
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.10.5"
+
     - name: Deploy
       run: "./deploy.sh prod"
