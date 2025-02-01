@@ -19,6 +19,9 @@ export function latestYear(years: Year[]) {
 
 const YEARS = [
     {
+      "id": "2025"
+    },
+    {
       "id": "2024"
     },
     {
