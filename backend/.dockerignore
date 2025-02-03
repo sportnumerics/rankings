@@ -1,2 +1,4 @@
 out/
 .vscode/
+.ruff_cache
+.venv/
