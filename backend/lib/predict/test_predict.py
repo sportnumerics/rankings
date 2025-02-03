@@ -23,5 +23,5 @@ class TestPredict(unittest.TestCase):
 
         ratings, hfa = predict.calculate_ratings(schedules)
 
-        self.assertGreater(ratings['1']['overall'], ratings['2']['overall'])
-        self.assertGreater(ratings['2']['overall'], ratings['3']['overall'])
+        self.assertGreater(ratings['1'].overall, ratings['2'].overall)
+        self.assertGreater(ratings['2'].overall, ratings['3'].overall)
