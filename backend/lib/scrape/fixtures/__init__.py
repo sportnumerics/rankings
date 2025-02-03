@@ -9,12 +9,20 @@ def mcla_team_list():
     return load_fixture('mcla_team_list.html')
 
 
+def mcla2_team_list():
+    return load_fixture('mcla2_team_list.html')
+
+
 def ncaa_game_by_game():
     return load_fixture('ncaa_game_by_game.html')
 
 
 def mcla_schedule():
     return load_fixture('mcla_schedule.html')
+
+
+def mcla2_schedule():
+    return load_fixture('mcla2_schedule.html')
 
 
 def mcla_game_details():
