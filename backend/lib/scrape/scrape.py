@@ -1,6 +1,6 @@
 from . import ncaa, mcla
 from ..shared import shared
-from ..shared.types import Game, ScrapeArgs, Scraper, Team, TeamDetail, Location
+from ..shared.types import ScrapeArgs, Scraper, Team, TeamDetail, Location
 from collections.abc import Iterator
 from requests_cache import CacheMixin, CachedSession
 from requests_ratelimiter import LimiterSession

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 from ..shared.types import PredictArgs, ScrapeArgs, SyncArgs
 from ..scrape import scrape

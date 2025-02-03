@@ -6,8 +6,8 @@ def parse_table(table, extractor, cls=dict):
     for raw_row in table.find_all('tr'):
         try:
             cols = [
-                col for col in _parse_row(raw_row, col_mapping, extractor)
-                if col != None and col[0] != None and col[1] != None
+                col for col in _parse_row(raw_row, col_mapping, extractor) if
+                col is not None and col[0] is not None and col[1] is not None
             ]
             if cols:
                 parsed_row = cls(**{col[0]: col[1] for col in cols})

@@ -1,5 +1,4 @@
 from . import scrape
-from datetime import datetime
 
 
 def add_parsers(parsers):

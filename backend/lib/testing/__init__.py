@@ -1,6 +1,3 @@
-from datetime import datetime
-
-
 def create_team(team_id,
                 name=None,
                 sport='ml',

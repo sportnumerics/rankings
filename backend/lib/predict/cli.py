@@ -1,5 +1,4 @@
 from . import predict
-from datetime import datetime
 
 
 def add_parsers(parsers):

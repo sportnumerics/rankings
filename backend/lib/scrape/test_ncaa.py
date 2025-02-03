@@ -1,4 +1,3 @@
-from optparse import OptParseError
 import unittest
 
 from ..shared.types import GameResult, GameStatLine, Location, PlayerSummary, ScheduleGame, ScheduleGameResult, Team, TeamSummary, TeamDetail

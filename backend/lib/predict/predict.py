@@ -106,7 +106,7 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
             for entry in game.away_stats or []:
                 add_player_stats(entry, game.away_team, game.home_team,
                                  game.id, game.date)
-        except Exception as e:
+        except Exception:
             LOGGER.error(f'Error adding stats from game {game}')
 
     LOGGER.info(

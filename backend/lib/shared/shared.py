@@ -1,7 +1,5 @@
-from dataclasses import asdict
-from textwrap import indent
 from typing import IO, TypeVar
-from collections.abc import Collection, Iterator, Iterable
+from collections.abc import Iterator, Iterable
 import json
 import typing
 
