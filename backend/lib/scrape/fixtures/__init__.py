@@ -37,6 +37,10 @@ def mcla_roster():
     return load_fixture('mcla_roster.html')
 
 
+def mcla2_roster():
+    return load_fixture('mcla2_roster.html')
+
+
 def ncaa_game_details():
     return load_fixture('ncaa_game_details.html')
 

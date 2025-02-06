@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 import re
+from turtle import position
 from typing import Any, Generator
 from bs4 import BeautifulSoup
 import datetime
@@ -90,7 +91,7 @@ class Mcla2():
                 date, '%Y %a %b %d %I:%M%p').isoformat()
             game_details_url = score_div.a['href']
             details = Location(
-                url=self._convert_game_details_url(game_details_url))
+                url=self._convert_url_to_absolute(game_details_url))
             id = '-'.join(
                 [team.sport, team.source,
                  game_details_url.split('/')[2]])
@@ -180,22 +181,28 @@ class Mcla2():
 
     def convert_roster(self, html: str, team: Team) -> Roster:
         soup = BeautifulSoup(html, 'html.parser')
-        head_coach_tag = soup.find(class_='head-coach')
+        head_coach_tag = soup.find('div', class_='coach-tile__info')
         coach = Coach(
             name=next(head_coach_tag.stripped_strings),
             id=self._parse_coach_link_into_id(team.sport, team.source,
                                               head_coach_tag.a['href']),
             external_link='https://mcla.us' + head_coach_tag.a['href'])
-        conference_tag = soup.find(class_='conference')
+
+        def is_conference(href):
+            return href.startswith('/conferences')
+
+        header_tag = soup.find('div', class_='team-header-card__orgs')
+        conference_tag = header_tag.find('a', href=is_conference)
         conference = Conference(
-            name=next(conference_tag.stripped_strings),
+            name=conference_tag.string,
             id=self._parse_conference_link_into_id(team.sport, team.source,
-                                                   conference_tag.a['href']),
-            external_link='https://mcla.us' + conference_tag.a['href'])
-        table = soup.find(class_='team-roster')
-        players = parse_table(
-            table, lambda col, cell: self._parse_roster_table_row(
-                team.sport, team.source, col, cell), RosterPlayer)
+                                                   conference_tag['href']),
+            external_link='https://mcla.us' + conference_tag['href'])
+        player_tiles = soup.find_all('div', class_='player-tile')
+        players = [
+            self._parse_player_tile(team.sport, team.source, tile)
+            for tile in player_tiles
+        ]
         return Roster(coach=coach, conference=conference, players=players)
 
     def get_limiter_session_args(self):
@@ -205,12 +212,14 @@ class Mcla2():
         stats = []
 
         def make_stats_line(**kwargs):
+            face_offs = None
             if 'fow' in kwargs and 'fol' in kwargs:
-                face_offs = FaceOffResults(won=kwargs['fow'],
-                                           lost=kwargs['fol'])
+                if kwargs['fow'] > 0 or kwargs['fol'] > 0:
+                    face_offs = FaceOffResults(won=kwargs['fow'],
+                                               lost=kwargs['fol'])
                 del kwargs['fow']
                 del kwargs['fol']
-                return GameStatLine(face_offs=face_offs, **kwargs)
+            return GameStatLine(face_offs=face_offs, **kwargs)
 
         for table in tables:
             rows = parse_table(
@@ -248,6 +257,47 @@ class Mcla2():
             return {'hometown': cell.string}
         return None
 
+    def _parse_player_tile(self, sport, source, tile) -> RosterPlayer:
+        number = next(
+            tile.find('div', class_='player-tile__name').stripped_strings)
+
+        def is_name(href):
+            return href.startswith('/players')
+
+        name_tile = tile.find('div', class_='player-tile__name')
+        name_tag = name_tile.find('a', href=is_name)
+        name = name_tag.string
+        external_link = 'https://mcla.us' + name_tag['href']
+        id = self._parse_player_link_into_id(sport, source, name_tag['href'])
+        (position, class_year, eligibility, height,
+         weight) = tile.find('div',
+                             class_='player-tile__meta').stripped_strings
+        (hometown, ) = tile.find(
+            'div', class_='player-tile__location').stripped_strings
+
+        return RosterPlayer(number=int(number),
+                            player=PlayerSummary(id=id,
+                                                 name=name,
+                                                 external_link=external_link),
+                            class_year=class_year,
+                            eligibility=eligibility,
+                            position=position,
+                            height=self._parse_height(height),
+                            weight=self._parse_weight(weight),
+                            hometown=hometown)
+
+    def _parse_height(self, inches_string):
+        inches = int(''.join(c for c in inches_string if c.isdigit()))
+        ft = int(inches / 12)
+        remaining_inches = inches % 12
+        if remaining_inches > 0:
+            return f'{ft}\' {remaining_inches}"'
+        else:
+            return f'{ft}\''
+
+    def _parse_weight(self, weight_string):
+        return ''.join(c for c in weight_string if c.isdigit())
+
     def _parse_stats_table_row(self, sport, source, col_name, cell):
         if col_name == '#':
             return {'number': int(cell.string)}
@@ -257,7 +307,8 @@ class Mcla2():
                 PlayerSummary(id=self._parse_player_link_into_id(
                     sport, source, cell.a['href']),
                               name=cell.a.string,
-                              external_link=cell.a['href']),
+                              external_link=self._convert_url_to_absolute(
+                                  cell.a['href'])),
                 'position':
                 cell.find('span', class_='position').string
             }
@@ -275,8 +326,6 @@ class Mcla2():
             return {'s': int(cell.string)}
         if col_name == 'GA':
             return {'ga': int(cell.string)}
-        if col_name == 'SA':
-            return {'sa': int(cell.string)}
 
     def _normalize_slug(self, slug):
         return re.sub(r'\_', '-', slug)
@@ -306,7 +355,7 @@ class Mcla2():
         id = link_parts[2]
         return '-'.join([sport, source, id])
 
-    def _convert_game_details_url(self, href):
+    def _convert_url_to_absolute(self, href):
         if href.startswith('https://'):
             return href
         else:

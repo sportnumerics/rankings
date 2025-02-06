@@ -131,10 +131,10 @@ class TestMcla2(unittest.TestCase):
                          a=0))
 
     def test_mcla_roster(self):
-        html = fixtures.mcla_roster()
+        html = fixtures.mcla2_roster()
         m = mcla2.Mcla2()
-        team = Team(id='ml-mcla-alabama',
-                    name='Alabama',
+        team = Team(id='ml-mcla-arizona-state',
+                    name='Arizona State',
                     year='2024',
                     div='mcla1',
                     sport='ml',
@@ -142,29 +142,27 @@ class TestMcla2(unittest.TestCase):
                     schedule=Location(url='schedule1'))
         roster = m.convert_roster(html, team)
 
-        self.assertEqual(roster.coach.name, 'Shane Ryan')
-        self.assertEqual(roster.coach.id, 'ml-mcla-2417')
+        self.assertEqual(roster.coach.name, 'Justin Straker')
+        self.assertEqual(roster.coach.id, 'ml-mcla-justin-straker-e9a18f')
         self.assertEqual(roster.coach.external_link,
-                         'https://mcla.us/coach/2417/shane_ryan')
+                         'https://mcla.us/coaches/justin-straker-e9a18f')
         self.assertEqual(roster.conference.name,
-                         'SouthEastern Lacrosse Conference')
-        self.assertEqual(roster.conference.id, 'ml-mcla-selc')
+                         'Southwestern Lacrosse Conference')
+        self.assertEqual(roster.conference.id, 'ml-mcla-slc')
         self.assertEqual(roster.conference.external_link,
-                         'https://mcla.us/conference/selc')
-        self.assertEqual(len(roster.players), 48)
+                         'https://mcla.us/conferences/slc')
+        self.assertEqual(len(roster.players), 40)
         first_player = roster.players[0]
-        self.assertEqual(first_player.number, 2)
+        self.assertEqual(first_player.number, 38)
         self.assertEqual(
             first_player.player,
             PlayerSummary(
-                id='ml-mcla-56433',
-                name='Jack Swartwood',
-                external_link='https://mcla.us/player/56433/jack_swartwood.html'
+                id='ml-mcla-quintin-ballweber-54996f',
+                name='Quintin Ballweber',
+                external_link='https://mcla.us/players/quintin-ballweber-54996f'
             ))
-        self.assertEqual(first_player.class_year, 'Jr')
-        self.assertEqual(first_player.eligibility, 'Jr')
-        self.assertEqual(first_player.position, 'Mid')
-        self.assertEqual(first_player.height, '5\' 8"')
-        self.assertEqual(first_player.weight, '160')
-        self.assertEqual(first_player.high_school, 'Knoxville Catholic')
-        self.assertEqual(first_player.hometown, 'Knoxville, TN')
+        self.assertEqual(first_player.class_year, 'So')
+        self.assertEqual(first_player.position, 'Midfield')
+        self.assertEqual(first_player.height, '6\'')
+        self.assertEqual(first_player.weight, '180')
+        self.assertEqual(first_player.hometown, 'Kenmore, WA')
