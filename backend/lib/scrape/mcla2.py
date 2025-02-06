@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import datetime
 import dateutil.parser as parser
 from .tables import parse_table
-from ..shared.types import Team, Location, ScheduleGame, TeamSummary, Game, ScheduleGameResult, GameResult, GameStatLine, Roster, RosterPlayer, Coach, Conference, PlayerSummary
+from ..shared.types import FaceOffResults, Team, Location, ScheduleGame, TeamSummary, Game, ScheduleGameResult, GameResult, GameStatLine, Roster, RosterPlayer, Coach, Conference, PlayerSummary
 
 TIMEZONES = {
     'PDT': -7 * 3600,
@@ -126,34 +126,45 @@ class Mcla2():
                                   game_id: str, sport: str, source: str,
                                   home_team: Team, away_team: Team) -> Game:
         soup = BeautifulSoup(html, 'html.parser')
-        header = soup.find(class_='name-and-info').h1
-        teams, date_tag = header.string.rsplit('on', maxsplit=1)
-        away_name, home_name = map(lambda x: x.strip(), teams.split('vs'))
-        time = header.next_sibling.replace('@', '')
-        date = parser.parse(date_tag.strip() + ' ' + time.strip(),
-                            tzinfos=TIMEZONES).isoformat()
-        game_score = soup.find('div', class_='game-score')
-        away_team_tag = game_score.find(class_='team-away')
-        home_team_tag = game_score.find(class_='team-home')
+        header = soup.find('div', class_='page-header').h2
+        team_date_match = re.match(
+            r'(?P<away_team>.+) @ (?P<home_team>.+) \((?P<date>\d{4}-\d{2}-\d{2})\)',
+            header.string)
+        home_name = team_date_match.group('home_team')
+        away_name = team_date_match.group('away_team')
+        date = team_date_match.group('date')
+        game_stats_meta = soup.find('div', class_='game-stats__meta')
+        time = list(game_stats_meta.stripped_strings)[1]
+        date = parser.parse(date + ' ' + time, tzinfos=TIMEZONES).isoformat()
+        game_score = soup.find('div', class_='game-stats__header')
+        away_team_tag = game_score.find(class_='game-stats__team--away')
+        home_team_tag = game_score.find(class_='game-stats__team--home')
         away_id = self._parse_team_link_into_id(sport, source,
                                                 away_team_tag.a['href'])
         home_id = self._parse_team_link_into_id(sport, source,
                                                 home_team_tag.a['href'])
         home_team = TeamSummary(id=home_id, name=home_name)
         away_team = TeamSummary(id=away_id, name=away_name)
-        away_score = int(away_team_tag.find(class_='score').string)
-        home_score = int(home_team_tag.find(class_='score').string)
+        away_score = int(
+            away_team_tag.find(class_='team__score--final').string)
+        home_score = int(
+            home_team_tag.find(class_='team__score--final').string)
         result = GameResult(home_score=home_score, away_score=away_score)
-        away_header = soup.find('header', attrs={'title': 'Away Team'})
-        if away_header:
-            away_tables = away_header.find_next_siblings('table')
+
+        roster_groups = soup.find('div', class_='roster-groups')
+        (away_container,
+         home_container) = roster_groups.find_all('div', recursive=False)
+
+        if away_container:
+            away_tables = away_container.find_all('table',
+                                                  class_='stats-table')
             away_stats = self._parse_stats_tables(away_tables, sport, source)
         else:
             away_stats = None
 
-        home_header = soup.find('header', attrs={'title': 'Home Team'})
-        if home_header:
-            home_tables = home_header.find_next_siblings('table')
+        if home_container:
+            home_tables = home_container.find_all('table',
+                                                  class_='stats-table')
             home_stats = self._parse_stats_tables(home_tables, sport, source)
         else:
             home_stats = None
@@ -192,69 +203,80 @@ class Mcla2():
 
     def _parse_stats_tables(self, tables, sport, source):
         stats = []
+
+        def make_stats_line(**kwargs):
+            if 'fow' in kwargs and 'fol' in kwargs:
+                face_offs = FaceOffResults(won=kwargs['fow'],
+                                           lost=kwargs['fol'])
+                del kwargs['fow']
+                del kwargs['fol']
+                return GameStatLine(face_offs=face_offs, **kwargs)
+
         for table in tables:
             rows = parse_table(
                 table, lambda col, cell: self._parse_stats_table_row(
-                    sport, source, col, cell), GameStatLine)
+                    sport, source, col, cell), make_stats_line,
+                table.select_one('thead tr:not(.pre-header)'))
             stats.extend(rows)
         return stats
 
     def _parse_roster_table_row(self, sport, source, col_name, cell):
         if col_name == '#':
-            return ('number', int(cell.string))
+            return {'number': int(cell.string)}
         if col_name == 'Player':
             last, first = ''.join(cell.a.stripped_strings).split(',')
-            return ('player',
-                    PlayerSummary(id=self._parse_player_link_into_id(
-                        sport, source, cell.a['href']),
-                                  name=f'{first.strip()} {last.strip()}',
-                                  external_link='https://mcla.us' +
-                                  cell.a['href']))
+            return {
+                'player':
+                PlayerSummary(id=self._parse_player_link_into_id(
+                    sport, source, cell.a['href']),
+                              name=f'{first.strip()} {last.strip()}',
+                              external_link='https://mcla.us' + cell.a['href'])
+            }
         if col_name == 'Yr':
-            return ('class_year', cell.string)
+            return {'class_year': cell.string}
         if col_name == 'El':
-            return ('eligibility', cell.string)
+            return {'eligibility': cell.string}
         if col_name == 'Pos':
-            return ('position', cell.string)
+            return {'position': cell.string}
         if col_name == 'HT':
-            return ('height', cell.string)
+            return {'height': cell.string}
         if col_name == 'WT':
-            return ('weight', cell.string)
+            return {'weight': cell.string}
         if col_name == 'High School':
-            return ('high_school', cell.string)
+            return {'high_school': cell.string}
         if col_name == 'Hometown':
-            return ('hometown', cell.string)
+            return {'hometown': cell.string}
         return None
 
     def _parse_stats_table_row(self, sport, source, col_name, cell):
         if col_name == '#':
-            return ['number', int(cell.string)]
-        if col_name == 'Field Player' or col_name == 'Goalie':
-            return [
-                'player',
+            return {'number': int(cell.string)}
+        if col_name == 'Player':
+            return {
+                'player':
                 PlayerSummary(id=self._parse_player_link_into_id(
                     sport, source, cell.a['href']),
                               name=cell.a.string,
-                              external_link=cell.a['href'])
-            ]
-        if col_name == 'Pos':
-            return ['position', cell.string]
-        if col_name == 'FO':
-            won, lost = cell.string.split('-')
-            if won or lost:
-                return ['face_offs', {'won': won or 0, 'lost': lost or 0}]
-            else:
-                return None
+                              external_link=cell.a['href']),
+                'position':
+                cell.find('span', class_='position').string
+            }
+        if col_name == 'FO-W':
+            return {'fow': int(cell.string)}
+        if col_name == 'FO-L':
+            return {'fol': int(cell.string)}
         if col_name == 'GB':
-            return ['gb', int(cell.string)]
+            return {'gb': int(cell.string)}
         if col_name == 'G':
-            return ['g', int(cell.string)]
+            return {'g': int(cell.string)}
         if col_name == 'A':
-            return ['a', int(cell.string)]
-        if col_name == 'S':
-            return ['s', int(cell.string)]
+            return {'a': int(cell.string)}
+        if col_name == 'SV':
+            return {'s': int(cell.string)}
         if col_name == 'GA':
-            return ['ga', int(cell.string)]
+            return {'ga': int(cell.string)}
+        if col_name == 'SA':
+            return {'sa': int(cell.string)}
 
     def _normalize_slug(self, slug):
         return re.sub(r'\_', '-', slug)
@@ -267,7 +289,8 @@ class Mcla2():
         else:
             return None
 
-    PLAYER_REGEX = re.compile(r'^(https://mcla.us)?/player/(?P<id>\d+)/.*')
+    PLAYER_REGEX = re.compile(
+        r'^(https://mcla.us)?/players/(?P<id>[a-z0-9_\-]+)')
 
     def _parse_player_link_into_id(self, sport, source, link):
         link_match = self.PLAYER_REGEX.match(link)

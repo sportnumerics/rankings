@@ -224,20 +224,20 @@ class Ncaa(Scraper):
                     if not href_match:
                         raise Exception(f'no match {href}')
                     last, first = text.rsplit(', ', 1)
-                    return ('player',
+                    return {'player':
                             PlayerSummary(name=f'{first} {last}',
                                           id=sport + '-' + source + '-' +
                                           href_match.group('spseq'),
                                           external_link=self.base_url +
-                                          href.replace('&amp;', '&')))
+                                          href.replace('&amp;', '&'))}
                 case 'Pos':
-                    return ('position', text) if text else None
+                    return {'position': text} if text else None
                 case 'Goals':
-                    return ('g', get_num(text))
+                    return {'g': get_num(text)}
                 case 'Assists':
-                    return ('a', get_num(text))
+                    return {'a': get_num(text)}
                 case 'GB':
-                    return ('gb', get_num(text))
+                    return {'gb': get_num(text)}
                 case _:
                     return None
         except Exception as ex:

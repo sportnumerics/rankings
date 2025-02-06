@@ -185,60 +185,61 @@ class Mcla():
 
     def _parse_roster_table_row(self, sport, source, col_name, cell):
         if col_name == '#':
-            return ('number', int(cell.string))
+            return {'number': int(cell.string)}
         if col_name == 'Player':
             last, first = ''.join(cell.a.stripped_strings).split(',')
-            return ('player',
-                    PlayerSummary(id=self._parse_player_link_into_id(
-                        sport, source, cell.a['href']),
-                                  name=f'{first.strip()} {last.strip()}',
-                                  external_link='https://mcla.us' +
-                                  cell.a['href']))
+            return {
+                'player':
+                PlayerSummary(id=self._parse_player_link_into_id(
+                    sport, source, cell.a['href']),
+                              name=f'{first.strip()} {last.strip()}',
+                              external_link='https://mcla.us' + cell.a['href'])
+            }
         if col_name == 'Yr':
-            return ('class_year', cell.string)
+            return {'class_year': cell.string}
         if col_name == 'El':
-            return ('eligibility', cell.string)
+            return {'eligibility': cell.string}
         if col_name == 'Pos':
-            return ('position', cell.string)
+            return {'position': cell.string}
         if col_name == 'HT':
-            return ('height', cell.string)
+            return {'height': cell.string}
         if col_name == 'WT':
-            return ('weight', cell.string)
+            return {'weight': cell.string}
         if col_name == 'High School':
-            return ('high_school', cell.string)
+            return {'high_school': cell.string}
         if col_name == 'Hometown':
-            return ('hometown', cell.string)
+            return {'hometown': cell.string}
         return None
 
     def _parse_stats_table_row(self, sport, source, col_name, cell):
         if col_name == '#':
-            return ['number', int(cell.string)]
+            return {'number': int(cell.string)}
         if col_name == 'Field Player' or col_name == 'Goalie':
-            return [
-                'player',
+            return {
+                'player':
                 PlayerSummary(id=self._parse_player_link_into_id(
                     sport, source, cell.a['href']),
                               name=cell.a.string,
                               external_link=cell.a['href'])
-            ]
+            }
         if col_name == 'Pos':
-            return ['position', cell.string]
+            return {'position': cell.string}
         if col_name == 'FO':
             won, lost = cell.string.split('-')
             if won or lost:
-                return ['face_offs', {'won': won or 0, 'lost': lost or 0}]
+                return {'face_offs': {'won': won or 0, 'lost': lost or 0}}
             else:
                 return None
         if col_name == 'GB':
-            return ['gb', int(cell.string)]
+            return {'gb': int(cell.string)}
         if col_name == 'G':
-            return ['g', int(cell.string)]
+            return {'g': int(cell.string)}
         if col_name == 'A':
-            return ['a', int(cell.string)]
+            return {'a': int(cell.string)}
         if col_name == 'S':
-            return ['s', int(cell.string)]
+            return {'s': int(cell.string)}
         if col_name == 'GA':
-            return ['ga', int(cell.string)]
+            return {'ga': int(cell.string)}
 
     def _normalize_slug(self, slug):
         return re.sub(r'\_', '-', slug)

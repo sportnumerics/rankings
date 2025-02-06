@@ -1,16 +1,22 @@
-def parse_table(table, extractor, cls=dict):
+def parse_table(table, extractor, cls=dict, header_row=None):
     col_mapping = {}
-    for i, heading in enumerate(table.find_all('th')):
+    if header_row is None:
+        header_row = table
+    for i, heading in enumerate(header_row.find_all('th')):
         col_mapping[i] = ''.join(heading.stripped_strings)
     rows = []
     for raw_row in table.find_all('tr'):
         try:
             cols = [
-                col for col in _parse_row(raw_row, col_mapping, extractor) if
-                col is not None and col[0] is not None and col[1] is not None
+                col for col in _parse_row(raw_row, col_mapping, extractor)
+                if col is not None
             ]
             if cols:
-                parsed_row = cls(**{col[0]: col[1] for col in cols})
+                parsed_row = cls(**{
+                    k: v
+                    for col in cols
+                    for k, v in col.items()
+                })
                 if parsed_row:
                     rows.append(parsed_row)
         except Exception as e:
