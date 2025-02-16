@@ -220,7 +220,7 @@ class Mcla():
         return Roster(coach=coach, conference=conference, players=players)
 
     def get_limiter_session_args(self):
-        return {}
+        return {'per_minute': 30}
 
     def _parse_stats_tables(self, tables, sport, source):
         stats = []
