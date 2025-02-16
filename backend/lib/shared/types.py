@@ -114,13 +114,13 @@ class Conference(BaseType):
 
 @dataclass
 class RosterPlayer(BaseType):
-    number: int
     player: PlayerSummary
-    class_year: str
-    eligibility: str
-    position: str
-    height: str
-    weight: str
+    class_year: str | None = None
+    position: str | None = None
+    eligibility: str | None = None
+    number: int | None = None
+    height: str | None = None
+    weight: str | None = None
     high_school: str | None = None
     hometown: str | None = None
 
@@ -183,9 +183,9 @@ class TeamRating(BaseType):
 
 @dataclass
 class Roster(BaseType):
-    coach: Coach
     conference: Conference
     players: list[RosterPlayer]
+    coach: Coach | None = None
 
 
 @dataclass

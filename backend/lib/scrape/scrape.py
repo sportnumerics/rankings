@@ -1,3 +1,4 @@
+from lib.scrape import mcla2
 from . import ncaa, mcla
 from ..shared import shared
 from ..shared.types import ScrapeArgs, Scraper, Team, TeamDetail, Location
@@ -58,6 +59,8 @@ class ScrapeRunner():
             self.scraper = ncaa.Ncaa()
         elif source == 'mcla':
             self.scraper = mcla.Mcla()
+        elif source == 'mcla2':
+            self.scraper = mcla2.Mcla2()
         else:
             raise Exception(f'Unimplemented source {source}')
         self.source = source
@@ -113,7 +116,7 @@ class ScrapeRunner():
             self.log.info(f'scraping schedule for {team.name}')
             games = self.scrape_schedule(team)
             if not games:
-                self.log.warn(f'No schedule for {team.name}')
+                self.log.warning(f'No schedule for {team.name}')
                 continue
             roster = self.scrape_roster(team)
             schedules.append(TeamDetail(team=team, games=games, roster=roster))
@@ -141,7 +144,7 @@ class ScrapeRunner():
                     game.details, game.id, team.sport, team.source, home_team,
                     away_team)
                 if not game_details:
-                    self.log.warn(
+                    self.log.warning(
                         f'no game details for game {team.name} vs {game.opponent.name} on {game.date}'
                     )
                     continue
@@ -203,7 +206,7 @@ class ScrapeRunner():
         response = self.cache.get(location.url,
                                   headers={'user-agent': USER_AGENT})
         if response.status_code != 200:
-            self.log.warn(
+            self.log.warning(
                 f'Issue fetching {location.url}, status code: {response.status_code}'
             )
             return None

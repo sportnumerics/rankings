@@ -45,11 +45,13 @@ class Mcla2():
         for table_div in division_tables:
             division_text = next(table_div.thead.stripped_strings)
             for row in table_div.tbody.find_all('tr'):
-                link = row.find('a')
-                link_parts = link['href'].split('/')
+                (team, conf) = row.find_all('a', limit=2)
+                if conf.string == 'NON-MCLA':
+                    continue
+                link_parts = team['href'].split('/')
                 slug = link_parts[2]
                 yield Team(
-                    name=next(link.stripped_strings),
+                    name=next(team.stripped_strings),
                     schedule=Location(
                         url=f'https://mcla.us/teams/{slug}/{year}/schedule'),
                     roster=Location(
@@ -69,7 +71,10 @@ class Mcla2():
             opponent_div = row.find('div',
                                     class_='game-opponent-tile__opponent')
             date_div = row.find('div', class_='game-opponent-tile__date')
-            time_p = row.find('p', class_='game-opponent-tile__time')
+            time_string = next(
+                row.find('p',
+                         class_='game-opponent-tile__time').stripped_strings)
+            time = time_string if _is_time(time_string) else ''
             score_div = row.find('div', class_='game-opponent-tile__result')
 
             opponent_p = opponent_div.find('p', class_='opponent__name')
@@ -85,10 +90,9 @@ class Mcla2():
             opponent.id = self._parse_team_link_into_id(
                 team.sport, team.source, opp_link)
 
-            date = ' '.join([team.year] + list(date_div.stripped_strings) +
-                            list(time_p.stripped_strings))
-            date = datetime.datetime.strptime(
-                date, '%Y %a %b %d %I:%M%p').isoformat()
+            date = ' '.join(
+                list(date_div.stripped_strings) + [time] + [team.year])
+            date = parser.parse(date, tzinfos=TIMEZONES).isoformat()
             game_details_url = score_div.a['href']
             details = Location(
                 url=self._convert_url_to_absolute(game_details_url))
@@ -146,11 +150,19 @@ class Mcla2():
                                                 home_team_tag.a['href'])
         home_team = TeamSummary(id=home_id, name=home_name)
         away_team = TeamSummary(id=away_id, name=away_name)
-        away_score = int(
-            away_team_tag.find(class_='team__score--final').string)
-        home_score = int(
-            home_team_tag.find(class_='team__score--final').string)
-        result = GameResult(home_score=home_score, away_score=away_score)
+        try:
+            away_score = int(
+                away_team_tag.find(class_='team__score--final').string)
+        except:
+            away_score = None
+        try:
+            home_score = int(
+                home_team_tag.find(class_='team__score--final').string)
+        except:
+            home_score = None
+        result = GameResult(
+            home_score=home_score,
+            away_score=away_score) if home_score and away_score else None
 
         roster_groups = soup.find('div', class_='roster-groups')
         (away_container,
@@ -182,11 +194,14 @@ class Mcla2():
     def convert_roster(self, html: str, team: Team) -> Roster:
         soup = BeautifulSoup(html, 'html.parser')
         head_coach_tag = soup.find('div', class_='coach-tile__info')
-        coach = Coach(
-            name=next(head_coach_tag.stripped_strings),
-            id=self._parse_coach_link_into_id(team.sport, team.source,
-                                              head_coach_tag.a['href']),
-            external_link='https://mcla.us' + head_coach_tag.a['href'])
+        if head_coach_tag:
+            coach = Coach(
+                name=next(head_coach_tag.stripped_strings),
+                id=self._parse_coach_link_into_id(team.sport, team.source,
+                                                  head_coach_tag.a['href']),
+                external_link='https://mcla.us' + head_coach_tag.a['href'])
+        else:
+            coach = None
 
         def is_conference(href):
             return href.startswith('/conferences')
@@ -258,8 +273,9 @@ class Mcla2():
         return None
 
     def _parse_player_tile(self, sport, source, tile) -> RosterPlayer:
-        number = next(
+        number_name = list(
             tile.find('div', class_='player-tile__name').stripped_strings)
+        number = int(number_name[0]) if len(number_name) > 1 else None
 
         def is_name(href):
             return href.startswith('/players')
@@ -269,24 +285,31 @@ class Mcla2():
         name = name_tag.string
         external_link = 'https://mcla.us' + name_tag['href']
         id = self._parse_player_link_into_id(sport, source, name_tag['href'])
-        (position, class_year, eligibility, height,
-         weight) = tile.find('div',
-                             class_='player-tile__meta').stripped_strings
-        (hometown, ) = tile.find(
-            'div', class_='player-tile__location').stripped_strings
+        info = list(
+            tile.find('div', class_='player-tile__meta').stripped_strings)
+        position = info[0] if len(info) > 0 else None
+        class_year = info[1] if len(info) > 1 else None
+        eligibility = info[2] if len(info) > 2 else None
+        height = info[3] if len(info) > 3 else None
+        weight = info[4] if len(info) > 4 else None
+        locaton_tile = tile.find('div', class_='player-tile__location')
+        (hometown, ) = locaton_tile.stripped_strings if locaton_tile else (
+            None, )
 
-        return RosterPlayer(number=int(number),
-                            player=PlayerSummary(id=id,
+        return RosterPlayer(player=PlayerSummary(id=id,
                                                  name=name,
                                                  external_link=external_link),
                             class_year=class_year,
                             eligibility=eligibility,
                             position=position,
+                            number=number,
                             height=self._parse_height(height),
                             weight=self._parse_weight(weight),
                             hometown=hometown)
 
     def _parse_height(self, inches_string):
+        if not inches_string:
+            return None
         inches = int(''.join(c for c in inches_string if c.isdigit()))
         ft = int(inches / 12)
         remaining_inches = inches % 12
@@ -296,11 +319,13 @@ class Mcla2():
             return f'{ft}\''
 
     def _parse_weight(self, weight_string):
+        if not weight_string:
+            return None
         return ''.join(c for c in weight_string if c.isdigit())
 
     def _parse_stats_table_row(self, sport, source, col_name, cell):
         if col_name == '#':
-            return {'number': int(cell.string)}
+            return {'number': int(cell.string) if cell.string else None}
         if col_name == 'Player':
             return {
                 'player':
@@ -360,3 +385,11 @@ class Mcla2():
             return href
         else:
             return 'https://mcla.us' + href
+
+
+def _is_time(time_string):
+    try:
+        parser.parse(time_string, tzinfos=TIMEZONES)
+        return True
+    except:
+        return False
