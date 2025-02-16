@@ -26,32 +26,25 @@ class TestScrape(unittest.TestCase):
         team_list = list(
             n.convert_team_list_html(html, '2023',
                                      next(n.get_team_list_urls('2023'))))
-        self.assertEqual(len(team_list), 76)
+        self.assertEqual(len(team_list), 77)
         self.assertEqual(
             team_list[0],
-            Team(
-                name='Air Force',
-                schedule=Location(
-                    url=
-                    'https://stats.ncaa.org/player/game_by_game?game_sport_year_ctl_id=16320&org_id=721&stats_player_seq=-100'
-                ),
-                year='2023',
-                id='ml-ncaa-721',
-                div='ml1',
-                sport='ml',
-                source='ncaa'))
+            Team(name='Air Force',
+                 schedule=Location(url='https://stats.ncaa.org/teams/594020'),
+                 year='2023',
+                 id='ml-ncaa-air-force',
+                 div='ml1',
+                 sport='ml',
+                 source='ncaa'))
 
     def test_ncaa_team_schedule_html(self):
         html = fixtures.ncaa_game_by_game()
         n = ncaa.Ncaa()
         team = Team(
             name='Air Force',
-            schedule=Location(
-                url=
-                'https://stats.ncaa.org/player/game_by_game?game_sport_year_ctl_id=16320&org_id=721&stats_player_seq=-100'
-            ),
+            schedule=Location(url='https://stats.ncaa.org/teams/594020'),
             year=2023,
-            id='ml-ncaa-721',
+            id='ml-ncaa-air-force',
             div='ml1',
             sport='ml',
             source='ncaa')
@@ -59,18 +52,19 @@ class TestScrape(unittest.TestCase):
         self.assertEqual(
             games[0],
             ScheduleGame(
-                id='ml-ncaa-1822151',
-                date='2020-02-01',
-                opponent=TeamSummary(name='Duke', id='ml-ncaa-193'),
+                id='ml-ncaa-6310104',
+                date='2025-02-01',
+                opponent=TeamSummary(name='Lafayette', id='ml-ncaa-lafayette'),
                 home=False,
-                result=ScheduleGameResult(points_for=14, points_against=13),
+                result=ScheduleGameResult(points_for=8, points_against=11),
                 source='ncaa',
                 sport='ml',
                 details=Location(
-                    url='https://stats.ncaa.org/contests/1822151/box_score')))
+                    url='https://stats.ncaa.org/contests/6310104/box_score')))
         self.assertEqual(list(map(lambda g: g.opponent.name, games)), [
-            'Duke', 'Denver', 'Utah', 'Cleveland St.', 'St. Bonaventure',
-            'Virginia', 'Canisius', 'Furman'
+            'Lafayette', 'Denver', 'Ohio St.', 'Boston U.', 'Quinnipiac',
+            'Marist', 'Duke', 'Marquette', 'Jacksonville', 'Bellarmine',
+            'Queens (NC)', 'Mercer', 'Utah'
         ])
 
     def test_ncaa_game_details(self):
@@ -136,38 +130,6 @@ class TestScrape(unittest.TestCase):
                          gb=0,
                          g=0,
                          a=0))
-
-    def test_non_divisional_and_alt_id(self):
-        html = fixtures.malone_game_by_game()
-        n = ncaa.Ncaa()
-        team = Team(
-            id='ml-ncaa-721',
-            name='Malone',
-            schedule=Location(
-                url=
-                'https://stats.ncaa.org/player/game_by_game?game_sport_year_ctl_id=16320&org_id=721&stats_player_seq=-100'
-            ),
-            div='ml1',
-            year='2024',
-            sport='ml',
-            source='ncaa')
-        games = n.convert_schedule_html(html, team)
-        self.assertEqual(team.alt_id, '571523')
-        self.assertEqual(
-            games[0],
-            ScheduleGame(date='2024-02-08',
-                         opponent=TeamSummary(name='SCAD Savannah',
-                                              id='ml-ncaa-nd-scad-savannah'),
-                         home=False,
-                         source='ncaa',
-                         sport='ml'))
-        self.assertEqual(
-            games[1],
-            ScheduleGame(date='2024-02-10',
-                         opponent=TeamSummary(name='Shorter', alt_id='571497'),
-                         home=False,
-                         source='ncaa',
-                         sport='ml'))
 
     def test_cross_linking(self):
         n = ncaa.Ncaa()

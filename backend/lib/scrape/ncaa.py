@@ -34,17 +34,15 @@ class Ncaa(Scraper):
         sport = SPORT_MAP[params['sport_code']]
         for link in team_links:
             link_parts = link['href'].split('/')
-            yield Team(
-                name=link.string,
-                schedule=Location(
-                    url=
-                    f'{self.base_url}/player/game_by_game?game_sport_year_ctl_id={link_parts[3]}&org_id={link_parts[2]}&stats_player_seq=-100'
-                ),
-                id=f'{sport}-ncaa-{link_parts[2]}',
-                div=sport + params['division'],
-                sport=sport,
-                year=params['academic_year'],
-                source='ncaa')
+            name = link.string
+            yield Team(name=name,
+                       schedule=Location(
+                           url=f'{self.base_url}/teams/{link_parts[2]}'),
+                       id=f'{sport}-ncaa-{self._generate_slug(name)}',
+                       div=sport + params['division'],
+                       sport=sport,
+                       year=params['academic_year'],
+                       source='ncaa')
 
     OPPONENT_NAME_REGEX = re.compile(
         r'(?P<away>\@)?\s*(?P<opponent_name>[^\@]+)(\@(?P<neutral_site>.*))?')
@@ -64,44 +62,34 @@ class Ncaa(Scraper):
                                                 }).attrs['value']
         if alt_id:
             team.alt_id = alt_id
-        game_breakdown_div = soup.find(id='game_breakdown_div')
-        rows = game_breakdown_div.table.table.find_all(
-            'tr') if game_breakdown_div else []
+        schedule_header = soup.find('div',
+                                    class_='card-header',
+                                    string='Schedule/Results')
+        schedule_div = schedule_header.parent
+        rows = schedule_div.table.tbody.find_all('tr')
         games = []
         for row in rows:
-            if 'class' in row.attrs or 'style' in row.attrs:
-                continue
             cols = list(row.find_all('td'))
+            if len(cols) < 4:
+                continue
             date_col = cols[0]
             opp_col = cols[1]
             result_col = cols[2]
 
             date = self._to_iso_format(date_col.string)
 
-            opp_link = opp_col.find(
-                lambda tag: tag.name == 'a' and not tag.has_attr('class'))
+            opp_link = opp_col.a
             opp_string = ' '.join(opp_col.stripped_strings)
             opp_match = self.OPPONENT_NAME_REGEX.match(opp_string)
             if not opp_match:
                 continue
 
-            opponent = TeamSummary(
-                name=opp_match.group('opponent_name').strip())
+            opponent_name = opp_match.group('opponent_name').strip()
+            opponent = TeamSummary(name=opponent_name)
             home = opp_match.group('away') is None
 
-            if opp_link:
-                id_match = self.OPPONENT_ID_REGEX.match(opp_link['href'])
-                if id_match:
-                    opponent.id = '-'.join(
-                        [team.sport, team.source,
-                         id_match.group('id')])
-                alt_id_match = self.OPPONENT_ALT_ID_REGEX.match(
-                    opp_link['href'])
-                if alt_id_match:
-                    opponent.alt_id = alt_id_match.group('alt_id')
-            else:
-                opponent.id = self._foreign_opponent_id(
-                    team.sport, team.source, opponent.name)
+            opponent.id = self._opponent_id(team.sport, team.source,
+                                            opponent_name)
 
             result_str = ' '.join(result_col.stripped_strings)
             score_match = self.SCORE_REGEX.match(result_str)
@@ -224,12 +212,14 @@ class Ncaa(Scraper):
                     if not href_match:
                         raise Exception(f'no match {href}')
                     last, first = text.rsplit(', ', 1)
-                    return {'player':
-                            PlayerSummary(name=f'{first} {last}',
-                                          id=sport + '-' + source + '-' +
-                                          href_match.group('spseq'),
-                                          external_link=self.base_url +
-                                          href.replace('&amp;', '&'))}
+                    return {
+                        'player':
+                        PlayerSummary(name=f'{first} {last}',
+                                      id=sport + '-' + source + '-' +
+                                      href_match.group('spseq'),
+                                      external_link=self.base_url +
+                                      href.replace('&amp;', '&'))
+                    }
                 case 'Pos':
                     return {'position': text} if text else None
                 case 'Goals':
@@ -247,5 +237,10 @@ class Ncaa(Scraper):
         return datetime.datetime.strptime(date, '%m/%d/%Y').date().isoformat()
 
     def _foreign_opponent_id(self, sport, source, name):
-        return f'{sport}-{source}-nd-' + re.sub(r'[^a-z-]', '',
-                                                name.lower().replace(' ', '-'))
+        return f'{sport}-{source}-nd-' + self._generate_slug(name)
+
+    def _opponent_id(self, sport, source, name):
+        return f'{sport}-{source}-{self._generate_slug(name)}'
+
+    def _generate_slug(self, name):
+        return re.sub(r'[^a-z-]', '', name.lower().replace(' ', '-'))

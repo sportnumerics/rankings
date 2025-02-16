@@ -1,3 +1,7 @@
+import datetime
+
+import dateutil
+import dateutil.parser
 from lib.scrape import mcla
 from . import ncaa, mcla
 from ..shared import shared
@@ -5,7 +9,7 @@ from ..shared.types import ScrapeArgs, Scraper, Team, TeamDetail, Location
 from collections.abc import Iterator
 from requests_cache import CacheMixin, CachedSession
 from requests_ratelimiter import LimiterSession
-from datetime import timedelta
+from datetime import UTC, timedelta, tzinfo
 import os
 import pathlib
 import logging
@@ -131,6 +135,10 @@ class ScrapeRunner():
             team = schedule.team
             for game in schedule.games:
                 if not game.details:
+                    continue
+
+                if dateutil.parser.isoparse(
+                        game.date).date() > datetime.date.today():
                     continue
 
                 self.log.info(
