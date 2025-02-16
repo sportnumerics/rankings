@@ -176,6 +176,8 @@ class ScrapeRunner():
     def scrape_schedule(self, team: Team):
         schedule_location = team.schedule
         html = self.fetch(schedule_location)
+        if not html:
+            return
         try:
             return self.scraper.convert_schedule_html(html, team)
         except Exception as e:
