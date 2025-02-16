@@ -105,7 +105,9 @@ class Ncaa(Scraper):
                 game_details_url = result_col.a['href']
                 url_match = self.DETAILS_URL_REGEX.match(game_details_url)
                 if url_match:
-                    details = Location(url=self.base_url + game_details_url)
+                    details = Location(url=self.base_url +
+                                       game_details_url.replace(
+                                           'box_score', 'individual_stats'))
                     id = 'ml-ncaa-' + url_match.group('id')
 
             games.append(
@@ -139,26 +141,32 @@ class Ncaa(Scraper):
                                   game_id: str, sport: str, source: str,
                                   home_team: Team, away_team: Team) -> Game:
         soup = BeautifulSoup(html, 'html.parser')
-        game_date = soup.find('td', string='Game Date:')
-        if not game_date:
+        header = soup.find('div', class_='table-responsive')
+        header_table_rows = list(header.table.table.find_all('tr'))
+        date_row = header_table_rows[3]
+        if not date_row:
             return None
-        date = self._to_iso_format(
-            next(game_date.find_next_sibling('td').stripped_strings))
+        date = self._to_iso_format(next(date_row.stripped_strings))
 
-        def is_team_href(href):
-            m = self.TEAM_HREF_REGEX.match(href)
-            return m
+        def is_team_href(tag):
+            if tag.name != 'a' or tag.get('href') is None:
+                return False
+            m = self.TEAM_HREF_REGEX.match(tag['href'])
+            if m:
+                return tag.find('img') is None
+            return False
 
-        team_links = soup.find_all('a', href=is_team_href)
+        team_links = soup.find_all(is_team_href)
+
+        def is_number(str):
+            return str.strip().isnumeric()
 
         def get_total_score(link):
-            row = link.find_parent('tr')
-            cells = row.find_all('td')
-            return int(cells[-1].get_text(strip=True))
+            link_cell = link.find_parent('td')
+            score_cell = link_cell.find_next_sibling('td', string=is_number)
+            return int(score_cell.string)
 
-        stats_tables = list(
-            map(lambda t: t.find_parent('table'),
-                soup.find_all('th', string='Player')))
+        stats_tables = list(soup.find_all('table', class_='dataTable'))
 
         away_score = get_total_score(team_links[0])
         home_score = get_total_score(team_links[1])
@@ -191,9 +199,7 @@ class Ncaa(Scraper):
     def convert_roster(self, html, team):
         return None
 
-    PLAYER_HREF_REGEX = re.compile(
-        r'/player/index\?game_sport_year_ctl_id=(?P<gsycid>\d+)&(amp;)?org_id=(?P<org_id>\d+)&(amp;)?stats_player_seq=(?P<spseq>\d+)'
-    )
+    PLAYER_HREF_REGEX = re.compile(r'/players/(?P<player_id>\d+)')
 
     def _map_statistic(self, sport, source, key, tag) -> tuple[str, Any]:
         text = tag.get_text(strip=True)
@@ -203,7 +209,9 @@ class Ncaa(Scraper):
 
         try:
             match key:
-                case 'Player':
+                case '#':
+                    return {'number': get_num(text)}
+                case 'Name':
                     a = tag.find('a')
                     if not a:
                         return None
@@ -211,16 +219,14 @@ class Ncaa(Scraper):
                     href_match = self.PLAYER_HREF_REGEX.match(href)
                     if not href_match:
                         raise Exception(f'no match {href}')
-                    last, first = text.rsplit(', ', 1)
                     return {
                         'player':
-                        PlayerSummary(name=f'{first} {last}',
+                        PlayerSummary(name=text,
                                       id=sport + '-' + source + '-' +
-                                      href_match.group('spseq'),
-                                      external_link=self.base_url +
-                                      href.replace('&amp;', '&'))
+                                      href_match.group('player_id'),
+                                      external_link=self.base_url + href)
                     }
-                case 'Pos':
+                case 'P':
                     return {'position': text} if text else None
                 case 'Goals':
                     return {'g': get_num(text)}

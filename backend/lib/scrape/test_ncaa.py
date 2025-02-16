@@ -60,7 +60,9 @@ class TestScrape(unittest.TestCase):
                 source='ncaa',
                 sport='ml',
                 details=Location(
-                    url='https://stats.ncaa.org/contests/6310104/box_score')))
+                    url=
+                    'https://stats.ncaa.org/contests/6310104/individual_stats')
+            ))
         self.assertEqual(list(map(lambda g: g.opponent.name, games)), [
             'Lafayette', 'Denver', 'Ohio St.', 'Boston U.', 'Quinnipiac',
             'Marist', 'Duke', 'Marquette', 'Jacksonville', 'Bellarmine',
@@ -94,42 +96,42 @@ class TestScrape(unittest.TestCase):
             source='ncaa')
         game_details = n.convert_game_details_html(
             html,
-            Location(url='https://stats.ncaa.org/contests/1822151/box_score'),
-            'ml-ncaa-1822151', 'ml', 'ncaa', home_team, away_team)
-        self.assertEqual(game_details.date, '2020-02-01')
-        self.assertEqual(game_details.id, 'ml-ncaa-1822151')
-        self.assertEqual(game_details.external_link,
-                         'https://stats.ncaa.org/contests/1822151/box_score')
+            Location(
+                url='https://stats.ncaa.org/contests/6310104/individual_stats'
+            ), 'ml-ncaa-6310104', 'ml', 'ncaa', home_team, away_team)
+        self.assertEqual(game_details.date, '2025-02-01')
+        self.assertEqual(game_details.id, 'ml-ncaa-6310104')
+        self.assertEqual(
+            game_details.external_link,
+            'https://stats.ncaa.org/contests/6310104/individual_stats')
         self.assertEqual(game_details.home_team, home_team)
         self.assertEqual(game_details.away_team, away_team)
         self.assertEqual(game_details.result,
-                         GameResult(home_score=13, away_score=14))
-        self.assertEqual(len(game_details.home_stats), 27)
+                         GameResult(home_score=11, away_score=8))
+        self.assertEqual(len(game_details.home_stats), 29)
         self.assertEqual(
             game_details.home_stats[0],
             GameStatLine(player=PlayerSummary(
-                name='CJ Carpenter',
-                id='ml-ncaa-1764378',
-                external_link=
-                'https://stats.ncaa.org/player/index?game_sport_year_ctl_id=15203&org_id=193&stats_player_seq=1764378'
-            ),
+                name='Nicholas Blalock',
+                id='ml-ncaa-9099631',
+                external_link='https://stats.ncaa.org/players/9099631'),
                          position='A',
-                         gb=2,
-                         g=2,
-                         a=2))
-        self.assertEqual(len(game_details.away_stats), 28)
+                         gb=1,
+                         g=1,
+                         a=1,
+                         number=14))
+        self.assertEqual(len(game_details.away_stats), 27)
         self.assertEqual(
             game_details.away_stats[0],
             GameStatLine(player=PlayerSummary(
-                name='August Johnson',
-                id='ml-ncaa-2126497',
-                external_link=
-                'https://stats.ncaa.org/player/index?game_sport_year_ctl_id=15203&org_id=721&stats_player_seq=2126497'
-            ),
-                         position='A',
-                         gb=0,
+                name='Connor Albertson',
+                id='ml-ncaa-8765561',
+                external_link='https://stats.ncaa.org/players/8765561'),
+                         position='D',
+                         gb=1,
                          g=0,
-                         a=0))
+                         a=0,
+                         number=24))
 
     def test_cross_linking(self):
         n = ncaa.Ncaa()
