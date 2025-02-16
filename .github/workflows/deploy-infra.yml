@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - 'infrastructure/**'
+      - '.github/workflows/deploy-infra.yml'
   workflow_dispatch: {}
 
 permissions:
