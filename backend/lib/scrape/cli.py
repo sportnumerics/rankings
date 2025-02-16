@@ -5,7 +5,7 @@ def add_parsers(parsers):
     scrape_parser = parsers.add_parser(
         'scrape', help='scrape stats from league websites')
     scrape_parser.add_argument('--source',
-                               choices=['ncaa', 'mcla', 'mcla2'],
+                               choices=['ncaa', 'mcla'],
                                required=True,
                                help='league source')
     scrape_parser.add_argument('--out-dir',

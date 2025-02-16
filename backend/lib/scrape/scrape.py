@@ -1,4 +1,4 @@
-from lib.scrape import mcla2
+from lib.scrape import mcla
 from . import ncaa, mcla
 from ..shared import shared
 from ..shared.types import ScrapeArgs, Scraper, Team, TeamDetail, Location
@@ -60,7 +60,7 @@ class ScrapeRunner():
         elif source == 'mcla':
             self.scraper = mcla.Mcla()
         elif source == 'mcla2':
-            self.scraper = mcla2.Mcla2()
+            self.scraper = mcla.Mcla()
         else:
             raise Exception(f'Unimplemented source {source}')
         self.source = source
