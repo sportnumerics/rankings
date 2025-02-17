@@ -1,8 +1,10 @@
 from collections.abc import Iterator
+import datetime
 import re
 from turtle import position
 from typing import Any, Generator
 from bs4 import BeautifulSoup
+import dateutil
 import dateutil.parser as parser
 from .tables import parse_table
 from ..shared.types import FaceOffResults, Team, Location, ScheduleGame, TeamSummary, Game, ScheduleGameResult, GameResult, GameStatLine, Roster, RosterPlayer, Coach, Conference, PlayerSummary
@@ -106,10 +108,21 @@ class Mcla():
                 r'(?P<result>[WL])?\s?(?P<points_for>\d+)\s?-\s?(?P<points_against>\d+)',
                 score)
 
-            result = ScheduleGameResult(
-                points_for=int(score_match.group('points_for')),
-                points_against=int(score_match.group(
-                    'points_against'))) if score_match else None
+            if score_match:
+                points_for = int(score_match.group('points_for'))
+                points_against = int(score_match.group('points_against'))
+                d = dateutil.parser.isoparse(date).date()
+                today = datetime.date.today()
+                if d < today:
+                    result = ScheduleGameResult(points_for=points_for,
+                                                points_against=points_against)
+                elif points_for > 0 or points_against > 0:
+                    result = ScheduleGameResult(points_for=points_for,
+                                                points_against=points_against)
+                else:
+                    result = None
+            else:
+                result = None
 
             games.append(
                 ScheduleGame(id=id,
