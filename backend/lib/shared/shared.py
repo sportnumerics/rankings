@@ -1,7 +1,13 @@
+import dataclasses
+import os
+import pathlib
 from typing import IO, TypeVar
 from collections.abc import Iterator, Iterable
 import json
 import typing
+
+import pyarrow
+import pyarrow.parquet as pq
 
 from .types import BaseType
 
@@ -42,3 +48,17 @@ def load_from_files(cls: type[T], filenames: Iterable[str]) -> Iterable[T]:
     for file in filenames:
         with open(file) as f:
             yield load(cls, f)
+
+
+R = TypeVar('R')
+
+
+def dump_parquet(data: Iterable[R], filename: str):
+    dir = os.path.dirname(filename)
+    pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
+    table = pyarrow.Table.from_pylist([dataclasses.asdict(d) for d in data])
+    pq.write_table(table, filename)
+
+
+def load_parquet(cls: type[R], filename: str) -> Iterable[R]:
+    return [cls.from_dict(r) for r in pq.read_table(filename).to_pylist()]

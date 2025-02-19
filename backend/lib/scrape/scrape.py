@@ -5,7 +5,7 @@ import dateutil.parser
 from lib.scrape import mcla
 from . import ncaa, mcla
 from ..shared import shared
-from ..shared.types import ScrapeArgs, Scraper, Team, TeamDetail, Location
+from ..shared.types import Game, ScrapeArgs, Scraper, Team, TeamDetail, Location
 from collections.abc import Iterator
 from requests_cache import CacheMixin, CachedSession
 from requests_ratelimiter import LimiterSession
@@ -36,13 +36,13 @@ def scrape_schedules(args: ScrapeArgs):
                               div=args.div,
                               limit=args.limit)
 
-        if not hasattr(args, 'team_list_file') or not args.team_list_file:
-            runner.scrape_and_write_team_lists()
-            team_list_file = runner.get_team_list_filename()
+        if hasattr(args, 'team_list_file') and args.team_list_file:
+            team_list_json_file = args.team_list_file
         else:
-            team_list_file = args.team_list_file
+            runner.scrape_and_write_team_lists()
+            team_list_json_file = None
 
-        runner.scrape_and_write_schedules(team_list_file)
+        runner.scrape_and_write_schedules(team_list_json_file)
 
 
 class LimitedCachedSession(CacheMixin, LimiterSession):
@@ -91,18 +91,30 @@ class ScrapeRunner():
         )
         teams = self.scrape_teams()
 
-        pathlib.Path(os.path.join(self.out_dir,
-                                  self.year)).mkdir(parents=True,
-                                                    exist_ok=True)
-        with open(self.get_team_list_filename(), 'w') as f:
+        year_dir = os.path.join(self.out_dir, self.year)
+        pathlib.Path(year_dir).mkdir(parents=True, exist_ok=True)
+
+        shared.dump_parquet(
+            teams, os.path.join(year_dir, self.source, 'teams.parquet'))
+
+        with open(
+                os.path.join(self.out_dir, self.year,
+                             f'{self.source}-teams.json'), 'w') as f:
             shared.dump(teams, f, many=True)
 
-    def scrape_and_write_schedules(self, team_list_file: str):
+    def scrape_and_write_schedules(self, team_list_json_file: str | None):
         self.log.info(
             f'scraping schedules for {self.source} ({self.year}) into {self.out_dir}'
         )
-        with open(team_list_file) as f:
-            teams = shared.load_many(Team, f)
+
+        year_dir = os.path.join(self.out_dir, self.year)
+
+        if team_list_json_file:
+            with open(team_list_json_file) as f:
+                teams = shared.load_many(Team, f)
+        else:
+            teams = shared.load_parquet(
+                Team, os.path.join(year_dir, self.source, 'teams.parquet'))
 
         if self.limit:
             teams = teams[:self.limit]
@@ -126,11 +138,17 @@ class ScrapeRunner():
             schedules.append(TeamDetail(team=team, games=games, roster=roster))
 
         self.cross_link_schedules(schedules)
+
         for schedule in schedules:
             file_name = os.path.join(schedule_dir, schedule.team.id + '.json')
             with open(file_name, 'w') as f:
                 shared.dump(schedule, f)
 
+        shared.dump_parquet(
+            schedules, os.path.join(year_dir, self.source,
+                                    'schedules.parquet'))
+
+        all_games = []
         for schedule in schedules:
             team = schedule.team
             for game in schedule.games:
@@ -156,9 +174,13 @@ class ScrapeRunner():
                         f'no game details for game {team.name} vs {game.opponent.name} on {game.date}'
                     )
                     continue
+                all_games.append(game_details)
                 with open(os.path.join(games_dir, game_details.id + '.json'),
                           'w') as f:
                     shared.dump(game_details, f)
+
+        shared.dump_parquet(
+            all_games, os.path.join(year_dir, self.source, 'games.parquet'))
 
     def scrape_teams(self) -> Iterator[Team]:
         for url in self.scraper.get_team_list_urls(self.year):
@@ -221,7 +243,3 @@ class ScrapeRunner():
             )
             return None
         return response.text
-
-    def get_team_list_filename(self):
-        return os.path.join(self.out_dir, self.year,
-                            f'{self.source}-teams.json')
