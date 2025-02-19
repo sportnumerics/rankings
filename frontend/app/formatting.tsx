@@ -5,9 +5,13 @@ export function twoPlaces(rating?: number): string {
 }
 
 export function datetime(date: string, hideTime: boolean = true): string {
-    const m = moment(date);
+    const m = moment.parseZone(date);
     if (!hideTime && date.includes('T')) {
-        return m.format('M/D ha');
+        if (m.minute() > 0) {
+            return m.format('M/D h:mma');
+        } else {
+            return m.format('M/D ha')
+        }
     } else {
         return m.format('M/D');
     }
