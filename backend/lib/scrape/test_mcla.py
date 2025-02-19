@@ -143,26 +143,25 @@ class TestMcla(unittest.TestCase):
         roster = m.convert_roster(html, team)
 
         self.assertEqual(roster.coach.name, 'Justin Straker')
-        self.assertEqual(roster.coach.id, 'ml-mcla-justin-straker-e9a18f')
+        self.assertEqual(roster.coach.id, 'ml-mcla-justin-straker-9f2386')
         self.assertEqual(roster.coach.external_link,
-                         'https://mcla.us/coaches/justin-straker-e9a18f')
+                         'https://mcla.us/coaches/justin-straker-9f2386')
         self.assertEqual(roster.conference.name,
                          'Southwestern Lacrosse Conference')
         self.assertEqual(roster.conference.id, 'ml-mcla-slc')
         self.assertEqual(roster.conference.external_link,
                          'https://mcla.us/conferences/slc')
-        self.assertEqual(len(roster.players), 40)
+        self.assertEqual(len(roster.players), 46)
         first_player = roster.players[0]
-        self.assertEqual(first_player.number, 38)
+        self.assertEqual(first_player.number, 34)
         self.assertEqual(
             first_player.player,
             PlayerSummary(
-                id='ml-mcla-quintin-ballweber-54996f',
-                name='Quintin Ballweber',
-                external_link='https://mcla.us/players/quintin-ballweber-54996f'
-            ))
-        self.assertEqual(first_player.class_year, 'So')
+                id='ml-mcla-luke-baldwin-c56198',
+                name='Luke Baldwin',
+                external_link='https://mcla.us/players/luke-baldwin-c56198'))
+        self.assertEqual(first_player.class_year, 'Fr')
         self.assertEqual(first_player.position, 'Midfield')
-        self.assertEqual(first_player.height, '6\'')
-        self.assertEqual(first_player.weight, '180')
-        self.assertEqual(first_player.hometown, 'Kenmore, WA')
+        self.assertEqual(first_player.height, '6\' 0"')
+        self.assertEqual(first_player.weight, '190 lbs')
+        self.assertEqual(first_player.hometown, 'Dallas, TX')

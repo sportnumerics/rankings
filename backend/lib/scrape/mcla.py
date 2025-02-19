@@ -315,25 +315,9 @@ class Mcla():
                             eligibility=eligibility,
                             position=position,
                             number=number,
-                            height=self._parse_height(height),
-                            weight=self._parse_weight(weight),
+                            height=height,
+                            weight=weight,
                             hometown=hometown)
-
-    def _parse_height(self, inches_string):
-        if not inches_string:
-            return None
-        inches = int(''.join(c for c in inches_string if c.isdigit()))
-        ft = int(inches / 12)
-        remaining_inches = inches % 12
-        if remaining_inches > 0:
-            return f'{ft}\' {remaining_inches}"'
-        else:
-            return f'{ft}\''
-
-    def _parse_weight(self, weight_string):
-        if not weight_string:
-            return None
-        return ''.join(c for c in weight_string if c.isdigit())
 
     def _parse_stats_table_row(self, sport, source, col_name, cell):
         if col_name == '#':
