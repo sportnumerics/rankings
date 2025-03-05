@@ -165,7 +165,7 @@ class PlayerRating(BaseType):
 
 @dataclass
 class TeamPlayersRating(BaseType):
-    team: TeamSummary
+    team: str
     goals_off: float
     goals_def: float
     assists_off: float

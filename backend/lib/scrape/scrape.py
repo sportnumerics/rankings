@@ -91,11 +91,10 @@ class ScrapeRunner():
         )
         teams = self.scrape_teams()
 
-        year_dir = os.path.join(self.out_dir, self.year)
-        pathlib.Path(year_dir).mkdir(parents=True, exist_ok=True)
-
         shared.dump_parquet(
-            teams, os.path.join(year_dir, self.source, 'teams.parquet'))
+            teams,
+            shared.parquet_path(self.out_dir, self.year, 'teams',
+                                f'{self.source}.parquet'))
 
         with open(
                 os.path.join(self.out_dir, self.year,
@@ -107,17 +106,17 @@ class ScrapeRunner():
             f'scraping schedules for {self.source} ({self.year}) into {self.out_dir}'
         )
 
-        year_dir = os.path.join(self.out_dir, self.year)
-
         if team_list_json_file:
             with open(team_list_json_file) as f:
                 teams = shared.load_many(Team, f)
         else:
             teams = shared.load_parquet(
-                Team, os.path.join(year_dir, self.source, 'teams.parquet'))
+                Team,
+                shared.parquet_path(self.out_dir, self.year, 'teams',
+                                    f'{self.source}.parquet'))
 
         if self.limit:
-            teams = teams[:self.limit]
+            teams = list(teams)[:self.limit]
 
         schedule_dir = os.path.join(self.out_dir, self.year, 'schedules')
         pathlib.Path(schedule_dir).mkdir(parents=True, exist_ok=True)
@@ -145,8 +144,9 @@ class ScrapeRunner():
                 shared.dump(schedule, f)
 
         shared.dump_parquet(
-            schedules, os.path.join(year_dir, self.source,
-                                    'schedules.parquet'))
+            schedules,
+            shared.parquet_path(self.out_dir, self.year, 'schedules',
+                                f'{self.source}.parquet'))
 
         all_games = []
         for schedule in schedules:
@@ -180,7 +180,9 @@ class ScrapeRunner():
                     shared.dump(game_details, f)
 
         shared.dump_parquet(
-            all_games, os.path.join(year_dir, self.source, 'games.parquet'))
+            all_games,
+            shared.parquet_path(self.out_dir, self.year, 'games',
+                                f'{self.source}.parquet'))
 
     def scrape_teams(self) -> Iterator[Team]:
         for url in self.scraper.get_team_list_urls(self.year):

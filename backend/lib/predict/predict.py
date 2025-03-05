@@ -17,13 +17,10 @@ LOGGER = logging.getLogger(__name__)
 def predict(args: PredictArgs):
     out_dir = args.out_dir
     for year in shared.years(args.year):
-        schedules_dir = os.path.join(args.input_dir, year, 'schedules')
-        _, _, filenames = next(os.walk(schedules_dir))
-
         schedules = list(
-            shared.load_from_files(
+            shared.load_parquet_dataset(
                 TeamDetail,
-                map(lambda f: os.path.join(schedules_dir, f), filenames)))
+                shared.parquet_path(args.input_dir, year, 'schedules')))
 
         LOGGER.info(
             f'Calculating team ratings for {len(schedules)} teams in {year}')
@@ -33,6 +30,11 @@ def predict(args: PredictArgs):
 
         pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True,
                                                         exist_ok=True)
+
+        shared.dump_parquet(
+            sorted_ratings,
+            shared.parquet_path(out_dir, year, 'team_ratings',
+                                f'data.parquet'))
         with open(os.path.join(out_dir, year, 'team-ratings.json'), 'w') as f:
             shared.dump(sorted_ratings, f, many=True)
 
@@ -43,12 +45,9 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
     out_dir = args.out_dir
     year = args.year
 
-    games_dir = os.path.join(args.input_dir, year, 'games')
-    _, _, filenames = next(os.walk(games_dir))
-
     games = list(
-        shared.load_from_files(
-            Game, map(lambda f: os.path.join(games_dir, f), filenames)))
+        shared.load_parquet_dataset(
+            Game, shared.parquet_path(args.input_dir, year, 'games')))
 
     teams_by_id: Mapping[str, Team] = {}
     players: Mapping[str, Player] = {}
@@ -199,9 +198,9 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
 
     teams: list[TeamPlayersRating] = []
     for i in range(0, n_teams):
-        team = team_idx_to_id[i]
+        team_id = team_idx_to_id[i]
         teams.append(
-            TeamPlayersRating(team=team,
+            TeamPlayersRating(team=team_id,
                               goals_off=goal_ratings[n_players + i],
                               goals_def=goal_ratings[n_players + n_teams + i],
                               assists_off=assist_ratings[n_players + i],
@@ -210,6 +209,17 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
 
     sorted_players = sorted(player_ratings, key=lambda r: -r.points)
     sorted_teams = sorted(teams, key=lambda r: -r.goals_def - r.assists_def)
+
+    shared.dump_parquet(
+        sorted_players,
+        shared.parquet_path(out_dir, year, 'player_ratings', 'data.parquet'))
+    shared.dump_parquet(
+        sorted_teams,
+        shared.parquet_path(out_dir, year, 'team_player_ratings',
+                            'data.parquet'))
+    shared.dump_parquet(
+        players.values(),
+        shared.parquet_path(out_dir, year, 'players', 'data.parquet'))
 
     pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True,
                                                     exist_ok=True)
@@ -252,7 +262,9 @@ class GameMapValue:
     points_against: int
 
 
-def calculate_ratings(schedules: Iterable[TeamDetail]):
+def calculate_ratings(
+        schedules: Iterable[TeamDetail]
+) -> tuple[Mapping[str, TeamRating], float]:
     game_map: Mapping[str, GameMapValue] = {}
     for schedule in schedules:
         for game in schedule.games:
@@ -360,7 +372,7 @@ def group_teams_by_games(games: Iterable[GameMapValue]) -> Iterable[Group]:
         opponent_group = group_for_team(groups, opponent_id)
         if (team_group is None and opponent_group is None):
             groups.append(
-                Group(id=idx,
+                Group(id=str(idx),
                       games=[game],
                       team_ids=set([team_id, opponent_id])))
             idx += 1
