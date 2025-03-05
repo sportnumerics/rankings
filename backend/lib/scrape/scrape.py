@@ -89,7 +89,7 @@ class ScrapeRunner():
         self.log.info(
             f'scraping teams for {self.source} ({self.year}) into {self.out_dir}'
         )
-        teams = self.scrape_teams()
+        teams = list(self.scrape_teams())
 
         shared.dump_parquet(
             teams,
