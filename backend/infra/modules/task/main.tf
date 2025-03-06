@@ -28,7 +28,7 @@ resource "aws_ecs_task_definition" "rankings_backend" {
     }
   ])
 
-  cpu                      = 256
+  cpu                      = 512
   memory                   = 4096
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
