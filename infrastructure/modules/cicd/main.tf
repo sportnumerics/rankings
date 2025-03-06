@@ -97,6 +97,7 @@ resource "aws_iam_policy" "deployment_role" {
           "iam:GetPolicyVersion",
           "iam:ListPolicyVersions",
           "iam:DeletePolicyVersion",
+          "iam:CreatePolicyVersion",
           "iam:TagPolicy"
         ],
         Resource = [
