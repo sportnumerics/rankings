@@ -71,16 +71,16 @@ class TestMcla(unittest.TestCase):
     def test_mcla_game_details(self):
         html = fixtures.mcla_game_details()
         m = mcla.Mcla()
-        home_team = Team(name='Loyola Marymount',
-                         id='ml-mcla-loyola-marymount',
-                         year='2023',
+        away_team = Team(name='Utah Tech',
+                         id='ml-mcla-utah-tech',
+                         year='2025',
                          div='mcla1',
                          sport='ml',
                          source='mcla',
                          schedule=Location(url='schedule1'))
-        away_team = Team(name='Air Force',
-                         id='ml-mcla-air-force',
-                         year='2023',
+        home_team = Team(name='Arizona',
+                         id='ml-mcla-arizona',
+                         year='2025',
                          div='mcla1',
                          sport='ml',
                          source='mcla',
@@ -88,46 +88,44 @@ class TestMcla(unittest.TestCase):
         game_details = m.convert_game_details_html(
             html,
             Location(
-                url=
-                'https://mcla.us/games/arizona-state-vs-utah-tech-2024-af4b5d'
-            ), 'ml-mcla-arizona-state-vs-utah-tech-2024-af4b5d', 'ml', 'mcla',
+                url='https://mcla.us/games/arizona-vs-utah-tech-2025-ef2321'),
+            'ml-mcla-arizona-vs-utah-tech-2025-ef2321', 'ml', 'mcla',
             home_team, away_team)
-        self.assertEqual(game_details.date, '2024-02-09T19:00:00')
+        self.assertEqual(game_details.date, '2025-02-11T16:00:00-07:00')
         self.assertEqual(game_details.id,
-                         'ml-mcla-arizona-state-vs-utah-tech-2024-af4b5d')
+                         'ml-mcla-arizona-vs-utah-tech-2025-ef2321')
         self.assertEqual(
             game_details.external_link,
-            'https://mcla.us/games/arizona-state-vs-utah-tech-2024-af4b5d')
-        self.assertEqual(
-            game_details.home_team,
-            TeamSummary(name='Arizona State', id='ml-mcla-arizona-state'))
+            'https://mcla.us/games/arizona-vs-utah-tech-2025-ef2321')
+        self.assertEqual(game_details.home_team,
+                         TeamSummary(name='Arizona', id='ml-mcla-arizona'))
         self.assertEqual(game_details.away_team,
                          TeamSummary(name='Utah Tech', id='ml-mcla-utah-tech'))
         self.assertEqual(game_details.result,
-                         GameResult(home_score=21, away_score=8))
+                         GameResult(home_score=11, away_score=7))
         self.assertEqual(
             game_details.home_stats[0],
             GameStatLine(
-                number=1,
+                number=0,
                 player=PlayerSummary(
-                    name='Owen Kielty',
-                    id='ml-mcla-owen-kielty-6fa276',
-                    external_link='https://mcla.us/players/owen-kielty-6fa276'
+                    name='Brendan Barry',
+                    id='ml-mcla-brendan-barry-ff4d9f',
+                    external_link='https://mcla.us/players/brendan-barry-ff4d9f'
                 ),
-                position='M',
-                gb=1,
-                g=1,
+                position='D',
+                gb=3,
+                g=0,
                 a=0))
         self.assertEqual(
             game_details.away_stats[0],
             GameStatLine(player=PlayerSummary(
                 name='Luke Kish',
-                id='ml-mcla-luke-kish-fc1b2a',
-                external_link='https://mcla.us/players/luke-kish-fc1b2a'),
+                id='ml-mcla-luke-kish-fb8ed5',
+                external_link='https://mcla.us/players/luke-kish-fb8ed5'),
                          number=1,
                          position='A',
-                         gb=0,
-                         g=0,
+                         gb=1,
+                         g=1,
                          a=0))
 
     def test_mcla_roster(self):

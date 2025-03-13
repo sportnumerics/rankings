@@ -58,6 +58,8 @@ R = TypeVar('R')
 def dump_parquet(data: Iterable[R],
                  filename: str,
                  sort_order: list[(str, str)] = []):
+    if len(data) == 0:
+        return
     dir = os.path.dirname(filename)
     pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
     it = iter(data)

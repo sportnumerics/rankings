@@ -144,15 +144,15 @@ class Mcla():
                                   home_team: Team, away_team: Team) -> Game:
         soup = BeautifulSoup(html, 'html.parser')
         header = soup.find('div', class_='page-header').h2
-        team_date_match = re.match(
-            r'(?P<away_team>.+) @ (?P<home_team>.+) \((?P<date>\d{4}-\d{2}-\d{2})\)',
-            header.string)
-        home_name = team_date_match.group('home_team')
-        away_name = team_date_match.group('away_team')
-        date = team_date_match.group('date')
+        header_match = re.match(r'(?P<away_team>.+) @ (?P<home_team>.+)',
+                                header.string)
+        home_name = header_match.group('home_team')
+        away_name = header_match.group('away_team')
+
         game_stats_meta = soup.find('div', class_='game-stats__meta')
-        time = list(game_stats_meta.stripped_strings)[1]
-        date = parser.parse(date + ' ' + time, tzinfos=TIMEZONES).isoformat()
+        (date, time, *_) = list(game_stats_meta.stripped_strings)
+        date = parser.parse(date + ' ' + home_team.year + ' ' + time,
+                            tzinfos=TIMEZONES).isoformat()
         game_score = soup.find('div', class_='game-stats__header')
         away_team_tag = game_score.find(class_='game-stats__team--away')
         home_team_tag = game_score.find(class_='game-stats__team--home')
