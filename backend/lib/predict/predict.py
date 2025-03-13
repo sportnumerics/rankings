@@ -26,15 +26,15 @@ def predict(args: PredictArgs):
             f'Calculating team ratings for {len(schedules)} teams in {year}')
         ratings, _ = calculate_ratings(schedules)
 
-        sorted_ratings = sorted(ratings.values(), key=lambda r: -r.overall)
+        sorted_ratings = sorted(ratings.values(), key=lambda r: r.team)
 
         pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True,
                                                         exist_ok=True)
 
-        shared.dump_parquet(
-            sorted_ratings,
-            shared.parquet_path(out_dir, year, 'team_ratings',
-                                f'data.parquet'))
+        shared.dump_parquet(sorted_ratings,
+                            shared.parquet_path(out_dir, year, 'team_ratings',
+                                                f'data.parquet'),
+                            sort_order=[('team', 'ascending')])
         with open(os.path.join(out_dir, year, 'team-ratings.json'), 'w') as f:
             shared.dump(sorted_ratings, f, many=True)
 
@@ -207,19 +207,22 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
                               assists_def=assist_ratings[n_players + n_teams +
                                                          i]))
 
-    sorted_players = sorted(player_ratings, key=lambda r: -r.points)
-    sorted_teams = sorted(teams, key=lambda r: -r.goals_def - r.assists_def)
+    sorted_players = sorted(player_ratings, key=lambda r: r.id)
+    sorted_teams = sorted(teams, key=lambda r: r.team)
 
-    shared.dump_parquet(
-        sorted_players,
-        shared.parquet_path(out_dir, year, 'player_ratings', 'data.parquet'))
-    shared.dump_parquet(
-        sorted_teams,
-        shared.parquet_path(out_dir, year, 'team_player_ratings',
-                            'data.parquet'))
-    shared.dump_parquet(
-        players.values(),
-        shared.parquet_path(out_dir, year, 'players', 'data.parquet'))
+    shared.dump_parquet(sorted_players,
+                        shared.parquet_path(out_dir, year, 'player_ratings',
+                                            'data.parquet'),
+                        sort_order=[('id', 'ascending')])
+    shared.dump_parquet(sorted_teams,
+                        shared.parquet_path(out_dir, year,
+                                            'team_player_ratings',
+                                            'data.parquet'),
+                        sort_order=[('team', 'ascending')])
+    shared.dump_parquet(sorted(players.values(), key=lambda p: p.id),
+                        shared.parquet_path(out_dir, year, 'players',
+                                            'data.parquet'),
+                        sort_order=[('id', 'ascending')])
 
     pathlib.Path(os.path.join(out_dir, year)).mkdir(parents=True,
                                                     exist_ok=True)

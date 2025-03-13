@@ -8,7 +8,7 @@ import itertools
 import json
 import typing
 
-import pyarrow
+import pyarrow as pa
 import pyarrow.parquet as pq
 
 from .types import BaseType
@@ -55,16 +55,21 @@ def load_from_files(cls: type[T], filenames: Iterable[str]) -> Iterable[T]:
 R = TypeVar('R')
 
 
-def dump_parquet(data: Iterable[R], filename: str):
+def dump_parquet(data: Iterable[R],
+                 filename: str,
+                 sort_order: list[(str, str)] = []):
     dir = os.path.dirname(filename)
     pathlib.Path(dir).mkdir(parents=True, exist_ok=True)
     it = iter(data)
     first = next(it)
     schema = get_schema(first)
-    table = pyarrow.Table.from_pylist(
+    table = pa.Table.from_pylist(
         [dataclasses.asdict(d) for d in itertools.chain([first], it)],
         schema=schema)
-    pq.write_table(table, filename)
+    pq.write_table(table,
+                   filename,
+                   sorting_columns=pq.SortingColumn.from_ordering(
+                       schema, sort_order))
 
 
 def parquet_path(out_dir: str, year: str, dataset_name: str, *rest: list[str]):
@@ -81,20 +86,20 @@ def load_parquet_dataset(cls: type[R], path: str) -> Iterable[R]:
             for r in pq.ParquetDataset(path, schema=schema).read().to_pylist())
 
 
-def get_schema(cls: type[R]) -> pyarrow.Schema:
-    return pyarrow.schema([(field.name, get_pyarrow_type(field.type))
-                           for field in dataclasses.fields(cls)])
+def get_schema(cls: type[R]) -> pa.Schema:
+    return pa.schema([(field.name, get_pyarrow_type(field.type))
+                      for field in dataclasses.fields(cls)])
 
 
-def get_pyarrow_type(field: any) -> pyarrow.DataType:
+def get_pyarrow_type(field: any) -> pa.DataType:
     if dataclasses.is_dataclass(field):
-        return pyarrow.struct([(field.name, get_pyarrow_type(field.type))
-                               for field in dataclasses.fields(field)])
+        return pa.struct([(field.name, get_pyarrow_type(field.type))
+                          for field in dataclasses.fields(field)])
     origin = typing.get_origin(field)
     if origin is UnionType or origin is Optional:
         return get_pyarrow_type(
             next(f for f in typing.get_args(field) if f is not type(None)))
     if origin is list:
-        return pyarrow.list_(get_pyarrow_type(typing.get_args(field)[0]))
+        return pa.list_(get_pyarrow_type(typing.get_args(field)[0]))
 
-    return pyarrow.from_numpy_dtype(field)
+    return pa.from_numpy_dtype(field)

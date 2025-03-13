@@ -91,10 +91,11 @@ class ScrapeRunner():
         )
         teams = list(self.scrape_teams())
 
-        shared.dump_parquet(
-            teams,
-            shared.parquet_path(self.out_dir, self.year, 'teams',
-                                f'{self.source}.parquet'))
+        shared.dump_parquet(sorted(teams, key=lambda t: t.id),
+                            shared.parquet_path(self.out_dir, self.year,
+                                                'teams',
+                                                f'{self.source}.parquet'),
+                            sort_order=[('id', 'ascending')])
 
         with open(
                 os.path.join(self.out_dir, self.year,
@@ -143,10 +144,11 @@ class ScrapeRunner():
             with open(file_name, 'w') as f:
                 shared.dump(schedule, f)
 
-        shared.dump_parquet(
-            schedules,
-            shared.parquet_path(self.out_dir, self.year, 'schedules',
-                                f'{self.source}.parquet'))
+        shared.dump_parquet(sorted(schedules, key=lambda s: s.team.id),
+                            shared.parquet_path(self.out_dir, self.year,
+                                                'schedules',
+                                                f'{self.source}.parquet'),
+                            sort_order=[('team.id', 'ascending')])
 
         all_games = []
         for schedule in schedules:
@@ -179,10 +181,11 @@ class ScrapeRunner():
                           'w') as f:
                     shared.dump(game_details, f)
 
-        shared.dump_parquet(
-            all_games,
-            shared.parquet_path(self.out_dir, self.year, 'games',
-                                f'{self.source}.parquet'))
+        shared.dump_parquet(sorted(all_games, key=lambda g: g.id),
+                            shared.parquet_path(self.out_dir, self.year,
+                                                'games',
+                                                f'{self.source}.parquet'),
+                            sort_order=[('id', 'ascending')])
 
     def scrape_teams(self) -> Iterator[Team]:
         for url in self.scraper.get_team_list_urls(self.year):
