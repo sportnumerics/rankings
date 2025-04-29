@@ -150,11 +150,17 @@ class ScrapeRunner():
                                                 f'{self.source}.parquet'),
                             sort_order=[('team.id', 'ascending')])
 
-        all_games = []
+        all_games = {}
         for schedule in schedules:
             team = schedule.team
             for game in schedule.games:
                 if not game.details:
+                    continue
+
+                if game.id in all_games:
+                    self.log.info(
+                        f'already fetched game details for game {team.name} vs {game.opponent.name} on {game.date}'
+                    )
                     continue
 
                 if dateutil.parser.isoparse(
@@ -176,12 +182,12 @@ class ScrapeRunner():
                         f'no game details for game {team.name} vs {game.opponent.name} on {game.date}'
                     )
                     continue
-                all_games.append(game_details)
+                all_games[game_details.id] = game_details
                 with open(os.path.join(games_dir, game_details.id + '.json'),
                           'w') as f:
                     shared.dump(game_details, f)
 
-        shared.dump_parquet(sorted(all_games, key=lambda g: g.id),
+        shared.dump_parquet(sorted(all_games.values(), key=lambda g: g.id),
                             shared.parquet_path(self.out_dir, self.year,
                                                 'games',
                                                 f'{self.source}.parquet'),
