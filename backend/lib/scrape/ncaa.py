@@ -45,6 +45,8 @@ class Ncaa(Scraper):
                        source='ncaa')
 
     OPPONENT_NAME_REGEX = re.compile(
+        r'(?P<opponent_rank>#\d+)?\s*(?P<opponent_name>.+)')
+    OPPONENT_COL_REGEX = re.compile(
         r'(?P<away>\@)?\s*(?P<opponent_name>[^\@]+)(\@(?P<neutral_site>.*))?')
     OPPONENT_ID_REGEX = re.compile(r'/team/(?P<id>\d+)/(?P<yearcode>\d+)')
     OPPONENT_ALT_ID_REGEX = re.compile(r'/teams/(?P<alt_id>\d+)')
@@ -79,12 +81,14 @@ class Ncaa(Scraper):
             date = self._to_iso_format(date_col.string)
 
             opp_link = opp_col.a
+            name_string = ' '.join(opp_link.stripped_strings)
+            name_match = self.OPPONENT_NAME_REGEX.match(name_string)
             opp_string = ' '.join(opp_col.stripped_strings)
-            opp_match = self.OPPONENT_NAME_REGEX.match(opp_string)
-            if not opp_match:
+            opp_match = self.OPPONENT_COL_REGEX.match(opp_string)
+            if not name_match or not opp_match:
                 continue
 
-            opponent_name = opp_match.group('opponent_name').strip()
+            opponent_name = name_match.group('opponent_name').strip()
             opponent = TeamSummary(name=opponent_name)
             home = opp_match.group('away') is None
 

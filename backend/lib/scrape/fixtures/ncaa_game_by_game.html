@@ -1,72 +1,84 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=UTF-8">
-<meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="">
-<meta name="author" content="">
-<meta name="version" content="48dd054547178443c06cad88ce4ad759cdb99744">
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
-<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-<link rel="shortcut icon" href="/assets/favicon-405088046a5f2bab8eedeacfae7636975c095e9c8decd8c28e3fd0e65c2f51c4.ico" type="image/vnd.microsoft.icon">
+  <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=UTF-8">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="version" content="85ded1d9e1460917a6a62962da3f5963afdb0fb2">
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+  <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+  <link rel="shortcut icon" href="/assets/favicon-405088046a5f2bab8eedeacfae7636975c095e9c8decd8c28e3fd0e65c2f51c4.ico"
+    type="image/vnd.microsoft.icon">
 
-<title>NCAA Statistics</title>
+  <title>NCAA Statistics</title>
 
-<!-- Bootstrap core CSS -->
+  <!-- Bootstrap core CSS -->
 
-<!--
+  <!--
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 -->
-<!--
+  <!--
 <link rel="stylesheet" href="https://cdn.datatables.net/2.0.0/css/dataTables.bootstrap4.css" crossorigin="anonymous">
 -->
-<link rel="stylesheet" media="all" href="/assets/application-6398c4a7dd6b20685db8e3bbfd67d6a9904c80dcc01dfc3a4fd22d57e1fefee8.css" />
+  <link rel="stylesheet" media="all"
+    href="/assets/application-dc93028dd9e909ae4c03e0288f53d91ad0f674d0112a8fc109056d8597278895.css" />
 
 
-<script src="/assets/application-9232576bb3cb000ac0841ff2af81251908ec17312a3c5eb72bf1a32f9754800c.js"></script>
-<!--
+  <script src="/assets/application-9232576bb3cb000ac0841ff2af81251908ec17312a3c5eb72bf1a32f9754800c.js"></script>
+  <!--
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 -->
-<!--
+  <!--
 <script src="https://cdn.datatables.net/2.0.0/js/dataTables.bootstrap4.js" crossorigin="anonymous"></script>
 -->
 
-<meta name="csrf-param" content="authenticity_token" />
-<meta name="csrf-token" content="+Klx9BchWS/P5xHtAoKJT2PN7LBXU0ZY8RIrrspUWDIskHGfGY9vH6wqoWbyjrjyrNwsSr9Dd3msAj7/JyZtxw==" />
+  <meta name="csrf-param" content="authenticity_token" />
+  <meta name="csrf-token"
+    content="QSvklCd8SxNsWiSn3PSZ8mo9RCUUKL+MRbTq74XZiRiVEuT/KdJ9Iw+XlCws+KhPpSyE3/w4jq0YpP++aKu87Q==" />
 
-<style>
-.grid {clear: all}
-.grid-item, .name {text-align: center;}
-h1 img {max-height: 33px;}
+  <style>
+    .grid {
+      clear: all
+    }
 
-</style>
-<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-<!--[if lt IE 9]>
+    .grid-item,
+    .name {
+      text-align: center;
+    }
+
+    h1 img {
+      max-height: 33px;
+    }
+  </style>
+  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
     <![endif]-->
 
 
-<script>(window.BOOMR_mq=window.BOOMR_mq||[]).push(["addVar",{"rua.upush":"false","rua.cpush":"false","rua.upre":"false","rua.cpre":"false","rua.uprl":"false","rua.cprl":"false","rua.cprf":"false","rua.trans":"SJ-432032fe-dadb-456b-81e3-9491fd649989","rua.cook":"true","rua.ims":"false","rua.ufprl":"false","rua.cfprl":"false","rua.isuxp":"false","rua.texp":"norulematch","rua.ceh":"false","rua.ueh":"false","rua.ieh.st":"0"}]);</script>
-                              <script>!function(e){var n="https://s.go-mpulse.net/boomerang/";if("False"=="True")e.BOOMR_config=e.BOOMR_config||{},e.BOOMR_config.PageParams=e.BOOMR_config.PageParams||{},e.BOOMR_config.PageParams.pci=!0,n="https://s2.go-mpulse.net/boomerang/";if(window.BOOMR_API_key="EVKJV-AGD2E-W66AE-NT84S-K5LTF",function(){function e(){if(!r){var e=document.createElement("script");e.id="boomr-scr-as",e.src=window.BOOMR.url,e.async=!0,o.appendChild(e),r=!0}}function t(e){r=!0;var n,t,a,i,d=document,O=window;if(window.BOOMR.snippetMethod=e?"if":"i",t=function(e,n){var t=d.createElement("script");t.id=n||"boomr-if-as",t.src=window.BOOMR.url,BOOMR_lstart=(new Date).getTime(),e=e||d.body,e.appendChild(t)},!window.addEventListener&&window.attachEvent&&navigator.userAgent.match(/MSIE [67]\./))return window.BOOMR.snippetMethod="s",void t(o,"boomr-async");a=document.createElement("IFRAME"),a.src="about:blank",a.title="",a.role="presentation",a.loading="eager",i=(a.frameElement||a).style,i.width=0,i.height=0,i.border=0,i.display="none",o.appendChild(a);try{O=a.contentWindow,d=O.document.open()}catch(_){n=document.domain,a.src="javascript:var d=document.open();d.domain='"+n+"';void 0;",O=a.contentWindow,d=O.document.open()}if(n)d._boomrl=function(){this.domain=n,t()},d.write("<bo"+"dy onload='document._boomrl();'>");else if(O._boomrl=function(){t()},O.addEventListener)O.addEventListener("load",O._boomrl,!1);else if(O.attachEvent)O.attachEvent("onload",O._boomrl);d.close()}function a(e){window.BOOMR_onload=e&&e.timeStamp||(new Date).getTime()}if(!window.BOOMR||!window.BOOMR.version&&!window.BOOMR.snippetExecuted){window.BOOMR=window.BOOMR||{},window.BOOMR.snippetStart=(new Date).getTime(),window.BOOMR.snippetExecuted=!0,window.BOOMR.snippetVersion=14,window.BOOMR.url=n+"EVKJV-AGD2E-W66AE-NT84S-K5LTF";var i=document.currentScript||document.getElementsByTagName("script")[0],o=i.parentNode,r=!1,d=document.createElement("link");if(d.relList&&"function"==typeof d.relList.supports&&d.relList.supports("preload")&&"as"in d)window.BOOMR.snippetMethod="p",d.href=window.BOOMR.url,d.rel="preload",d.as="script",d.addEventListener("load",e),d.addEventListener("error",function(){t(!0)}),setTimeout(function(){if(!r)t(!0)},3e3),BOOMR_lstart=(new Date).getTime(),o.appendChild(d);else t(!1);if(window.addEventListener)window.addEventListener("load",a,!1);else if(window.attachEvent)window.attachEvent("onload",a)}}(),"".length>0)if(e&&"performance"in e&&e.performance&&"function"==typeof e.performance.setResourceTimingBufferSize)e.performance.setResourceTimingBufferSize();!function(){if(BOOMR=e.BOOMR||{},BOOMR.plugins=BOOMR.plugins||{},!BOOMR.plugins.AK){var n="false"=="true"?1:0,t="cookiepresent",a="nc2zvjfyda3bsz5rly2q-f-ee486c3bf-clientnsv4-s.akamaihd.net",i="false"=="true"?2:1,o={"ak.v":"39","ak.cp":"1168236","ak.ai":parseInt("215853",10),"ak.ol":"0","ak.cr":16,"ak.ipv":4,"ak.proto":"h2","ak.rid":"44f377d0","ak.r":43888,"ak.a2":n,"ak.m":"a","ak.n":"essl","ak.bpcip":"104.181.154.0","ak.cport":50699,"ak.gh":"23.205.108.71","ak.quicv":"","ak.tlsv":"tls1.3","ak.0rtt":"","ak.0rtt.ed":"","ak.csrc":"-","ak.acc":"","ak.t":"1739677237","ak.ak":"hOBiQwZUYzCg5VSAfCLimQ==Z93xg9kxsP50ggEWf50SkcbZp796PXUitid4z9jjr9+7c0b+gXB5qcSvSpn9w0AmRljJzHD7rGT5B9M/6Tb9CVmxE7oGJsFfvDBdtOXFK6tOjMLrwX8ym3v2A7CFOXfOFOzs25WQ4KbHoqwS0QHM4ttvVdLTszPRWT0IWNNh2aXWlZjAHBUJx4vPXMnZySmA3YwxlPVxBdX2dXHhheSEN8QM+77RfGEbw96oksvaH7agqp4Jdnpt3nOuHehT/s6lPhxwundzcr2sca08cUJeSQadEU0hrsep3x5Niv8Cj2G3Zju9wXAYiso5NJ2BlmnyLNfmszwIer6OdpEM+a3hS3TnjGCtmcRX4q+AHRRv5Sy3ArE/VKRlkNBZTj7R3IL+BrYMjrP8weJKInQPdW+/ihx+ATzNPR/wP2obD3MZjmk=","ak.pv":"87","ak.dpoabenc":"","ak.tf":i};if(""!==t)o["ak.ruds"]=t;var r={i:!1,av:function(n){var t="http.initiator";if(n&&(!n[t]||"spa_hard"===n[t]))o["ak.feo"]=void 0!==e.aFeoApplied?1:0,BOOMR.addVar(o)},rv:function(){var e=["ak.bpcip","ak.cport","ak.cr","ak.csrc","ak.gh","ak.ipv","ak.m","ak.n","ak.ol","ak.proto","ak.quicv","ak.tlsv","ak.0rtt","ak.0rtt.ed","ak.r","ak.acc","ak.t","ak.tf"];BOOMR.removeVar(e)}};BOOMR.plugins.AK={akVars:o,akDNSPreFetchDomain:a,init:function(){if(!r.i){var e=BOOMR.subscribe;e("before_beacon",r.av,null,null),e("onbeacon",r.rv,null,null),r.i=!0}return this},is_complete:function(){return!0}}}}()}(window);</script></head>
+  <script>(window.BOOMR_mq = window.BOOMR_mq || []).push(["addVar", { "rua.upush": "false", "rua.cpush": "false", "rua.upre": "false", "rua.cpre": "false", "rua.uprl": "false", "rua.cprl": "false", "rua.cprf": "false", "rua.trans": "", "rua.cook": "false", "rua.ims": "false", "rua.ufprl": "false", "rua.cfprl": "false", "rua.isuxp": "false", "rua.texp": "norulematch", "rua.ceh": "false", "rua.ueh": "false", "rua.ieh.st": "0" }]);</script>
+  <script>!function (e) { var n = "https://s.go-mpulse.net/boomerang/"; if ("False" == "True") e.BOOMR_config = e.BOOMR_config || {}, e.BOOMR_config.PageParams = e.BOOMR_config.PageParams || {}, e.BOOMR_config.PageParams.pci = !0, n = "https://s2.go-mpulse.net/boomerang/"; if (window.BOOMR_API_key = "EVKJV-AGD2E-W66AE-NT84S-K5LTF", function () { function e() { if (!r) { var e = document.createElement("script"); e.id = "boomr-scr-as", e.src = window.BOOMR.url, e.async = !0, o.appendChild(e), r = !0 } } function t(e) { r = !0; var n, t, a, i, d = document, O = window; if (window.BOOMR.snippetMethod = e ? "if" : "i", t = function (e, n) { var t = d.createElement("script"); t.id = n || "boomr-if-as", t.src = window.BOOMR.url, BOOMR_lstart = (new Date).getTime(), e = e || d.body, e.appendChild(t) }, !window.addEventListener && window.attachEvent && navigator.userAgent.match(/MSIE [67]\./)) return window.BOOMR.snippetMethod = "s", void t(o, "boomr-async"); a = document.createElement("IFRAME"), a.src = "about:blank", a.title = "", a.role = "presentation", a.loading = "eager", i = (a.frameElement || a).style, i.width = 0, i.height = 0, i.border = 0, i.display = "none", o.appendChild(a); try { O = a.contentWindow, d = O.document.open() } catch (_) { n = document.domain, a.src = "javascript:var d=document.open();d.domain='" + n + "';void 0;", O = a.contentWindow, d = O.document.open() } if (n) d._boomrl = function () { this.domain = n, t() }, d.write("<bo" + "dy onload='document._boomrl();'>"); else if (O._boomrl = function () { t() }, O.addEventListener) O.addEventListener("load", O._boomrl, !1); else if (O.attachEvent) O.attachEvent("onload", O._boomrl); d.close() } function a(e) { window.BOOMR_onload = e && e.timeStamp || (new Date).getTime() } if (!window.BOOMR || !window.BOOMR.version && !window.BOOMR.snippetExecuted) { window.BOOMR = window.BOOMR || {}, window.BOOMR.snippetStart = (new Date).getTime(), window.BOOMR.snippetExecuted = !0, window.BOOMR.snippetVersion = 14, window.BOOMR.url = n + "EVKJV-AGD2E-W66AE-NT84S-K5LTF"; var i = document.currentScript || document.getElementsByTagName("script")[0], o = i.parentNode, r = !1, d = document.createElement("link"); if (d.relList && "function" == typeof d.relList.supports && d.relList.supports("preload") && "as" in d) window.BOOMR.snippetMethod = "p", d.href = window.BOOMR.url, d.rel = "preload", d.as = "script", d.addEventListener("load", e), d.addEventListener("error", function () { t(!0) }), setTimeout(function () { if (!r) t(!0) }, 3e3), BOOMR_lstart = (new Date).getTime(), o.appendChild(d); else t(!1); if (window.addEventListener) window.addEventListener("load", a, !1); else if (window.attachEvent) window.attachEvent("onload", a) } }(), "".length > 0) if (e && "performance" in e && e.performance && "function" == typeof e.performance.setResourceTimingBufferSize) e.performance.setResourceTimingBufferSize(); !function () { if (BOOMR = e.BOOMR || {}, BOOMR.plugins = BOOMR.plugins || {}, !BOOMR.plugins.AK) { var n = "" == "true" ? 1 : 0, t = "", a = "nc2zvjaxicnme2a2gjfa-f-361c2e66e-clientnsv4-s.akamaihd.net", i = "false" == "true" ? 2 : 1, o = { "ak.v": "39", "ak.cp": "1168236", "ak.ai": parseInt("215853", 10), "ak.ol": "0", "ak.cr": 21, "ak.ipv": 4, "ak.proto": "h2", "ak.rid": "a75a5143", "ak.r": 48095, "ak.a2": n, "ak.m": "a", "ak.n": "essl", "ak.bpcip": "104.181.154.0", "ak.cport": 49379, "ak.gh": "23.219.81.45", "ak.quicv": "", "ak.tlsv": "tls1.3", "ak.0rtt": "", "ak.0rtt.ed": "", "ak.csrc": "-", "ak.acc": "", "ak.t": "1746547274", "ak.ak": "hOBiQwZUYzCg5VSAfCLimQ==aD4iNg7CWEzNltC6aUpW3jtgEDkleKubokvh7Qq8jS6ZuSGMDzmfPc7CRNe6b1FDYoEiT3ByIKOPGT9VSGHWeigytCWrn9TNO5CPHYEf84mivtC2yNosA3DpQVcAnX//qBv4gYDHcn8wuz39HxMz+9uaqCPZx/mgg0H4oM8+RpZnQV6JWBzNkG0LWM02P85QgptYUYnhJBtgk6HRjwr3mB8CCZ8B1RhT0st4/GNBoGmyXKFQ3YlQtjZ5wPlw6wkbKBm3z+ZfrHHax9fiQ3y4LPVbWqC+Nd8j9M9c4yVb6wcOhWLRzjrviv2usBG+Gi3ek2oGXUbYij4VIOQTO1WwK+qHHaimOTqJC963avSaZmkynyJmaN5B5unUfD+xzyxujSJ8CL+o2SZy8NA8t2zGAjwFsKoR8ux/+gT4TZ5lpKA=", "ak.pv": "87", "ak.dpoabenc": "", "ak.tf": i }; if ("" !== t) o["ak.ruds"] = t; var r = { i: !1, av: function (n) { var t = "http.initiator"; if (n && (!n[t] || "spa_hard" === n[t])) o["ak.feo"] = void 0 !== e.aFeoApplied ? 1 : 0, BOOMR.addVar(o) }, rv: function () { var e = ["ak.bpcip", "ak.cport", "ak.cr", "ak.csrc", "ak.gh", "ak.ipv", "ak.m", "ak.n", "ak.ol", "ak.proto", "ak.quicv", "ak.tlsv", "ak.0rtt", "ak.0rtt.ed", "ak.r", "ak.acc", "ak.t", "ak.tf"]; BOOMR.removeVar(e) } }; BOOMR.plugins.AK = { akVars: o, akDNSPreFetchDomain: a, init: function () { if (!r.i) { var e = BOOMR.subscribe; e("before_beacon", r.av, null, null), e("onbeacon", r.rv, null, null), r.i = !0 } return this }, is_complete: function () { return !0 } } } }() }(window);</script>
+</head>
 
-  <script>
+<script>
 
 
   //initialize tooltip
-  $(document).ready(function() {
+  $(document).ready(function () {
     //$("body").tooltip({ selector: '[data-toggle=tooltip]' });
     $('[data-toggle="tooltip"]').tooltip();
   });
 
-  $(document).ready(function() {
-    $( "#org_name" ).autocomplete({
+  $(document).ready(function () {
+    $("#org_name").autocomplete({
       source: '/team/search',
-      select: function( event, ui ) {
+      select: function (event, ui) {
         $("#org_id").val(ui.item.vid);
         $("#id").val(ui.item.vid);
         $('#sport_btn').click();
@@ -76,500 +88,525 @@ h1 img {max-height: 33px;}
 
   var body = 'body';
 
-  $.ajaxSetup ({
+  $.ajaxSetup({
     // Disable caching of AJAX responses
     cache: false
   });
 
-  function changeSport(field){
+  function changeSport(field) {
     var el = $(field);
     var tmList = el.parent().next().find('.new-team-year')[0];
-    if (tmList == null){
+    if (tmList == null) {
       tmList = el.nextAll('.new-team-year')[0];
     }
     $.ajax({
-      url: "/game_sport_year_ctls/"+el.val()+"/available_teams",
+      url: "/game_sport_year_ctls/" + el.val() + "/available_teams",
       dataType: "script",
-      success: function(data, status){
+      success: function (data, status) {
         $(tmList).empty();
         $(tmList).append(("<option value=''>Select team</option>"));
-        $.each(JSON.parse(data), function(k, v){
+        $.each(JSON.parse(data), function (k, v) {
           $(tmList).append($("<option></option>")
-              .attr("value", v["id"])
-              .text(v["member_org"]["name_tabular"]));
+            .attr("value", v["id"])
+            .text(v["member_org"]["name_tabular"]));
         });
         $(tmList).trigger("chosen:updated");
       }
     });
   }
 
-    function set_process_styles(fld, start_color, end_color){
-       $('#'+fld).effect('highlight', {color: '#99CC99'}, 6000);
+  function set_process_styles(fld, start_color, end_color) {
+    $('#' + fld).effect('highlight', { color: '#99CC99' }, 6000);
+  }
+
+  var downImage = "/assets/down12.gif";
+  var rightImage = "/assets/right12.gif";
+
+  function highlight(div_id) {
+    $(div_id).effect('highlight', { color: '#99CC99' }, 6000);
+  }
+
+  function show_hide_rows(attr_val, link_id) {
+    $('#' + attr_val).toggle();
+    if ($('#' + attr_val).is(':visible')) {
+      $('#' + link_id).attr('src', downImage);
+    } else {
+      $('#' + link_id).attr('src', rightImage);
     }
+  }
 
-    var downImage = "/assets/down12.gif";
-    var rightImage = "/assets/right12.gif";
+  function mask(label) {
+    $('body').mask(label);
+  }
+  function unmask() {
+    $('body').unmask();
+  }
 
-    function highlight(div_id){
-      $(div_id).effect('highlight', {color: '#99CC99'}, 6000);
-    }
+  var winHeight = "auto";
+  var winWidth = "auto";
+  var maxHeight = 700;
+  var maxWidth = 1400;
+  var minHeight = 100;
+  var minWidth = 200;
 
-    function show_hide_rows(attr_val, link_id){
-      $('#'+attr_val).toggle();
-      if ($('#'+attr_val).is(':visible')) {
-        $('#'+link_id).attr('src', downImage);
-      }else{
-        $('#'+link_id).attr('src', rightImage);
-      }
-    }
+  var modalOptions = {
+    "width": winWidth,
+    "height": winHeight,
+    "maxHeight": maxHeight,
+    "maxWidth": maxWidth,
+    "minHeight": minHeight,
+    "minWidth": minWidth
+  };
 
-    function mask(label){
-      $('body').mask(label);
-    }
-    function unmask(){
-      $('body').unmask();
-    }
+  function dialog(url, title) {
 
-    var winHeight = "auto";
-    var winWidth = "auto";
-    var maxHeight = 700;
-    var maxWidth = 1400;
-    var minHeight = 100;
-    var minWidth = 200;
+    $("#stats_app_dialog").dialog({ modal: true, minWidth: minWidth, minHeight: minHeight, maxWidth: maxWidth, maxHeight: maxHeight, width: winWidth, height: winHeight, title: title, closeOnEscape: false });
 
-    var modalOptions = {"width": winWidth,
-                        "height": winHeight,
-                        "maxHeight": maxHeight,
-                        "maxWidth": maxWidth,
-                        "minHeight": minHeight,
-                        "minWidth": minWidth};
+    modalOptions.title = title;
 
-    function dialog(url, title){
+    $("#stats_app_dialog").dialog("option", modalOptions);
 
-      $("#stats_app_dialog").dialog({modal:true, minWidth:minWidth, minHeight:minHeight, maxWidth:maxWidth, maxHeight:maxHeight, width:winWidth, height:winHeight, title:title, closeOnEscape: false});
+    $("#stats_app_dialog").html("Loading...");
+    $("#stats_app_dialog").load(url).dialog('open');
+  }
 
-      modalOptions.title = title;
-
-      $("#stats_app_dialog").dialog("option", modalOptions);
-
-      $("#stats_app_dialog").html("Loading...");
-      $("#stats_app_dialog").load(url).dialog('open');
-    }
-
-    function addDatePicker(){
-    $('.adddatepicker').each(function(i, obj){
+  function addDatePicker() {
+    $('.adddatepicker').each(function (i, obj) {
       $(obj).datepicker({
         showOn: 'both',
         buttonImage: '/assets/calendar.gif',
         buttonImageOnly: true,
       });
     });
-    }
+  }
 
-   $(document).ready(function() {
-     addDatePicker();
-     $('.chosen-select').chosen({allow_single_deselect: true, search_contains: true, width: '250px'});
-     $('.chosen-select-wide').chosen({allow_single_deselect: true, search_contains: true, width: '400px'});
-   });
+  $(document).ready(function () {
+    addDatePicker();
+    $('.chosen-select').chosen({ allow_single_deselect: true, search_contains: true, width: '250px' });
+    $('.chosen-select-wide').chosen({ allow_single_deselect: true, search_contains: true, width: '400px' });
+  });
 
-   function setClassInputFields(){
-     addDatePicker();
-     $('.chosen-select').chosen({allow_single_deselect: true, search_contains: true, width: '250px'});
-     $('.chosen-select-wide').chosen({allow_single_deselect: true, search_contains: true, width: '400px'});
-   }
+  function setClassInputFields() {
+    addDatePicker();
+    $('.chosen-select').chosen({ allow_single_deselect: true, search_contains: true, width: '250px' });
+    $('.chosen-select-wide').chosen({ allow_single_deselect: true, search_contains: true, width: '400px' });
+  }
 
-  </script>
+</script>
 
 
-<body style="font-size: .75rem;" onload="if (top != self) { top.location=self.location; }" >
+<body style="font-size: .75rem;" onload="if (top != self) { top.location=self.location; }">
 
-      <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light header-dark-border-color py-0">
-        <a class="navbar-brand mr-0 mr-md-2" href="/" aria-label="statistics">
-                          <img alt="NCAA" style="margin-left: 24px; margin-right: 0; margin-top: 6px;" src="/assets/ncaa-fbc4d0406ae731b47babcc3fca53775b5955ef372bf8b8e998ca9a513e468b8f.svg" />
-                          <span class="title" class="dark-blue-font">Statistics</span>
-        </a>
-       </nav>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light header-dark-border-color py-0" style="background-color: var(--color-dark-blue) !important;">
-  <button class="navbar-toggler bg-white" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light header-dark-border-color py-0">
+      <a class="navbar-brand mr-0 mr-md-2" href="/" aria-label="statistics">
+        <img alt="NCAA" style="margin-left: 24px; margin-right: 0; margin-top: 6px;"
+          src="/assets/ncaa-fbc4d0406ae731b47babcc3fca53775b5955ef372bf8b8e998ca9a513e468b8f.svg" />
+        <span class="title" class="dark-blue-font">Statistics</span>
+      </a>
+    </nav>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light header-dark-border-color py-0"
+      style="background-color: var(--color-dark-blue) !important;">
+      <button class="navbar-toggler bg-white" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01"
+        aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
         <ul class="navbar-nav mr-auto mt-2 mt-lg-0 justify-content-center">
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle skipMask" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Rankings
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-          <a class="dropdown-item" href="/rankings">National Rankings</a>
-          <a class="dropdown-item" href="/active_career_leaders">Active Career Leaders</a>
-        </div>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/contests/livestream_scoreboards">Scoreboard</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/selection_rankings/nitty_gritties">Selection Rankings</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/head_coaches">Head Coaches</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/search/players">Players</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link skipMask dropdown-toggle" data-toggle="collapse" href="#collapseSchoolTeams" role="button" aria-expanded="false" aria-controls="collapseSchoolTeams">
-          Air Force Sports
-        </a>
-      </li>
-     </ul>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle skipMask" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
+              Rankings
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <a class="dropdown-item" href="/rankings">National Rankings</a>
+              <a class="dropdown-item" href="/active_career_leaders">Active Career Leaders</a>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/contests/livestream_scoreboards">Scoreboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/selection_rankings/nitty_gritties">Selection Rankings</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/head_coaches">Head Coaches</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/search/players">Players</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link skipMask dropdown-toggle" data-toggle="collapse" href="#collapseSchoolTeams"
+              role="button" aria-expanded="false" aria-controls="collapseSchoolTeams">
+              Air Force Sports
+            </a>
+          </li>
+        </ul>
 
-    <form onsubmit="mask(&#39;Loading&#39;);" id="change_team_form" style="display:inline;" class="form-inline my-2 my-lg-0" action="/team/index" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="VK/FSlPpsvQIWvtxob1hLKOcO7fPwiZaXZFOf7tz9VbhYG267wEBsyurhj+fn76QT9ND14la2UxIMFVlK5Zr0Q==" />
-  <div style="display:none;">
-  <input type="submit" name="commit" value="Submit" id="sport_btn" data-disable-with="Submit" />
-  </div>
-    <div id="team_autocomplete" class="ui-widget">
-      <input type="search" name="org_name" id="org_name" style="width:200px; font-size: 12px !important" class="form-control mr-sm-2" placeholder="Team Search" />
-      <input type="hidden" name="org_id" id="org_id" />
-    </div>
-</form>  </div>
-  </nav>
+        <form onsubmit="mask(&#39;Loading&#39;);" id="change_team_form" style="display:inline;"
+          class="form-inline my-2 my-lg-0" action="/team/index" accept-charset="UTF-8" method="post"><input name="utf8"
+            type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token"
+            value="aZqex47nhEYmNhzaoM7W0El0kouM9LX3+oO+pYBqfaTcVTY3Mg83AQXHYZSe7AlspTvq68psSuHvIqW/EI/jIw==" />
+          <div style="display:none;">
+            <input type="submit" name="commit" value="Submit" id="sport_btn" data-disable-with="Submit" />
+          </div>
+          <div id="team_autocomplete" class="ui-widget">
+            <input type="search" name="org_name" id="org_name" style="width:200px; font-size: 12px !important"
+              class="form-control mr-sm-2" placeholder="Team Search" />
+            <input type="hidden" name="org_id" id="org_id" />
+          </div>
+        </form>
+      </div>
+    </nav>
     <div class="collapse pt-4" id="collapseSchoolTeams" style="width: 100%">
       <div class="container-fluid">
         <div class="row">
           <div class="col-md">
             <ul class="list-unstyled">
               <li><strong>Fall</strong></li>
-                   <li><a href="/teams/606051">2025-26 Football (0-0)</a></li>
-                   <li><a href="/teams/603679">2025-26 Men&#39;s Soccer (0-0)</a></li>
-                   <li><a href="/teams/596327">2024-25 Men&#39;s Water Polo (13-20)</a></li>
-                   <li><a href="/teams/602844">2025-26 Women&#39;s Soccer (0-0)</a></li>
-                   <li><a href="/teams/604935">2025-26 Women&#39;s Volleyball (0-0)</a></li>
+              <li><a href="/teams/606051">2025-26 Football (0-0)</a></li>
+              <li><a href="/teams/603679">2025-26 Men&#39;s Soccer (0-0)</a></li>
+              <li><a href="/teams/596327">2024-25 Men&#39;s Water Polo (13-20)</a></li>
+              <li><a href="/teams/602844">2025-26 Women&#39;s Soccer (0-0)</a></li>
+              <li><a href="/teams/604935">2025-26 Women&#39;s Volleyball (0-0)</a></li>
             </ul>
           </div>
           <div class="col-md">
             <ul class="list-unstyled">
               <li><strong>Winter</strong></li>
-                   <li><a href="/teams/590762">2024-25 Men&#39;s Basketball (3-22)</a></li>
-                   <li><a href="/teams/592943">2024-25 Men&#39;s Ice Hockey (13-19-2)</a></li>
-                   <li><a href="/teams/591934">2024-25 Women&#39;s Basketball (14-11)</a></li>
+              <li><a href="/teams/609502">2025-26 Men&#39;s Basketball (0-0)</a></li>
+              <li><a href="/teams/610693">2025-26 Men&#39;s Ice Hockey (0-0)</a></li>
+              <li><a href="/teams/609930">2025-26 Women&#39;s Basketball (0-0)</a></li>
             </ul>
           </div>
           <div class="col-md">
             <ul class="list-unstyled">
               <li><strong>Spring</strong></li>
-                   <li><a href="/teams/596430">2024-25 Baseball (0-2)</a></li>
-                   <li><a href="/teams/594020">2024-25 Men&#39;s Lacrosse (0-3)</a></li>
+              <li><a href="/teams/596430">2024-25 Baseball (18-30)</a></li>
+              <li><a href="/teams/594020">2024-25 Men&#39;s Lacrosse (8-7)</a></li>
             </ul>
           </div>
-      </div>
-    </div>
-</nav>
-      </header>
-
-       <div id="stats_app_dialog" style="display:none;">
         </div>
-
-<div class="card p-1">
-  <div class="card-body application teams p-0">
-    <h3 class="card-title p-0"></h3>
-    <div class="container-fluid p-0">
-      <div class="row align-items-center justify-content-center p-0">
-        <div class="col-sm-12 p-0">
-        <script>
-  function submit_form(val){
-    curr_action = '/teams/';
-    $('#change_sport_form').attr("action", curr_action + val);
-    $('#team_sport_btn').click();
-  }
-  $(function() {
-    $( "#org_sport_name" ).autocomplete({
-      open: function(){
-        setTimeout(function () {
-            $('.ui-autocomplete').css('z-index', 99999999999999);
-        }, 0);
-      },
-      source: '/team/16781/sport_sponsored_search',
-      select: function( event, ui ) {
-        $("#sport_search_org_id").val(ui.item.vid);
-        //curr_action = '/teams/'.replace("721", ui.item.vid);
-        curr_action = '/teams/'+ui.item.vid;
-        //$('#change_sport_form').attr("action", curr_action + $('#sport_list').val());
-        $('#change_sport_form').attr("action", curr_action);
-        $('#team_sport_btn').click();
-      }
-    });
-  });
-</script>
-
-  <div class="card">
-    <div class="card-header">
-    <img height="20px" width="30px" alt="Air Force" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//721.gif" /> <a target="ATHLETICS_URL" href="http://www.goairforcefalcons.com/">Air Force Falcons</a> (0-3)
-    </div>
-    <div class="card-body p-1">
-  <form onsubmit="mask(&#39;Loading&#39;);" id="change_sport_form" action="http://stats.ncaa.org" accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="&#x2713;" />
-    <select name="year_id" id="year_list" onchange="submit_form(this.value);"><option selected="selected" value="594020">2024-25</option>
-<option value="571437">2023-24</option>
-<option value="546929">2022-23</option>
-<option value="530081">2021-22</option>
-<option value="507874">2020-21</option>
-<option value="493893">2019-20</option>
-<option value="473285">2018-19</option>
-<option value="423561">2017-18</option>
-<option value="110563">2016-17</option>
-<option value="23983">2015-16</option>
-<option value="105982">2014-15</option>
-<option value="103551">2013-14</option>
-<option value="35212">2012-13</option>
-<option value="56760">2011-12</option>
-<option value="29435">2010-11</option>
-<option value="53282">2009-10</option>
-<option value="95414">2008-09</option>
-<option value="408043">2007-08</option>
-<option value="178975">2006-07</option>
-<option value="222369">2005-06</option>
-<option value="222151">2004-05</option>
-<option value="179614">2003-04</option>
-<option value="179406">2002-03</option>
-<option value="179204">2001-02</option>
-<option value="141242">2000-01</option>
-<option value="141061">1999-00</option>
-<option value="221956">1998-99</option>
-<option value="221791">1997-98</option>
-<option value="371035">1996-97</option>
-<option value="336826">1995-96</option>
-<option value="221637">1994-95</option>
-<option value="221497">1993-94</option>
-<option value="221357">1992-93</option>
-<option value="300026">1991-92</option>
-<option value="407854">1990-91</option>
-<option value="178792">1989-90</option>
-<option value="140904">1988-89</option>
-<option value="370892">1987-88</option>
-<option value="370776">1986-87</option>
-<option value="370663">1985-86</option>
-<option value="336692">1984-85</option>
-<option value="336583">1983-84</option>
-<option value="140787">1982-83</option>
-<option value="370553">1981-82</option>
-<option value="221226">1980-81</option>
-<option value="407735">1979-80</option>
-<option value="257447">1978-79</option>
-<option value="336482">1977-78</option>
-<option value="178679">1976-77</option>
-<option value="370459">1975-76</option>
-<option value="407643">1974-75</option>
-<option value="257359">1973-74</option>
-<option value="221132">1972-73</option>
-<option value="370371">1971-72</option>
-<option value="336395">1970-71</option>
-<option value="178594">1969-70</option>
-<option value="336323">1968-69</option>
-<option value="336256">1967-68</option>
-<option value="221056">1966-67</option></select>
-    <select name="sport_id" id="sport_list" onchange="submit_form(this.value);"><option value="596430">Baseball</option>
-<option value="590762">Men&#39;s Basketball</option>
-<option value="589002">Football</option>
-<option value="592943">Men&#39;s Ice Hockey</option>
-<option selected="selected" value="594020">Men&#39;s Lacrosse</option>
-<option value="587841">Men&#39;s Soccer</option>
-<option value="596327">Men&#39;s Water Polo</option>
-<option value="591934">Women&#39;s Basketball</option>
-<option value="587018">Women&#39;s Soccer</option>
-<option value="585334">Women&#39;s Volleyball</option></select>
-    <a href="/teams/history/MLA/721">Team History</a> |
-    <a href="/teams/coaches_summary/MLA/721">Coaches Summary</a>
-
-    <div style="display:none;">
-    <input type="submit" name="commit" value="Submit" id="team_sport_btn" data-disable-with="Submit" />
-    </div>
-    <span id="tst" style="float:right;">
-      <div id="team_sport_autocomplete" class="ui-widget">
-      Teams Sponsoring Men&#39;s Lacrosse:
-      <input type="text" name="org_sport_name" id="org_sport_name" style="width:200px" />
-      <input type="hidden" name="org_id" id="sport_search_org_id" />
       </div>
-    </span>
-</form>    <!--
+      </nav>
+  </header>
+
+  <div id="stats_app_dialog" style="display:none;">
+  </div>
+
+  <div class="card p-1">
+    <div class="card-body application teams p-0">
+      <h3 class="card-title p-0"></h3>
+      <div class="container-fluid p-0">
+        <div class="row align-items-center justify-content-center p-0">
+          <div class="col-sm-12 p-0">
+            <script>
+              function submit_form(val) {
+                curr_action = '/teams/';
+                $('#change_sport_form').attr("action", curr_action + val);
+                $('#team_sport_btn').click();
+              }
+              $(function () {
+                $("#org_sport_name").autocomplete({
+                  open: function () {
+                    setTimeout(function () {
+                      $('.ui-autocomplete').css('z-index', 99999999999999);
+                    }, 0);
+                  },
+                  source: '/team/16781/sport_sponsored_search',
+                  select: function (event, ui) {
+                    $("#sport_search_org_id").val(ui.item.vid);
+                    //curr_action = '/teams/'.replace("721", ui.item.vid);
+                    curr_action = '/teams/' + ui.item.vid;
+                    //$('#change_sport_form').attr("action", curr_action + $('#sport_list').val());
+                    $('#change_sport_form').attr("action", curr_action);
+                    $('#team_sport_btn').click();
+                  }
+                });
+              });
+            </script>
+
+            <div class="card">
+              <div class="card-header">
+                <img class="logo_image" alt="Air Force"
+                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//721.gif" /> <a target="ATHLETICS_URL"
+                  href="http://www.goairforcefalcons.com/">Air Force Falcons</a> (8-7) <a class="skipMask"
+                  target="TEAM_SHEET_44572_594020_WIN"
+                  href="/selection_rankings/nitty_gritties/44572/teams/594020/team_sheet">RPI Ranking - 38</a>
+              </div>
+              <div class="card-body p-1">
+                <form onsubmit="mask(&#39;Loading&#39;);" id="change_sport_form" action="http://stats.ncaa.org"
+                  accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="&#x2713;" />
+                  <select name="year_id" id="year_list" onchange="submit_form(this.value);">
+                    <option selected="selected" value="594020">2024-25</option>
+                    <option value="571437">2023-24</option>
+                    <option value="546929">2022-23</option>
+                    <option value="530081">2021-22</option>
+                    <option value="507874">2020-21</option>
+                    <option value="493893">2019-20</option>
+                    <option value="473285">2018-19</option>
+                    <option value="423561">2017-18</option>
+                    <option value="110563">2016-17</option>
+                    <option value="23983">2015-16</option>
+                    <option value="105982">2014-15</option>
+                    <option value="103551">2013-14</option>
+                    <option value="35212">2012-13</option>
+                    <option value="56760">2011-12</option>
+                    <option value="29435">2010-11</option>
+                    <option value="53282">2009-10</option>
+                    <option value="95414">2008-09</option>
+                    <option value="408043">2007-08</option>
+                    <option value="178975">2006-07</option>
+                    <option value="222369">2005-06</option>
+                    <option value="222151">2004-05</option>
+                    <option value="179614">2003-04</option>
+                    <option value="179406">2002-03</option>
+                    <option value="179204">2001-02</option>
+                    <option value="141242">2000-01</option>
+                    <option value="141061">1999-00</option>
+                    <option value="221956">1998-99</option>
+                    <option value="221791">1997-98</option>
+                    <option value="371035">1996-97</option>
+                    <option value="336826">1995-96</option>
+                    <option value="221637">1994-95</option>
+                    <option value="221497">1993-94</option>
+                    <option value="221357">1992-93</option>
+                    <option value="300026">1991-92</option>
+                    <option value="407854">1990-91</option>
+                    <option value="178792">1989-90</option>
+                    <option value="140904">1988-89</option>
+                    <option value="370892">1987-88</option>
+                    <option value="370776">1986-87</option>
+                    <option value="370663">1985-86</option>
+                    <option value="336692">1984-85</option>
+                    <option value="336583">1983-84</option>
+                    <option value="140787">1982-83</option>
+                    <option value="370553">1981-82</option>
+                    <option value="221226">1980-81</option>
+                    <option value="407735">1979-80</option>
+                    <option value="257447">1978-79</option>
+                    <option value="336482">1977-78</option>
+                    <option value="178679">1976-77</option>
+                    <option value="370459">1975-76</option>
+                    <option value="407643">1974-75</option>
+                    <option value="257359">1973-74</option>
+                    <option value="221132">1972-73</option>
+                    <option value="370371">1971-72</option>
+                    <option value="336395">1970-71</option>
+                    <option value="178594">1969-70</option>
+                    <option value="336323">1968-69</option>
+                    <option value="336256">1967-68</option>
+                    <option value="221056">1966-67</option>
+                  </select>
+                  <select name="sport_id" id="sport_list" onchange="submit_form(this.value);">
+                    <option value="585334">Women&#39;s Volleyball</option>
+                    <option value="589002">Football</option>
+                    <option selected="selected" value="594020">Men&#39;s Lacrosse</option>
+                    <option value="587841">Men&#39;s Soccer</option>
+                    <option value="592943">Men&#39;s Ice Hockey</option>
+                    <option value="596327">Men&#39;s Water Polo</option>
+                    <option value="596430">Baseball</option>
+                    <option value="587018">Women&#39;s Soccer</option>
+                    <option value="590762">Men&#39;s Basketball</option>
+                    <option value="591934">Women&#39;s Basketball</option>
+                    <option value="608307">Men&#39;s Tennis</option>
+                    <option value="607832">Women&#39;s Tennis</option>
+                  </select>
+                  <a href="/teams/history/MLA/721">Team History</a> |
+                  <a href="/teams/coaches_summary/MLA/721">Coaches Summary</a>
+
+                  <div style="display:none;">
+                    <input type="submit" name="commit" value="Submit" id="team_sport_btn" data-disable-with="Submit" />
+                  </div>
+                  <span id="tst" style="float:right;">
+                    <div id="team_sport_autocomplete" class="ui-widget">
+                      Teams Sponsoring Men&#39;s Lacrosse:
+                      <input type="text" name="org_sport_name" id="org_sport_name" style="width:200px" />
+                      <input type="hidden" name="org_id" id="sport_search_org_id" />
+                    </div>
+                  </span>
+                </form> <!--
   </div>
 
   <div class="card">
     <div class="card-body">
       -->
-    <div class="row">
-      <div class="col p-0">
-          <div class="card m-2" id="team_venues_594020">
-    <div class="card-header">
-      Field
-    </div>
-    <div class="card-body">
-    <div class="card m-2" id="team_page_season_venue_339453">
-  <div class="card-body">
-    <dl class="row mb-0 text-nowrap">
-      <dt class="col-sm-3 mb-0">Name:</dt>
-      <dd class="col-sm-9 mb-0">
-        Falcon Stadium
-      </dd>
-      <dt class="col-sm-3 mb-0">Capacity:</dt>
-      <dd class="col-sm-9 mb-0">
-        46,692
-      </dd>
-      <dt class="col-sm-3 mb-0">Year Built:</dt>
-      <dd class="col-sm-9 mb-0">
-        1962
-      </dd>
-    </dl>
-  </div>
-</div>
+                <div class="row">
+                  <div class="col p-0">
+                    <div class="card m-2" id="team_venues_594020">
+                      <div class="card-header">
+                        Field
+                      </div>
+                      <div class="card-body">
+                        <div class="card m-2" id="team_page_season_venue_339453">
+                          <div class="card-body">
+                            <dl class="row mb-0 text-nowrap">
+                              <dt class="col-sm-3 mb-0">Name:</dt>
+                              <dd class="col-sm-9 mb-0">
+                                Falcon Stadium
+                              </dd>
+                              <dt class="col-sm-3 mb-0">Capacity:</dt>
+                              <dd class="col-sm-9 mb-0">
+                                46,692
+                              </dd>
+                              <dt class="col-sm-3 mb-0">Year Built:</dt>
+                              <dd class="col-sm-9 mb-0">
+                                1962
+                              </dd>
+                            </dl>
+                          </div>
+                        </div>
 
-   </div>
- </div>
+                      </div>
+                    </div>
 
-      </div>
+                  </div>
 
-        <div class="col p-0">
-        <div class="card m-2">
-  <div class="card-header">Coach</div>
-  <div class="card-body">
-      <div class="card">
-        <dl class="row mb-0 text-nowrap">
-          <dt class="col-sm-3 mb-0">Name:</dt>
-          <dd class="col-sm-9 mb-0">
-            <a href="/people/1992190?sport_code=MLA">Bill Wilson</a>
-          </dd>
+                  <div class="col p-0">
+                    <div class="card m-2">
+                      <div class="card-header">Coach</div>
+                      <div class="card-body">
+                        <div class="card">
+                          <dl class="row mb-0 text-nowrap">
+                            <dt class="col-sm-3 mb-0">Name:</dt>
+                            <dd class="col-sm-9 mb-0">
+                              <a href="/people/1992190?sport_code=MLA">Bill Wilson</a>
+                            </dd>
 
-          <dt class="col-sm-3 mb-0">Alma Mater:</dt>
-          <dd class="col-sm-9 mb-0">
-            Loyola Maryland - 1994
-          </dd>
-          <dt class="col-sm-3 mb-0">Seasons:</dt>
-          <dd class="col-sm-9 mb-0">
-            8
-           <dt class="col-sm-3 mb-0">Record:</dt>
-          <dd class="col-sm-9 mb-0">
-            51-49
-          </dd>
-        </dl>
-      </div>
-  </div>
-</div>
+                            <dt class="col-sm-3 mb-0">Alma Mater:</dt>
+                            <dd class="col-sm-9 mb-0">
+                              Loyola Maryland - 1994
+                            </dd>
+                            <dt class="col-sm-3 mb-0">Seasons:</dt>
+                            <dd class="col-sm-9 mb-0">
+                              8
+                            <dt class="col-sm-3 mb-0">Record:</dt>
+                            <dd class="col-sm-9 mb-0">
+                              59-53
+                            </dd>
+                          </dl>
+                        </div>
+                      </div>
+                    </div>
 
-        </div>
-    </div>
-    <!--
+                  </div>
+                </div>
+                <!--
     don't close this here, but make sure to close it at the end of rosters, schedule results, game by game etc.
   </div>
   -->
 
-    <div class="row">
-      <div class="col p-0">
-  <div class="card mb-2 mx-2">
-  <div class="card-header">Season-to-date Records</div>
-  <div class="card-body p-0">
-       <div class="row">
-          <div class="card mx-2 my-2" style="min-width: 10em;">
-            <div class="card-header p-1">Overall</div>
-            <div class="card-body p-1">
-              <div class="row">
-                <span>0-3 (0.000)</span>
-              </div>
-              <div class="row">
-                <span> Streak: L4 </span>
-              </div>
-            </div>
-          </div>
-          <div class="card mx-2 my-2" style="min-width: 10em;">
-            <div class="card-header p-1">Conference</div>
-            <div class="card-body p-1">
-              <div class="row">
-                <span>0-0 (0.000)</span>
-              </div>
-              <div class="row">
-                <span> Streak: L2 </span>
-              </div>
-            </div>
-          </div>
-          <div class="card mx-2 my-2" style="min-width: 10em;">
-            <div class="card-header p-1">Home</div>
-            <div class="card-body p-1">
-              <div class="row">
-                <span>0-1 (0.000)</span>
-              </div>
-              <div class="row">
-                <span> Streak: L3 </span>
-              </div>
-            </div>
-          </div>
-          <div class="card mx-2 my-2" style="min-width: 10em;">
-            <div class="card-header p-1">Road</div>
-            <div class="card-body p-1">
-              <div class="row">
-                <span>0-2 (0.000)</span>
-              </div>
-              <div class="row">
-                <span> Streak: L2 </span>
-              </div>
-            </div>
-          </div>
-          <div class="card mx-2 my-2" style="min-width: 10em;">
-            <div class="card-header p-1">Neutral </div>
-            <div class="card-body p-1">
-              <div class="row">
-                <span>0-0 (0.000)</span>
-              </div>
-              <div class="row">
-                <span> Streak: L2 </span>
-              </div>
-            </div>
-          </div>
-          <div class="card mx-2 my-2" style="min-width: 10em;">
-            <div class="card-header p-1">Non-Division</div>
-            <div class="card-body p-1">
-              <div class="row">
-                <span>0-0 (0.000)</span>
-              </div>
-              <div class="row">
-                <span> Streak: 0 </span>
-              </div>
-            </div>
-          </div>
-    </div>
-  </div>
-</div>
+                <div class="row">
+                  <div class="col p-0">
+                    <div class="card mb-2 mx-2">
+                      <div class="card-header">Season-to-date Records</div>
+                      <div class="card-body p-0">
+                        <div class="row">
+                          <div class="card mx-2 my-2" style="min-width: 10em;">
+                            <div class="card-header p-1">Overall</div>
+                            <div class="card-body p-1">
+                              <div class="row">
+                                <span>8-7 (0.533)</span>
+                              </div>
+                              <div class="row">
+                                <span> Streak: W6 </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="card mx-2 my-2" style="min-width: 10em;">
+                            <div class="card-header p-1">Conference</div>
+                            <div class="card-body p-1">
+                              <div class="row">
+                                <span>4-1 (0.800)</span>
+                              </div>
+                              <div class="row">
+                                <span> Streak: W6 </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="card mx-2 my-2" style="min-width: 10em;">
+                            <div class="card-header p-1">Home</div>
+                            <div class="card-body p-1">
+                              <div class="row">
+                                <span>5-1 (0.833)</span>
+                              </div>
+                              <div class="row">
+                                <span> Streak: W5 </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="card mx-2 my-2" style="min-width: 10em;">
+                            <div class="card-header p-1">Road</div>
+                            <div class="card-body p-1">
+                              <div class="row">
+                                <span>2-5 (0.286)</span>
+                              </div>
+                              <div class="row">
+                                <span> Streak: W2 </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="card mx-2 my-2" style="min-width: 10em;">
+                            <div class="card-header p-1">Neutral </div>
+                            <div class="card-body p-1">
+                              <div class="row">
+                                <span>1-1 (0.500)</span>
+                              </div>
+                              <div class="row">
+                                <span> Streak: W1 </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="card mx-2 my-2" style="min-width: 10em;">
+                            <div class="card-header p-1">Non-Division</div>
+                            <div class="card-body p-1">
+                              <div class="row">
+                                <span>0-0 (0.000)</span>
+                              </div>
+                              <div class="row">
+                                <span> Streak: 0 </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-      </div>
-    </div>
-</div>
+                  </div>
+                </div>
+              </div>
 
 
-  <nav>
-<ul class="nav nav-tabs padding-nav">
-  <li class="nav-item">
-    <a class="nav-link active" href="/teams/594020">Schedule/Results</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/teams/594020/roster">Roster</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/teams/594020/season_to_date_stats">Team Statistics</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/players/8779440">Game By Game</a>
-  </li>
-<!--
+              <nav>
+                <ul class="nav nav-tabs padding-nav">
+                  <li class="nav-item">
+                    <a class="nav-link active" href="/teams/594020">Schedule/Results</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/teams/594020/roster">Roster</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/teams/594020/season_to_date_stats">Team Statistics</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/players/8779440">Game By Game</a>
+                  </li>
+                  <!--
 <a href="/team/team_game_highs?org_id=721&amp;sport_year_ctl_id=16781">Game Highs</a>
 <a href="/team/conf_game_highs?org_id=721&amp;sport_year_ctl_id=16781">Conf Game Highs</a>
 <a href="/player/player_rank_history?game_sport_year_ctl_id=16781&amp;index_start=0&amp;org_id=721&amp;stat_seq_to_chart=0&amp;stats_player_seq=-100">Ranking Trends</a>
 <a href="/player/team_player_rank_yearly_history?game_sport_year_ctl_id=16781&amp;index_start=0&amp;org_id=721&amp;stat_seq_to_chart=0&amp;stats_player_seq=-100">Team Final Trends</a>
 -->
-      <li class="nav-item">
-        <a class="nav-link" href="/rankings/ranking_summary?academic_year=2025&amp;division=1&amp;org_id=721&amp;ranking_period=10&amp;sport_code=MLA">Ranking Summary</a>
-      </li>
-</ul>
-</nav>
+                  <li class="nav-item">
+                    <a class="nav-link"
+                      href="/rankings/ranking_summary?academic_year=2025&amp;division=1&amp;org_id=721&amp;ranking_period=59&amp;sport_code=MLA">Ranking
+                      Summary</a>
+                  </li>
+                </ul>
+              </nav>
 
 
-<!--
+              <!--
 
   <div class="row">
   <tr>
@@ -578,395 +615,516 @@ h1 img {max-height: 33px;}
   </tr>
 </div>
 -->
-      <div class="row">
-        <div class="col p-0" style="min-width: 400px;">
-          <div class="card m-2">
-  <div class="card-header">Schedule/Results</div>
-  <div class="card-body">
-    <table style="border-collapse: collapse" width="80%">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Opponent</th>
-          <th>Result</th>
-          <th align="right" style="text-align: right !important">Attendance</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="underline_rows">
-          <td>02/01/2025</td>
-          <td>
-        @<a href="/teams/593962"><img height="20px" width="30px" alt="Lafayette" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//342.gif" /> Lafayette</a>
-          </td>
-          <td nowrap>
-          <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310104/box_score">L 8-11 </a>
-          </td>
-          <td align="right">
-        213
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>02/08/2025</td>
-          <td>
-        <a href="/teams/593936"><img height="20px" width="30px" alt="Denver" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//183.gif" /> Denver</a>
-          </td>
-          <td nowrap>
-          <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310059/box_score">L 8-14 </a>
-          </td>
-          <td align="right">
-        246
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>02/15/2025</td>
-          <td>
-        @<a href="/teams/593994"><img height="20px" width="30px" alt="Ohio St." src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//518.gif" /> Ohio St.</a>
-          </td>
-          <td nowrap>
-          <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310109/box_score">L 11-17 </a>
-          </td>
-          <td align="right">
-        1,023
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>02/22/2025</td>
-          <td>
-        @<a href="/teams/593915"><img height="20px" width="30px" alt="Boston U." src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//68.gif" /> Boston U.</a>
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>02/28/2025</td>
-          <td>
-        <a href="/teams/594003"><img height="20px" width="30px" alt="Quinnipiac" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//562.gif" /> Quinnipiac</a>
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>03/02/2025</td>
-          <td>
-        <a href="/teams/593970"><img height="20px" width="30px" alt="Marist" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//386.gif" /> Marist</a>
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>03/08/2025</td>
-          <td>
-        @<a href="/teams/593943"><img height="20px" width="30px" alt="Duke" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//193.gif" /> Duke</a>
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>03/22/2025</td>
-          <td>
-        <a href="/teams/593972"><img height="20px" width="30px" alt="Marquette" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//387.gif" /> Marquette</a> <br/>@Wilmette, IL
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>03/29/2025</td>
-          <td>
-        @<a href="/teams/593958"><img height="20px" width="30px" alt="Jacksonville" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//316.gif" /> Jacksonville</a>
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>04/05/2025</td>
-          <td>
-        <a href="/teams/593910"><img height="20px" width="30px" alt="Bellarmine" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//52.gif" /> Bellarmine</a>
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>04/12/2025</td>
-          <td>
-        <a href="/teams/594044"><img height="20px" width="30px" alt="Queens (NC)" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//11504.gif" /> Queens (NC)</a>
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>04/19/2025</td>
-          <td>
-        @<a href="/teams/593982"><img height="20px" width="30px" alt="Mercer" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//406.gif" /> Mercer</a>
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-        <tr class="underline_rows">
-          <td>04/26/2025</td>
-          <td>
-        <a href="/teams/594051"><img height="20px" width="30px" alt="Utah" src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//732.gif" /> Utah</a>
-          </td>
-          <td nowrap>
-          </td>
-          <td align="right">
-          </td>
-       </tr>
-       <tr>
-         <td colspan="4"></td>
-       </tr>
-    </tbody>
-	 </table>
- </div>
-</div>
+              <div class="row">
+                <div class="col p-0" style="min-width: 400px;">
+                  <div class="card m-2">
+                    <div class="card-header">Schedule/Results</div>
+                    <div class="card-body">
+                      <table style="border-collapse: collapse" width="80%">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Opponent</th>
+                            <th>Result</th>
+                            <th align="right" style="text-align: right !important">Attendance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="underline_rows">
+                            <td>02/01/2025</td>
+                            <td>
+                              @<a href="/teams/593962"><img height="20px" width="30px" alt="Lafayette"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//342.gif" /> Lafayette</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310104/box_score">L 8-11
+                              </a>
+                            </td>
+                            <td align="right">
+                              213
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>02/08/2025</td>
+                            <td>
+                              <a href="/teams/593936"><img height="20px" width="30px" alt="Denver"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//183.gif" /> Denver</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310059/box_score">L 8-14
+                              </a>
+                            </td>
+                            <td align="right">
+                              246
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>02/15/2025</td>
+                            <td>
+                              @<a href="/teams/593994"><img height="20px" width="30px" alt="Ohio St."
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//518.gif" /> Ohio St.</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310109/box_score">L 11-17
+                              </a>
+                            </td>
+                            <td align="right">
+                              1,023
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>02/22/2025</td>
+                            <td>
+                              @<a href="/teams/593915"><img class="logo_image" alt="Boston U."
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//68.gif" /> Boston U.</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310107/box_score">L 7-15
+                              </a>
+                            </td>
+                            <td align="right">
+                              569
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>02/28/2025</td>
+                            <td>
+                              <a href="/teams/594003"><img class="logo_image" alt="Quinnipiac"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//562.gif" /> Quinnipiac</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310112/box_score">W 21-8
+                              </a>
+                            </td>
+                            <td align="right">
+                              185
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>03/02/2025</td>
+                            <td>
+                              <a href="/teams/593970"><img class="logo_image" alt="Marist"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//386.gif" /> Marist</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310116/box_score">W 23-8
+                              </a>
+                            </td>
+                            <td align="right">
+                              223
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>03/08/2025</td>
+                            <td>
+                              @<a href="/teams/593943"><img class="logo_image" alt="Duke"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//193.gif" /> Duke</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310125/box_score">L 11-16
+                              </a>
+                            </td>
+                            <td align="right">
+                              695
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>03/22/2025</td>
+                            <td>
+                              <a href="/teams/593972"><img class="logo_image" alt="Marquette"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//387.gif" /> Marquette</a>
+                              <br />@Wilmette, IL
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310130/box_score">L 8-9
+                              </a>
+                            </td>
+                            <td align="right">
+                              640
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>03/29/2025</td>
+                            <td>
+                              @<a href="/teams/593958"><img class="logo_image" alt="Jacksonville"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//316.gif" /> Jacksonville</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310137/box_score">L 11-15
+                              </a>
+                            </td>
+                            <td align="right">
+                              892
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>04/05/2025</td>
+                            <td>
+                              <a href="/teams/593910"><img class="logo_image" alt="Bellarmine"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//52.gif" /> Bellarmine</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6309998/box_score">W 18-6
+                              </a>
+                            </td>
+                            <td align="right">
+                              136
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>04/12/2025</td>
+                            <td>
+                              <a href="/teams/594044"><img class="logo_image" alt="Queens (NC)"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//11504.gif" /> Queens (NC)</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310141/box_score">W 8-7
+                              </a>
+                            </td>
+                            <td align="right">
+                              212
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>04/19/2025</td>
+                            <td>
+                              @<a href="/teams/593982"><img class="logo_image" alt="Mercer"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//406.gif" /> Mercer</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310143/box_score">W 12-8
+                              </a>
+                            </td>
+                            <td align="right">
+                              127
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>04/26/2025</td>
+                            <td>
+                              <a href="/teams/594051"><img class="logo_image" alt="Utah"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//732.gif" /> Utah</a>
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6310153/box_score">W 16-15
+                                (1 OT)</a>
+                            </td>
+                            <td align="right">
+                              306
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>05/02/2025</td>
+                            <td>
+                              @<a href="/teams/593958"><img class="logo_image" alt="Jacksonville"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//316.gif" />#2 Jacksonville</a>
+                              <br />2025 ASUN MLA Championship
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6380948/box_score">W 15-12
+                              </a>
+                            </td>
+                            <td align="right">
+                              172
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>05/04/2025</td>
+                            <td>
+                              <a href="/teams/594051"><img class="logo_image" alt="Utah"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//732.gif" />#1 Utah</a>
+                              <br />@Jacksonville, FL (2025 ASUN MLA Championship)
+                            </td>
+                            <td nowrap>
+                              <a target="BOX_SCORE_WINDOW" class="skipMask" href="/contests/6380947/box_score">W 11-10
+                              </a>
+                            </td>
+                            <td align="right">
+                              166
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td>05/07/2025</td>
+                            <td>
+                              @<a href="/teams/594007"><img class="logo_image" alt="Robert Morris"
+                                  src="https://web2.ncaa.org/ncaa_style/img/All_Logos/sm//579.gif" /> Robert Morris</a>
+                              <br />2025 NCAA DI MLA Championship
+                            </td>
+                            <td nowrap>
+                            </td>
+                            <td align="right">
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="4"></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
 
+                </div>
+                <div class="col p-0">
+                  <div class="card m-2">
+                    <div class="card-header">Team Stats - Through games 05/04/2025</div>
+                    <div class="card-body">
+                      <table class="" style="border-collapse: collapse" width="50%">
+                        <thead>
+                          <tr>
+                            <th align="left">Stat</th>
+                            <th align="right" sytle="text-align: right !important">Rank</th>
+                            <th align="rigth" style="text-align: right !important">Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/233/59">Winning
+                                Percentage</a></td>
+                            <td align="right">31</td>
+                            <td align="right">
+                              0.533
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/228/59">Scoring
+                                Offense</a></td>
+                            <td align="right">18</td>
+                            <td align="right">
+                              12.53
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/229/59">Scoring
+                                Defense</a></td>
+                            <td align="right">47</td>
+                            <td align="right">
+                              11.40
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/238/59">Scoring
+                                Margin</a></td>
+                            <td align="right">32</td>
+                            <td align="right">
+                              1.13
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/231/59">Man-Up
+                                Offense</a></td>
+                            <td align="right">7</td>
+                            <td align="right">
+                              0.500
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/232/59">Man-Down
+                                Defense</a></td>
+                            <td align="right">15</td>
+                            <td align="right">
+                              0.744
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/230/59">Face-Off
+                                Winning Percentage</a></td>
+                            <td align="right">51</td>
+                            <td align="right">
+                              0.467
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/563/59">Shot
+                                Percentage</a></td>
+                            <td align="right">2</td>
+                            <td align="right">
+                              0.336
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/538/59">Ground
+                                Balls Per Game</a></td>
+                            <td align="right">47</td>
+                            <td align="right">
+                              29.67
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/838/59">Clearing
+                                Percentage</a></td>
+                            <td align="right">55</td>
+                            <td align="right">
+                              0.834
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/537/59">Points
+                                Per Game</a></td>
+                            <td align="right">20</td>
+                            <td align="right">
+                              19.73
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/535/59">Assists
+                                Per Game</a></td>
+                            <td align="right">26</td>
+                            <td align="right">
+                              7.20
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/536/59">Saves
+                                Per Game</a></td>
+                            <td align="right">53</td>
+                            <td align="right">
+                              11.27
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask"
+                                href="/rankings/MLA/2025/1/559/59">Turnovers Per Game</a></td>
+                            <td align="right">39</td>
+                            <td align="right">
+                              16.40
+                            </td>
+                          </tr>
+                          <tr class="underline_rows">
+                            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/561/59">Caused
+                                Turnovers Per Game</a></td>
+                            <td align="right">42</td>
+                            <td align="right">
+                              7.60
+                            </td>
+                          </tr>
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colspan="3">
+                              <a target="RANKINGS_WIN" class="skipMask"
+                                href="/rankings/ranking_summary?academic_year=2025.0&amp;division=1.0&amp;game_high=N&amp;org_id=721&amp;ranking_period=59&amp;sport_code=MLA&amp;team_individual=T">View
+                                Complete Ranking Summary</a>
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                  </table>
+                  <br />
+
+
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
-        <div class="col p-0">
-            <div class="card m-2">
-    <div class="card-header">Team Stats - Through games 02/14/2025</div>
-    <div class="card-body">
-      <table class="" style="border-collapse: collapse" width="50%">
-        <thead>
-          <tr>
-            <th align="left">Stat</th>
-            <th align="right" sytle="text-align: right !important">Rank</th>
-            <th align="rigth" style="text-align: right !important">Value</th>
-          </tr>
-        </thead>
-        <tbody>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/233/10">Winning Percentage</a></td>
-            <td align="right">45</td>
-            <td align="right">
-              0.000
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/228/10">Scoring Offense</a></td>
-            <td align="right">T-49</td>
-            <td align="right">
-              8.00
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/229/10">Scoring Defense</a></td>
-            <td align="right">41</td>
-            <td align="right">
-              12.50
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/238/10">Scoring Margin</a></td>
-            <td align="right">46</td>
-            <td align="right">
-              -4.50
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/231/10">Man-Up Offense</a></td>
-            <td align="right">T-24</td>
-            <td align="right">
-              0.400
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/232/10">Man-Down Defense</a></td>
-            <td align="right">7</td>
-            <td align="right">
-              0.857
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/230/10">Face-Off Winning Percentage</a></td>
-            <td align="right">43</td>
-            <td align="right">
-              0.479
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/563/10">Shot Percentage</a></td>
-            <td align="right">51</td>
-            <td align="right">
-              0.235
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/538/10">Ground Balls Per Game</a></td>
-            <td align="right">32</td>
-            <td align="right">
-              31.50
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/838/10">Clearing Percentage</a></td>
-            <td align="right">43</td>
-            <td align="right">
-              0.811
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/537/10">Points Per Game</a></td>
-            <td align="right">44</td>
-            <td align="right">
-              14.00
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/535/10">Assists Per Game</a></td>
-            <td align="right">35</td>
-            <td align="right">
-              6.00
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/536/10">Saves Per Game</a></td>
-            <td align="right">55</td>
-            <td align="right">
-              9.00
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/559/10">Turnovers Per Game</a></td>
-            <td align="right">58</td>
-            <td align="right">
-              21.50
-            </td>
-          </tr>
-              <tr class="underline_rows">
-            <td nowrap><a target="Rankings" class="skipMask" href="/rankings/MLA/2025/1/561/10">Caused Turnovers Per Game</a></td>
-            <td align="right">5</td>
-            <td align="right">
-              13.50
-            </td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="3">
-              <a target="RANKINGS_WIN" class="skipMask" href="/rankings/ranking_summary?academic_year=2025.0&amp;division=1.0&amp;game_high=N&amp;org_id=721&amp;ranking_period=10&amp;sport_code=MLA&amp;team_individual=T">View Complete Ranking Summary</a>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  </div>
-</table>
-<br/>
-
-
-        </div>
-    </div>
-</div>
-
-       </div>
       </div>
     </div>
   </div>
-</div>
 
-<footer>&copy; <script>document.write(new Date().getFullYear())</script> NCAA <a href="http://web1.ncaa.org/web_files/terms_and_conditions.html" title ="Terms and Conditions" target=_blank>Terms and Conditions</a> | <a href="http://web1.ncaa.org/web_files/privacy.html" target=_blank title="Our Privacy Policy">Privacy Policy</a> | <a href="mailto:ncaa_stats@ncaa.org">Contact Us</a> </footer>
+  <footer>&copy;
+    <script>document.write(new Date().getFullYear())</script> NCAA <a
+      href="http://web1.ncaa.org/web_files/terms_and_conditions.html" title="Terms and Conditions" target=_blank>Terms
+      and Conditions</a> | <a href="http://web1.ncaa.org/web_files/privacy.html" target=_blank
+      title="Our Privacy Policy">Privacy Policy</a> | <a href="mailto:ncaa_stats@ncaa.org">Contact Us</a>
+  </footer>
 
   <!-- /.container -->
-  </body>
+</body>
 
-  <script charset="utf-8">
-    $(document).ready(function() {
-      $('a.remote[data-toggle="tab"]').on('show.bs.tab', function (e) {
-        var tab_id = '#' + $(this).attr('aria-controls');
-        $(tab_id).html('<br/><br/><p style="text-align: center"><img style="vertical-align:middle; text-align: center" src="/assets/ajax-loader-6913acdbf4be7d6a2908a84bdecd6cad18110f5fc6d5a07cf8c9ce78d9548700.gif" /> Loading... </p><br/><br/>');
-        $.get($(this).data('remote'), function(data){
-          $(tab_id).html(data);
-        });
+<script charset="utf-8">
+  $(document).ready(function () {
+    $('a.remote[data-toggle="tab"]').on('show.bs.tab', function (e) {
+      var tab_id = '#' + $(this).attr('aria-controls');
+      $(tab_id).html('<br/><br/><p style="text-align: center"><img style="vertical-align:middle; text-align: center" src="/assets/ajax-loader-6913acdbf4be7d6a2908a84bdecd6cad18110f5fc6d5a07cf8c9ce78d9548700.gif" /> Loading... </p><br/><br/>');
+      $.get($(this).data('remote'), function (data) {
+        $(tab_id).html(data);
       });
     });
+  });
 
-    function skipMask(obj){
-      if (obj.hasClass('chosen-single') || obj.hasClass('skipMask') || obj.hasClass('ui-datepicker-prev') || obj.hasClass('ui-datepicker-next') || obj.hasClass('ui-corner-all') || obj.hasClass('paginate_button') || obj.hasClass('dt-button')){
-        return true;
-      }else{
-        return false;
-      }
+  function skipMask(obj) {
+    if (obj.hasClass('chosen-single') || obj.hasClass('skipMask') || obj.hasClass('ui-datepicker-prev') || obj.hasClass('ui-datepicker-next') || obj.hasClass('ui-corner-all') || obj.hasClass('paginate_button') || obj.hasClass('dt-button')) {
+      return true;
+    } else {
+      return false;
     }
+  }
 
-    $(document).ajaxComplete(function(){
-      unmask();
-    });
-/*
-    $("form").on('submit', function(event){
-      if (skipMask($(this))){
-        return;
-      }else{
-        mask('Loading');
-      }
-    });
-    */
-    $(document).on('click', 'a', function(){
-      if (skipMask($(this))){
-        return;
-      }else{
-        mask('Loading');
-      }
-    });
-    $(document).on('click', 'input.green', function(){
-      if (skipMask($(this))){
-        return;
-      }else{
-        mask('Loading');
-      }
-    });
+  $(document).ajaxComplete(function () {
+    unmask();
+  });
+  /*
+      $("form").on('submit', function(event){
+        if (skipMask($(this))){
+          return;
+        }else{
+          mask('Loading');
+        }
+      });
+      */
+  $(document).on('click', 'a', function () {
+    if (skipMask($(this))) {
+      return;
+    } else {
+      mask('Loading');
+    }
+  });
+  $(document).on('click', 'input.green', function () {
+    if (skipMask($(this))) {
+      return;
+    } else {
+      mask('Loading');
+    }
+  });
 
-  </script>
+</script>
+
 </html>

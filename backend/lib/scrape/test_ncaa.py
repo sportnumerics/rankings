@@ -66,7 +66,8 @@ class TestScrape(unittest.TestCase):
         self.assertEqual(list(map(lambda g: g.opponent.name, games)), [
             'Lafayette', 'Denver', 'Ohio St.', 'Boston U.', 'Quinnipiac',
             'Marist', 'Duke', 'Marquette', 'Jacksonville', 'Bellarmine',
-            'Queens (NC)', 'Mercer', 'Utah'
+            'Queens (NC)', 'Mercer', 'Utah', 'Jacksonville', 'Utah',
+            'Robert Morris'
         ])
 
     def test_ncaa_game_details(self):
