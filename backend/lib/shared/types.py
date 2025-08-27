@@ -200,10 +200,10 @@ class ScrapeArgs:
     source: str
     year: str
     out_dir: str
-    team: str = None
-    div: str = None
-    limit: str = None
-    team_list_file: str = None
+    team: str | None = None
+    div: str | None = None
+    limit: str | None = None
+    team_list_file: str | None = None
 
 
 @dataclass
@@ -225,14 +225,17 @@ class Scraper(Protocol):
 
     def get_team_list_urls(self, year: str) -> Iterator[Location]:
         """Get the team list URLs for this source"""
+        ...
 
     def convert_team_list_html(self, html: str, year: str,
                                location: Location) -> Iterator[Team]:
         """Convert the team list html into """
+        ...
 
     def convert_schedule_html(self, html: str,
                               team: Team) -> Iterator[ScheduleGame]:
         """Convert schedule html into a schedule of games"""
+        ...
 
     def cross_link_schedules(self, schedules: list[TeamDetail]):
         """Cross link schedules adding additional IDs if necessary"""
@@ -241,9 +244,12 @@ class Scraper(Protocol):
                                   game_id: str, sport: str, source: str,
                                   home_team: Team, away_team: Team) -> Game:
         """Convert game details html into game"""
+        ...
 
     def convert_roster(self, html: str, team: TeamSummary) -> Roster:
         """Convert roster html into roster"""
+        ...
 
     def get_limiter_session_args(self) -> dict[str, int]:
         """Get additional arguments for LimiterSession if rate limiting is needed"""
+        ...
