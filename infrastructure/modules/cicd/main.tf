@@ -62,15 +62,28 @@ resource "aws_iam_policy" "deployment_role_prod" {
         }
       },
       {
-        Sid    = "ProdS3"
+        Sid    = "ProdS3Data"
         Effect = "Allow"
         Action = ["s3:*"]
         Resource = [
           "arn:aws:s3:::sportnumerics-rankings-bucket-prod",
-          "arn:aws:s3:::sportnumerics-rankings-bucket-prod/*",
-          "arn:aws:s3:::sportnumerics-rankings-terraform-state",
-          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*"
+          "arn:aws:s3:::sportnumerics-rankings-bucket-prod/*"
         ]
+      },
+      {
+        Sid    = "ProdS3State"
+        Effect = "Allow"
+        Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+        Resource = [
+          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*/prod.tfstate",
+          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*/prod.tfstate.lock.info"
+        ]
+      },
+      {
+        Sid    = "S3StateBucket"
+        Effect = "Allow"
+        Action = ["s3:ListBucket", "s3:GetBucketLocation"]
+        Resource = ["arn:aws:s3:::sportnumerics-rankings-terraform-state"]
       },
       {
         Sid    = "UntaggedResources"
@@ -202,15 +215,28 @@ resource "aws_iam_policy" "deployment_role_dev" {
         }
       },
       {
-        Sid    = "DevS3"
+        Sid    = "DevS3Data"
         Effect = "Allow"
         Action = ["s3:*"]
         Resource = [
           "arn:aws:s3:::sportnumerics-rankings-bucket-dev",
-          "arn:aws:s3:::sportnumerics-rankings-bucket-dev/*",
-          "arn:aws:s3:::sportnumerics-rankings-terraform-state",
-          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*"
+          "arn:aws:s3:::sportnumerics-rankings-bucket-dev/*"
         ]
+      },
+      {
+        Sid    = "DevS3State"
+        Effect = "Allow"
+        Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+        Resource = [
+          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*/dev.tfstate",
+          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*/dev.tfstate.lock.info"
+        ]
+      },
+      {
+        Sid    = "S3StateBucket"
+        Effect = "Allow"
+        Action = ["s3:ListBucket", "s3:GetBucketLocation"]
+        Resource = ["arn:aws:s3:::sportnumerics-rankings-terraform-state"]
       },
       {
         Sid    = "UntaggedResources"
