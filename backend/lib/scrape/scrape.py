@@ -91,6 +91,10 @@ class ScrapeRunner():
         )
         teams = list(self.scrape_teams())
 
+        # Ensure output directory exists
+        year_dir = os.path.join(self.out_dir, self.year)
+        pathlib.Path(year_dir).mkdir(parents=True, exist_ok=True)
+
         shared.dump_parquet(sorted(teams, key=lambda t: t.id),
                             shared.parquet_path(self.out_dir, self.year,
                                                 'teams',
