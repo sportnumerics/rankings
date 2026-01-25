@@ -30,8 +30,8 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: us-west-2
-        role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role
-        role-session-name: RankingsDeploy
+        role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role-prod
+        role-session-name: RankingsDeployProd
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
