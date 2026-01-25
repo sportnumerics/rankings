@@ -169,7 +169,7 @@ resource "aws_iam_policy" "deployment_role_dev" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "InfraManagement"
+        Sid    = "DevResourcesWrite"
         Effect = "Allow"
         Action = [
           "ecs:*",
@@ -179,6 +179,43 @@ resource "aws_iam_policy" "deployment_role_dev" {
           "lambda:*",
           "cloudfront:*",
           "events:*"
+        ]
+        Resource = ["*"]
+        Condition = {
+          StringEquals = {
+            "aws:ResourceTag/Stage" = "dev"
+          }
+        }
+      },
+      {
+        Sid    = "ReadOnly"
+        Effect = "Allow"
+        Action = [
+          # ECS
+          "ecs:Describe*",
+          "ecs:List*",
+          # ECR
+          "ecr:GetAuthorizationToken",
+          "ecr:Describe*",
+          "ecr:List*",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer",
+          # Logs
+          "logs:Describe*",
+          "logs:List*",
+          "logs:Get*",
+          # Lambda
+          "lambda:Get*",
+          "lambda:List*",
+          # CloudFront
+          "cloudfront:Get*",
+          "cloudfront:List*",
+          # Scheduler
+          "scheduler:Get*",
+          "scheduler:List*",
+          # Events
+          "events:Describe*",
+          "events:List*"
         ]
         Resource = ["*"]
       },
