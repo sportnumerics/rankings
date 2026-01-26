@@ -72,6 +72,11 @@ resource "aws_cloudwatch_event_rule" "task_exit_rule" {
       lastStatus    = ["STOPPED"]
     }
   })
+
+  tags = {
+    App   = "rankings"
+    Stage = var.environment
+  }
 }
 
 resource "aws_cloudwatch_event_target" "task_exit_target" {
@@ -104,6 +109,11 @@ data "aws_iam_policy_document" "task_exit_log_resource_policy" {
 
 resource "aws_ecs_cluster" "rankings_backend" {
   name = "rankings-backend-${var.environment}"
+
+  tags = {
+    App   = "rankings"
+    Stage = var.environment
+  }
 }
 
 resource "aws_cloudwatch_log_group" "rankings_backend" {

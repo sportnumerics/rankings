@@ -37,6 +37,11 @@ resource "aws_lambda_function" "lambda" {
       "DATA_BUCKET"             = local.bucket_name
     }
   }
+
+  tags = {
+    App   = "rankings"
+    Stage = var.environment
+  }
 }
 
 resource "aws_lambda_function_url" "lambda" {
@@ -185,6 +190,11 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
+
+  tags = {
+    App   = "rankings"
+    Stage = var.environment
+  }
 }
 
 resource "aws_s3_bucket_policy" "cloudfront_bucket_policy" {
@@ -230,6 +240,11 @@ resource "aws_cloudfront_cache_policy" "lambda_cache_policy" {
     query_strings_config {
       query_string_behavior = "all"
     }
+  }
+
+  tags = {
+    App   = "rankings"
+    Stage = var.environment
   }
 }
 
