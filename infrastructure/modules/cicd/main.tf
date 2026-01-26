@@ -254,7 +254,12 @@ resource "aws_iam_policy" "deployment_role_dev" {
           "events:PutTargets",
           "events:RemoveTargets",
           "events:TagResource",
-          "events:UntagResource"
+          "events:UntagResource",
+          # Route53 - write actions only
+          "route53:ChangeResourceRecordSets",
+          "route53:CreateHostedZone",
+          "route53:DeleteHostedZone",
+          "route53:ChangeTagsForResource"
         ]
         Resource = ["*"]
         Condition = {
@@ -291,7 +296,11 @@ resource "aws_iam_policy" "deployment_role_dev" {
           "scheduler:List*",
           # Events
           "events:Describe*",
-          "events:List*"
+          "events:List*",
+          # Route53
+          "route53:Get*",
+          "route53:List*",
+          "route53:TestDNSAnswer"
         ]
         Resource = ["*"]
       },
