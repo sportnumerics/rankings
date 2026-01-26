@@ -1,0 +1,52 @@
+name: Deploy PR Preview
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-pr-preview.yml'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  deploy:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-west-2
+        role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role-dev
+        role-session-name: RankingsDeployDev
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.10.5"
+
+    - name: Deploy to Dev
+      run: "./deploy.sh dev"
+
+    - name: Comment on PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '🚀 **Preview deployed to dev!**\n\nTest it at: https://dev.sportnumerics.com\n\nMerge to deploy to production.'
+          })
