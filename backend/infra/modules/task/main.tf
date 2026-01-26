@@ -61,6 +61,11 @@ resource "aws_scheduler_schedule" "rankings_backend" {
       }
     }
   }
+
+  tags = {
+    App   = "rankings"
+    Stage = var.environment
+  }
 }
 
 resource "aws_cloudwatch_event_rule" "task_exit_rule" {
