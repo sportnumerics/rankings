@@ -4,7 +4,7 @@ locals {
 }
 
 # =============================================================================
-# PROD DEPLOYMENT ROLE - only main branch can assume
+# PROD DEPLOYMENT ROLE - only production environment can assume
 # =============================================================================
 resource "aws_iam_role" "deployment_role_prod" {
   name = "rankings-deployment-role-prod"
@@ -20,7 +20,7 @@ resource "aws_iam_role" "deployment_role_prod" {
         Condition = {
           StringEquals : {
             "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com"
-            "token.actions.githubusercontent.com:sub" : "repo:sportnumerics/rankings:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:sub" : "repo:sportnumerics/rankings:environment:production"
           }
         }
       }
@@ -43,7 +43,7 @@ resource "aws_iam_policy" "deployment_role_prod" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "ProdResources"
+        Sid    = "InfraManagement"
         Effect = "Allow"
         Action = [
           "ecs:*",
@@ -52,17 +52,13 @@ resource "aws_iam_policy" "deployment_role_prod" {
           "scheduler:*",
           "lambda:*",
           "cloudfront:*",
-          "route53:*"
+          "route53:*",
+          "events:*"
         ]
         Resource = ["*"]
-        Condition = {
-          StringLike = {
-            "aws:ResourceTag/Stage" = ["prod", ""]
-          }
-        }
       },
       {
-        Sid    = "ProdS3Data"
+        Sid    = "ProdS3"
         Effect = "Allow"
         Action = ["s3:*"]
         Resource = [
@@ -71,35 +67,13 @@ resource "aws_iam_policy" "deployment_role_prod" {
         ]
       },
       {
-        Sid    = "ProdS3State"
+        Sid    = "TerraformState"
         Effect = "Allow"
-        Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+        Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"]
         Resource = [
-          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*/prod.tfstate",
-          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*/prod.tfstate.lock.info"
+          "arn:aws:s3:::sportnumerics-rankings-terraform-state",
+          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*"
         ]
-      },
-      {
-        Sid    = "S3StateBucket"
-        Effect = "Allow"
-        Action = ["s3:ListBucket", "s3:GetBucketLocation"]
-        Resource = ["arn:aws:s3:::sportnumerics-rankings-terraform-state"]
-      },
-      {
-        Sid    = "UntaggedResources"
-        Effect = "Allow"
-        Action = [
-          "ecs:DescribeClusters",
-          "ecs:ListTaskDefinitions",
-          "ecs:DescribeTaskDefinition",
-          "ecr:GetAuthorizationToken",
-          "ecr:DescribeRepositories",
-          "logs:DescribeLogGroups",
-          "lambda:ListFunctions",
-          "cloudfront:ListDistributions",
-          "route53:ListHostedZones"
-        ]
-        Resource = ["*"]
       },
       {
         Sid    = "IAMRoles"
@@ -110,7 +84,7 @@ resource "aws_iam_policy" "deployment_role_prod" {
           "iam:DetachRolePolicy",
           "iam:PutRolePermissionsBoundary"
         ],
-        Resource = ["arn:aws:iam::${local.account_id}:role/rankings-*-prod*"],
+        Resource = ["arn:aws:iam::${local.account_id}:role/rankings-*"],
         Condition = {
           StringEquals = {
             "iam:PermissionsBoundary" = aws_iam_policy.permissions_boundary.arn
@@ -156,7 +130,7 @@ resource "aws_iam_policy" "deployment_role_prod" {
 }
 
 # =============================================================================
-# DEV DEPLOYMENT ROLE - any branch can assume
+# DEV DEPLOYMENT ROLE - only dev environment can assume
 # =============================================================================
 resource "aws_iam_role" "deployment_role_dev" {
   name = "rankings-deployment-role-dev"
@@ -172,9 +146,7 @@ resource "aws_iam_role" "deployment_role_dev" {
         Condition = {
           StringEquals : {
             "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com"
-          }
-          StringLike : {
-            "token.actions.githubusercontent.com:sub" : "repo:sportnumerics/rankings:*"
+            "token.actions.githubusercontent.com:sub" : "repo:sportnumerics/rankings:environment:dev"
           }
         }
       }
@@ -197,7 +169,7 @@ resource "aws_iam_policy" "deployment_role_dev" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "DevResources"
+        Sid    = "DevResourcesWrite"
         Effect = "Allow"
         Action = [
           "ecs:*",
@@ -205,7 +177,8 @@ resource "aws_iam_policy" "deployment_role_dev" {
           "logs:*",
           "scheduler:*",
           "lambda:*",
-          "cloudfront:*"
+          "cloudfront:*",
+          "events:*"
         ]
         Resource = ["*"]
         Condition = {
@@ -215,7 +188,39 @@ resource "aws_iam_policy" "deployment_role_dev" {
         }
       },
       {
-        Sid    = "DevS3Data"
+        Sid    = "ReadOnly"
+        Effect = "Allow"
+        Action = [
+          # ECS
+          "ecs:Describe*",
+          "ecs:List*",
+          # ECR
+          "ecr:GetAuthorizationToken",
+          "ecr:Describe*",
+          "ecr:List*",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer",
+          # Logs
+          "logs:Describe*",
+          "logs:List*",
+          "logs:Get*",
+          # Lambda
+          "lambda:Get*",
+          "lambda:List*",
+          # CloudFront
+          "cloudfront:Get*",
+          "cloudfront:List*",
+          # Scheduler
+          "scheduler:Get*",
+          "scheduler:List*",
+          # Events
+          "events:Describe*",
+          "events:List*"
+        ]
+        Resource = ["*"]
+      },
+      {
+        Sid    = "DevS3"
         Effect = "Allow"
         Action = ["s3:*"]
         Resource = [
@@ -224,34 +229,13 @@ resource "aws_iam_policy" "deployment_role_dev" {
         ]
       },
       {
-        Sid    = "DevS3State"
+        Sid    = "TerraformState"
         Effect = "Allow"
-        Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+        Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"]
         Resource = [
-          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*/dev.tfstate",
-          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*/dev.tfstate.lock.info"
+          "arn:aws:s3:::sportnumerics-rankings-terraform-state",
+          "arn:aws:s3:::sportnumerics-rankings-terraform-state/*"
         ]
-      },
-      {
-        Sid    = "S3StateBucket"
-        Effect = "Allow"
-        Action = ["s3:ListBucket", "s3:GetBucketLocation"]
-        Resource = ["arn:aws:s3:::sportnumerics-rankings-terraform-state"]
-      },
-      {
-        Sid    = "UntaggedResources"
-        Effect = "Allow"
-        Action = [
-          "ecs:DescribeClusters",
-          "ecs:ListTaskDefinitions",
-          "ecs:DescribeTaskDefinition",
-          "ecr:GetAuthorizationToken",
-          "ecr:DescribeRepositories",
-          "logs:DescribeLogGroups",
-          "lambda:ListFunctions",
-          "cloudfront:ListDistributions"
-        ]
-        Resource = ["*"]
       },
       {
         Sid    = "IAMRoles"
