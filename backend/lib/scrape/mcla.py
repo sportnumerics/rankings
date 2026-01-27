@@ -1,7 +1,6 @@
 from collections.abc import Iterator
 import datetime
 import re
-from turtle import position
 from typing import Any, Generator
 from bs4 import BeautifulSoup
 import dateutil
@@ -42,26 +41,68 @@ class Mcla():
     def convert_team_list_html(self, html: str, year: str,
                                location: Location) -> Iterator[Team]:
         soup = BeautifulSoup(html, 'html.parser')
-        division_tables = soup.find_all('div', id='teams-table')
-        for table_div in division_tables:
-            division_text = next(table_div.thead.stripped_strings)
-            for row in table_div.tbody.find_all('tr'):
-                (team, conf) = row.find_all('a', limit=2)
-                if conf.string == 'NON-MCLA':
+        
+        # Try new structure first (2026+): <h4 class="box__title">Division X</h4>
+        box_titles = soup.find_all('h4', class_='box__title')
+        if box_titles:
+            for title in box_titles:
+                # Extract division text (e.g., "Division 1")
+                division_text = title.get_text(strip=True)
+                
+                # Find the table following this title
+                table_wrapper = title.find_next('div', class_='table__wrapper--embedded')
+                if not table_wrapper:
                     continue
-                link_parts = team['href'].split('/')
-                slug = link_parts[2]
-                yield Team(
-                    name=next(team.stripped_strings),
-                    schedule=Location(
-                        url=f'https://mcla.us/teams/{slug}/{year}/schedule'),
-                    roster=Location(
-                        url=f'https://mcla.us/teams/{slug}/{year}/roster'),
-                    year=year,
-                    id=f'ml-mcla-{self._normalize_slug(slug)}',
-                    div='mcla' + DIVISION_MAP[division_text],
-                    sport='ml',
-                    source='mcla')
+                    
+                table = table_wrapper.find('table')
+                if not table or not table.tbody:
+                    continue
+                
+                for row in table.tbody.find_all('tr'):
+                    links = row.find_all('a')
+                    if len(links) < 2:
+                        continue
+                    team = links[0]
+                    conf = links[1]
+                    
+                    if conf.string == 'NON-MCLA':
+                        continue
+                    
+                    link_parts = team['href'].split('/')
+                    slug = link_parts[2]
+                    yield Team(
+                        name=next(team.stripped_strings),
+                        schedule=Location(
+                            url=f'https://mcla.us/teams/{slug}/{year}/schedule'),
+                        roster=Location(
+                            url=f'https://mcla.us/teams/{slug}/{year}/roster'),
+                        year=year,
+                        id=f'ml-mcla-{self._normalize_slug(slug)}',
+                        div='mcla' + DIVISION_MAP[division_text],
+                        sport='ml',
+                        source='mcla')
+        else:
+            # Fall back to old structure (pre-2026): <div id="teams-table">
+            division_tables = soup.find_all('div', id='teams-table')
+            for table_div in division_tables:
+                division_text = next(table_div.thead.stripped_strings)
+                for row in table_div.tbody.find_all('tr'):
+                    (team, conf) = row.find_all('a', limit=2)
+                    if conf.string == 'NON-MCLA':
+                        continue
+                    link_parts = team['href'].split('/')
+                    slug = link_parts[2]
+                    yield Team(
+                        name=next(team.stripped_strings),
+                        schedule=Location(
+                            url=f'https://mcla.us/teams/{slug}/{year}/schedule'),
+                        roster=Location(
+                            url=f'https://mcla.us/teams/{slug}/{year}/roster'),
+                        year=year,
+                        id=f'ml-mcla-{self._normalize_slug(slug)}',
+                        div='mcla' + DIVISION_MAP[division_text],
+                        sport='ml',
+                        source='mcla')
 
     def convert_schedule_html(self, html: str,
                               team: Team) -> Iterator[ScheduleGame]:
