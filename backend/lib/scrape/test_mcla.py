@@ -16,17 +16,17 @@ class TestMcla(unittest.TestCase):
         html = fixtures.mcla_team_list()
         m = mcla.Mcla()
         team_list = list(
-            m.convert_team_list_html(html, '2025',
-                                     next(m.get_team_list_urls('2025'))))
-        self.assertEqual(len(team_list), 180)
+            m.convert_team_list_html(html, '2026',
+                                     next(m.get_team_list_urls('2026'))))
+        self.assertEqual(len(team_list), 174)
         self.assertEqual(
             team_list[0],
             Team(name='Alabama',
                  schedule=Location(
-                     url='https://mcla.us/teams/alabama/2025/schedule'),
+                     url='https://mcla.us/teams/alabama/2026/schedule'),
                  roster=Location(
-                     url='https://mcla.us/teams/alabama/2025/roster'),
-                 year='2025',
+                     url='https://mcla.us/teams/alabama/2026/roster'),
+                 year='2026',
                  div='mcla1',
                  id='ml-mcla-alabama',
                  sport='ml',
