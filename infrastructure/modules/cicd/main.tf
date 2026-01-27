@@ -268,6 +268,26 @@ resource "aws_iam_policy" "deployment_role_dev" {
           }
         }
       },
+      # NOTE: TagResource is needed *before* a resource has Stage=dev, so it cannot
+      # be protected with aws:ResourceTag/Stage. Instead, constrain it by the tags
+      # being applied.
+      {
+        Sid    = "DevLambdaTagResource"
+        Effect = "Allow"
+        Action = [
+          "lambda:TagResource",
+          "lambda:UntagResource"
+        ]
+        Resource = ["arn:aws:lambda:us-west-2:${local.account_id}:function:*"],
+        Condition = {
+          StringEquals = {
+            "aws:RequestTag/Stage" = "dev"
+          }
+          "ForAllValues:StringEquals" = {
+            "aws:TagKeys" = ["Stage", "App"]
+          }
+        }
+      },
       {
         Sid    = "ReadOnly"
         Effect = "Allow"
