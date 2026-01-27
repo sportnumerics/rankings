@@ -278,7 +278,9 @@ resource "aws_iam_policy" "deployment_role_dev" {
           "lambda:TagResource",
           "lambda:UntagResource"
         ]
-        Resource = ["arn:aws:lambda:us-west-2:${local.account_id}:function:*"],
+        # Scope to *dev* Lambdas by name to avoid retagging prod resources.
+        # (Lambda ARN wildcards are supported in IAM resource statements.)
+        Resource = ["arn:aws:lambda:us-west-2:${local.account_id}:function:*-dev"],
         Condition = {
           StringEquals = {
             "aws:RequestTag/Stage" = "dev"
