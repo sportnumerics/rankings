@@ -115,10 +115,15 @@ class ScrapeRunner():
             with open(team_list_json_file) as f:
                 teams = shared.load_many(Team, f)
         else:
-            teams = shared.load_parquet(
-                Team,
-                shared.parquet_path(self.out_dir, self.year, 'teams',
-                                    f'{self.source}.parquet'))
+            teams_path = shared.parquet_path(self.out_dir, self.year, 'teams',
+                                            f'{self.source}.parquet')
+            if not os.path.exists(teams_path):
+                self.log.warning(
+                    f'Teams file not found at {teams_path}, skipping schedule scraping. '
+                    f'This usually means no teams were scraped for {self.source} {self.year}.'
+                )
+                return
+            teams = shared.load_parquet(Team, teams_path)
 
         if self.limit:
             teams = list(teams)[:self.limit]
