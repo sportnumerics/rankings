@@ -1,25 +1,30 @@
 name: E2E smoke (Playwright)
 
 on:
-  pull_request:
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/e2e-smoke.yml'
+  # Run after the PR preview deploy completes successfully so we test the actual deployed dev site.
+  workflow_run:
+    workflows: ["Deploy PR Preview"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       base_url:
-        description: 'Base URL to test (e.g. https://dev.sportnumerics.com)'
+        description: 'Base URL to test (defaults to dev)'
         required: false
         default: 'https://dev.sportnumerics.com'
 
 jobs:
   e2e-smoke:
+    # Only run when the triggering deploy workflow succeeded (or on manual dispatch).
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # When triggered by workflow_run, test the exact revision that was deployed.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,7 +44,7 @@ jobs:
       - name: Run smoke tests
         working-directory: frontend
         env:
-          BASE_URL: ${{ inputs.base_url || 'https://dev.sportnumerics.com' }}
+          BASE_URL: ${{ (github.event_name == 'workflow_dispatch' && inputs.base_url) || 'https://dev.sportnumerics.com' }}
         run: npm run e2e
 
       - name: Upload Playwright report (on failure)
