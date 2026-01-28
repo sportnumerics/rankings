@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "update": "npm-check-updates -u && npm install"
+    "update": "npm-check-updates -u && npm install",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.496.0",
@@ -29,5 +31,8 @@
     "server-only": "^0.0.1",
     "tailwindcss": "3.4.1",
     "typescript": "5.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0"
   }
 }
