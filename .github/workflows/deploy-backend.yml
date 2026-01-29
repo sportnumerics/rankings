@@ -47,3 +47,7 @@ jobs:
 
     - name: Deploy
       run: "./deploy.sh prod"
+
+    - name: Trigger ECS task run
+      run: "./run.sh prod"
+
