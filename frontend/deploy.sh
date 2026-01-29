@@ -7,6 +7,8 @@ environment=${1:-dev}
 npm install
 
 export DATA_BUCKET="sportnumerics-rankings-bucket-$environment"
+export GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')"
+export BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 npm run build
 

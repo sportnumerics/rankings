@@ -170,6 +170,29 @@ Deployment is automated via GitHub Actions:
 
 See `.github/workflows/` for CI/CD configuration.
 
+### Health Check
+
+The frontend exposes a health endpoint for monitoring:
+
+**GET /api/health**
+
+Returns deployment info and S3 connectivity status:
+```json
+{
+  "ok": true,
+  "timestamp": "2026-01-29T02:42:00Z",
+  "gitSha": "a1b2c3d",
+  "buildTime": "2026-01-29T02:30:00Z",
+  "environment": "production",
+  "s3": {
+    "bucket": "sportnumerics-rankings-bucket-prod",
+    "accessible": true
+  }
+}
+```
+
+Use this to verify deployments and debug data connectivity issues.
+
 ---
 
 ## FAQ
