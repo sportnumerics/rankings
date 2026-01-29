@@ -1,14 +1,7 @@
 name: E2E smoke (Playwright)
 
 on:
-  # NOTE: workflow_run triggers are evaluated from the workflow file on the default branch.
-  # Until this is merged to main, we also keep a pull_request trigger so PRs still get e2e runs.
-  pull_request:
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/e2e-smoke.yml'
-
-  # After merge, this provides strict ordering: deploy-to-dev first, then test the deployed site.
+  # Runs after Deploy PR Preview completes, testing the exact revision that was deployed.
   workflow_run:
     workflows: ["Deploy PR Preview"]
     types: [completed]
