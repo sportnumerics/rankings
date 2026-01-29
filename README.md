@@ -178,7 +178,7 @@ See `.github/workflows/` for CI/CD configuration.
 A: NCAA and MCLA don't provide public APIs. We scrape responsibly with rate limiting and caching.
 
 **Q: Can I use this data for my own project?**  
-A: The code is private, but feel free to reach out if you have a specific use case.
+A: The code is open source on GitHub! Feel free to fork, contribute, or use it for your own projects.
 
 **Q: How often is data updated?**  
 A: Backend runs nightly during the season. Off-season updates are less frequent.
@@ -190,7 +190,7 @@ A: Because it's a great sport with limited analytics tools. We're fixing that.
 
 ## License
 
-Private repository. Contact the maintainer for usage inquiries.
+Open source - see repository for details. Contributions welcome!
 
 ---
 
