@@ -41,8 +41,8 @@ sportnumerics-rankings/
 
 **Data Flow:**
 1. Backend runs nightly via ECS (scrapes → processes → ranks)
-2. Outputs Parquet files to S3
-3. Frontend fetches from S3 on-demand (server-side rendering)
+2. Outputs JSON files to S3 (parquet files also generated for dev/analysis)
+3. Frontend fetches JSON from S3 on-demand (server-side rendering)
 4. CloudFront CDN caches pages globally
 
 ---
@@ -130,7 +130,7 @@ npm run build  # Type-check and build
 - Fetch team lists, schedules, rosters from NCAA/MCLA websites
 - Parse HTML into structured data models
 - Cache responses to avoid hammering source sites
-- Output: JSON + Parquet files
+- Output: JSON files (production), Parquet files (dev/analysis)
 
 ### 2. Ranking (`backend/lib/all/`)
 - Predict game outcomes using Elo-like algorithm

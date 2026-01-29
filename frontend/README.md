@@ -8,7 +8,7 @@ Next.js application for displaying lacrosse rankings and statistics.
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **Deployment**: AWS S3 + CloudFront CDN
-- **Data Source**: Server-side fetch from S3 (Parquet files)
+- **Data Source**: Server-side fetch from S3 (JSON files)
 
 ---
 
@@ -75,7 +75,7 @@ app/
 
 ### Server-Side Rendering (SSR)
 - All pages use `async` components to fetch data server-side
-- Data loaded from S3 Parquet files on each request
+- Data loaded from S3 JSON files on each request
 - No client-side JavaScript needed for initial render
 
 ### Dynamic Routes
@@ -95,7 +95,7 @@ app/
 
 1. User requests page (e.g., `/2025/ncaa1/teams`)
 2. Next.js server-side component runs
-3. `server/source.ts` fetches Parquet from S3
+3. `server/source.ts` fetches JSON from S3
 4. Data parsed and rendered to HTML
 5. HTML sent to client (fast first paint)
 6. CloudFront caches response (subsequent requests instant)
@@ -148,7 +148,7 @@ export default async function Page({ params }: { params: { team: string } }) {
 ```
 
 ### Add New Data Field
-1. Update backend to include field in Parquet output
+1. Update backend to include field in JSON output
 2. Update type in `server/source.ts` (or create new interface)
 3. Display in relevant page component
 
