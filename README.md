@@ -20,7 +20,7 @@ Sportnumerics provides predictive rankings and detailed statistics for college l
 ## Architecture
 
 ```
-sportnumerics-rankings/
+rankings/
 ├── backend/          # Python: web scraping, data processing, ranking algorithms
 │   ├── lib/
 │   │   ├── scrape/   # NCAA & MCLA scrapers
