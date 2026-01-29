@@ -47,3 +47,27 @@ jobs:
 
     - name: Deploy
       run: "./deploy.sh prod"
+
+    - name: Trigger immediate ECS task run
+      run: |
+        # Get the latest task definition
+        TASK_DEF=$(aws ecs describe-task-definition \
+          --task-definition rankings-backend-prod \
+          --query 'taskDefinition.taskDefinitionArn' \
+          --output text)
+        
+        # Get subnets from the existing scheduled task
+        SUBNETS=$(aws scheduler get-schedule \
+          --name rankings-backend-prod \
+          --query 'Target.EcsParameters.NetworkConfiguration.awsvpcConfiguration.Subnets' \
+          --output json)
+        
+        # Run the task
+        aws ecs run-task \
+          --cluster rankings-backend-prod \
+          --task-definition "$TASK_DEF" \
+          --launch-type FARGATE \
+          --network-configuration "awsvpcConfiguration={subnets=$SUBNETS,assignPublicIp=ENABLED}" \
+          --count 1
+        
+        echo "✅ Triggered ECS task run in prod"
