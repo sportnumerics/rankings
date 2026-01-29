@@ -141,6 +141,24 @@
   - Optimize scraping schedule (do we need to scrape daily in off-season?)
   - Use spot instances for non-critical backend tasks
 
+### Migrate from JSON to Parquet + DuckDB 💡
+- **Current state**: Write hundreds/thousands of JSON files to S3 multiple times per day
+  - Expensive: Many small S3 writes
+  - Manageable but not ideal
+- **Goal**: Write fewer, larger Parquet files; query with DuckDB at request time
+  - Fewer S3 writes = lower cost
+  - Potentially better query performance with proper partitioning
+  - More flexible querying (filter/aggregate without precomputing all combinations)
+- **Challenge**: Initial testing showed latency issues with Parquet
+  - Need to design schema/partitioning correctly
+  - DuckDB might solve this with smart indexing/caching
+- **Research needed**:
+  - Optimal Parquet schema and partitioning strategy
+  - DuckDB latency benchmarks on realistic queries
+  - Cost comparison: many small JSON writes vs fewer large Parquet writes
+  - Frontend integration: DuckDB WASM? Lambda with DuckDB?
+- **Impact**: High - could significantly reduce S3 costs and improve query flexibility
+
 ---
 
 ## Performance
