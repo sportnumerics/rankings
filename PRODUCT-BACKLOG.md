@@ -20,34 +20,39 @@ A lightweight, assistant-run task management system.
 ## Now (top priority)
 
 ### Ready
-1) **Add Next.js build caching in GitHub Actions**
-   - Outcome: faster deploy runs; fewer rebuilds; reduced Next.js "No build cache found" warning.
-   - First increment: update deploy workflow(s) to cache:
-     - `~/.npm` (or npm cache dir)
-     - `frontend/.next/cache`
-   - Acceptance checks:
-     - Workflow run shows cache hit on subsequent runs
-     - Deploy job time decreases measurably (even ~20-40%)
-
-2) **Add a minimal /api/health endpoint with version info**
+1) **Add a minimal /api/health endpoint with version info**
    - Outcome: quick way to confirm deploy + data connectivity from the outside.
    - First increment: implement `/api/health` returning `{ ok: true, gitSha, buildTime }` (and optionally a cheap S3 list/head to confirm bucket access).
    - Acceptance checks:
      - Endpoint returns 200 in dev
      - Included in README for debugging
 
-3) **Document "how deploy works" (1-page ops doc)**
+2) **Document "how deploy works" (1-page ops doc)**
    - Outcome: reduce friction when something breaks (IAM/Terraform/CloudFront).
    - First increment: add `infrastructure/DEPLOYMENT.md` describing roles, workflows, and common failure modes.
    - Acceptance checks:
      - Covers: which workflows deploy what, which IAM role, where Terraform state lives
      - Includes "how to debug" checklist
 
+3) **Add backend end-to-end smoke test in CI**
+   - Outcome: catch backend scraping/prediction bugs before merge + keep dev populated with realistic data.
+   - First increment: add `.github/workflows/backend-e2e.yml` that:
+     - Triggers on backend PRs
+     - Builds the Docker container
+     - Runs `scrape --source mcla teams` + `scrape schedules --limit 5`
+     - Runs `predict` on the limited dataset
+     - Syncs to dev S3 (sportnumerics-rankings-bucket-dev)
+     - Verifies output files exist and contain valid JSON/parquet
+   - Acceptance checks:
+     - Workflow passes on a backend PR
+     - Dev site shows the limited dataset after workflow completes
+     - Workflow fails if scraping or prediction throws exceptions
+
 ### In Progress
 - (none)
 
 ### PR
-- (none)
+- **Add Next.js build caching** (PR #13) - caches npm + .next/cache for faster deploys
 
 ---
 
