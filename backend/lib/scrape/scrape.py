@@ -15,7 +15,7 @@ import pathlib
 import logging
 import traceback
 
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
+USER_AGENT = 'sportnumerics-scraper/1.0 (https://sportnumerics.com)'
 
 
 def scrape_team_list(args: ScrapeArgs):

@@ -184,35 +184,73 @@ class Mcla():
                                   game_id: str, sport: str, source: str,
                                   home_team: Team, away_team: Team) -> Game:
         soup = BeautifulSoup(html, 'html.parser')
-        header = soup.find('div', class_='page-header').h2
-        header_match = re.match(r'(?P<away_team>.+) @ (?P<home_team>.+)',
-                                header.string)
-        home_name = header_match.group('home_team')
-        away_name = header_match.group('away_team')
+        
+        # Try new 2026+ structure first
+        game_page_header = soup.find('div', class_='game-page-header')
+        if game_page_header:
+            # New structure
+            away_team_div = game_page_header.find('div', class_='game-page-header__team--away')
+            home_team_div = game_page_header.find('div', class_='game-page-header__team--home')
+            
+            away_name = away_team_div.find('span', class_='team__name').string
+            home_name = home_team_div.find('span', class_='team__name').string
+            
+            away_link = away_team_div.find('a')
+            home_link = home_team_div.find('a')
+            away_id = self._parse_team_link_into_id(sport, source, away_link['href']) if away_link else None
+            home_id = self._parse_team_link_into_id(sport, source, home_link['href']) if home_link else None
+            
+            info_div = game_page_header.find('div', class_='game-page-header__info')
+            date_str = info_div.find('span', class_='info__date').string
+            date = parser.parse(date_str + ' ' + home_team.year, tzinfos=TIMEZONES).isoformat()
+        else:
+            # Old structure (pre-2026)
+            header = soup.find('div', class_='page-header').h2
+            header_match = re.match(r'(?P<away_team>.+) @ (?P<home_team>.+)',
+                                    header.string)
+            home_name = header_match.group('home_team')
+            away_name = header_match.group('away_team')
 
-        game_stats_meta = soup.find('div', class_='game-stats__meta')
-        (date, time, *_) = list(game_stats_meta.stripped_strings)
-        date = parser.parse(date + ' ' + home_team.year + ' ' + time,
-                            tzinfos=TIMEZONES).isoformat()
-        game_score = soup.find('div', class_='game-stats__header')
-        away_team_tag = game_score.find(class_='game-stats__team--away')
-        home_team_tag = game_score.find(class_='game-stats__team--home')
-        away_id = self._parse_team_link_into_id(sport, source,
-                                                away_team_tag.a['href'])
-        home_id = self._parse_team_link_into_id(sport, source,
-                                                home_team_tag.a['href'])
+            game_stats_meta = soup.find('div', class_='game-stats__meta')
+            (date_str, time, *_) = list(game_stats_meta.stripped_strings)
+            date = parser.parse(date_str + ' ' + home_team.year + ' ' + time,
+                                tzinfos=TIMEZONES).isoformat()
+            game_score = soup.find('div', class_='game-stats__header')
+            away_team_tag = game_score.find(class_='game-stats__team--away')
+            home_team_tag = game_score.find(class_='game-stats__team--home')
+            away_id = self._parse_team_link_into_id(sport, source,
+                                                    away_team_tag.a['href'])
+            home_id = self._parse_team_link_into_id(sport, source,
+                                                    home_team_tag.a['href'])
         home_team = TeamSummary(id=home_id, name=home_name)
         away_team = TeamSummary(id=away_id, name=away_name)
-        try:
-            away_score = int(
-                away_team_tag.find(class_='team__score--final').string)
-        except:
-            away_score = None
-        try:
-            home_score = int(
-                home_team_tag.find(class_='team__score--final').string)
-        except:
-            home_score = None
+        
+        # Parse scores - try new structure first
+        if game_page_header:
+            # New 2026+ structure
+            try:
+                info_div = game_page_header.find('div', class_='game-page-header__info')
+                away_score_tag = info_div.find('span', class_='info__result--away')
+                away_score = int(away_score_tag.string) if away_score_tag else None
+            except:
+                away_score = None
+            try:
+                home_score_tag = info_div.find('span', class_='info__result-home')
+                home_score = int(home_score_tag.string) if home_score_tag else None
+            except:
+                home_score = None
+        else:
+            # Old structure
+            try:
+                away_score = int(
+                    away_team_tag.find(class_='team__score--final').string)
+            except:
+                away_score = None
+            try:
+                home_score = int(
+                    home_team_tag.find(class_='team__score--final').string)
+            except:
+                home_score = None
         result = GameResult(
             home_score=home_score,
             away_score=away_score) if home_score and away_score else None
