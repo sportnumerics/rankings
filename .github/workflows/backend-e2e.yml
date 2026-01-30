@@ -8,9 +8,8 @@ on:
   workflow_dispatch:
     inputs:
       year:
-        description: 'Year to scrape'
+        description: 'Year to scrape (defaults to current year)'
         required: false
-        default: '2026'
 
 permissions:
   id-token: write
@@ -29,6 +28,16 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+
+    - name: Set year
+      id: set-year
+      run: |
+        YEAR="${{ inputs.year }}"
+        if [ -z "$YEAR" ]; then
+          YEAR=$(date +%Y)
+        fi
+        echo "year=$YEAR" >> $GITHUB_OUTPUT
+        echo "Using year: $YEAR"
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -52,25 +61,25 @@ jobs:
         docker run --rm \
           -v $(pwd)/out:/app/out \
           rankings-backend:e2e \
-          uv run main.py --year ${{ inputs.year || '2026' }} scrape --source mcla teams
+          uv run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla teams
 
     - name: Scrape MCLA schedules (limited to 5 teams)
       run: |
         docker run --rm \
           -v $(pwd)/out:/app/out \
           rankings-backend:e2e \
-          uv run main.py --year ${{ inputs.year || '2026' }} scrape --source mcla schedules --limit 5
+          uv run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla schedules --limit 5
 
     - name: Run predictions
       run: |
         docker run --rm \
           -v $(pwd)/out:/app/out \
           rankings-backend:e2e \
-          uv run main.py --year ${{ inputs.year || '2026' }} predict
+          uv run main.py --year ${{ steps.set-year.outputs.year }} predict
 
     - name: Verify output files exist
       run: |
-        year=${{ inputs.year || '2026' }}
+        year=${{ steps.set-year.outputs.year }}
         
         echo "Checking for required output files..."
         
@@ -118,7 +127,7 @@ jobs:
 
     - name: Verify dev S3 sync
       run: |
-        year=${{ inputs.year || '2026' }}
+        year=${{ steps.set-year.outputs.year }}
         
         echo "Verifying files were synced to S3..."
         
