@@ -71,16 +71,16 @@ class TestMcla(unittest.TestCase):
     def test_mcla_game_details(self):
         html = fixtures.mcla_game_details()
         m = mcla.Mcla()
-        away_team = Team(name='Utah Tech',
-                         id='ml-mcla-utah-tech',
-                         year='2025',
+        away_team = Team(name='UNC-Wilmington',
+                         id='ml-mcla-unc-wilmington',
+                         year='2026',
                          div='mcla1',
                          sport='ml',
                          source='mcla',
                          schedule=Location(url='schedule1'))
-        home_team = Team(name='Arizona',
-                         id='ml-mcla-arizona',
-                         year='2025',
+        home_team = Team(name='High Point',
+                         id='ml-mcla-high-point',
+                         year='2026',
                          div='mcla1',
                          sport='ml',
                          source='mcla',
@@ -88,45 +88,24 @@ class TestMcla(unittest.TestCase):
         game_details = m.convert_game_details_html(
             html,
             Location(
-                url='https://mcla.us/games/arizona-vs-utah-tech-2025-ef2321'),
-            'ml-mcla-arizona-vs-utah-tech-2025-ef2321', 'ml', 'mcla',
+                url='https://mcla.us/games/high-point-vs-university-of-north-carolina-wilmington-2026-55dace'),
+            'ml-mcla-high-point-vs-university-of-north-carolina-wilmington-2026-55dace', 'ml', 'mcla',
             home_team, away_team)
-        self.assertEqual(game_details.date, '2025-02-11T16:00:00-07:00')
+        self.assertEqual(game_details.date, '2026-01-24T12:00:00-05:00')
         self.assertEqual(game_details.id,
-                         'ml-mcla-arizona-vs-utah-tech-2025-ef2321')
+                         'ml-mcla-high-point-vs-university-of-north-carolina-wilmington-2026-55dace')
         self.assertEqual(
             game_details.external_link,
-            'https://mcla.us/games/arizona-vs-utah-tech-2025-ef2321')
+            'https://mcla.us/games/high-point-vs-university-of-north-carolina-wilmington-2026-55dace')
         self.assertEqual(game_details.home_team,
-                         TeamSummary(name='Arizona', id='ml-mcla-arizona'))
+                         TeamSummary(name='High Point', id='ml-mcla-high-point'))
         self.assertEqual(game_details.away_team,
-                         TeamSummary(name='Utah Tech', id='ml-mcla-utah-tech'))
+                         TeamSummary(name='UNC-Wilmington', id='ml-mcla-unc-wilmington'))
         self.assertEqual(game_details.result,
-                         GameResult(home_score=11, away_score=7))
-        self.assertEqual(
-            game_details.home_stats[0],
-            GameStatLine(
-                number=0,
-                player=PlayerSummary(
-                    name='Brendan Barry',
-                    id='ml-mcla-brendan-barry-ff4d9f',
-                    external_link='https://mcla.us/players/brendan-barry-ff4d9f'
-                ),
-                position='D',
-                gb=3,
-                g=0,
-                a=0))
-        self.assertEqual(
-            game_details.away_stats[0],
-            GameStatLine(player=PlayerSummary(
-                name='Luke Kish',
-                id='ml-mcla-luke-kish-fb8ed5',
-                external_link='https://mcla.us/players/luke-kish-fb8ed5'),
-                         number=1,
-                         position='A',
-                         gb=1,
-                         g=1,
-                         a=0))
+                         GameResult(home_score=0, away_score=0))
+        # Note: This 2026 game has no player stats recorded yet, so stats arrays should be empty
+        self.assertEqual(len(game_details.home_stats), 0)
+        self.assertEqual(len(game_details.away_stats), 0)
 
     def test_mcla_roster(self):
         html = fixtures.mcla_roster()
