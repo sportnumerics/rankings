@@ -1,0 +1,150 @@
+name: Backend E2E
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-e2e.yml'
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Year to scrape (defaults to current year)'
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  e2e-test:
+    name: Build, scrape, predict, and sync to dev
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-west-2
+        role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role-dev
+        role-session-name: RankingsBackendE2E
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build backend container
+      run: |
+        docker build --platform linux/amd64 -t rankings-backend:e2e .
+
+    - name: Create output directory
+      run: mkdir -p out
+
+    - name: Scrape MCLA teams
+      run: |
+        docker run --rm \
+          -v $(pwd)/out:/app/out \
+          rankings-backend:e2e \
+          uv run main.py --year ${{ inputs.year || '2026' }} scrape --source mcla teams
+
+    - name: Scrape MCLA schedules (limited to 5 teams)
+      run: |
+        docker run --rm \
+          -v $(pwd)/out:/app/out \
+          rankings-backend:e2e \
+          uv run main.py --year ${{ inputs.year || '2026' }} scrape --source mcla schedules --limit 5
+
+    - name: Run predictions
+      run: |
+        docker run --rm \
+          -v $(pwd)/out:/app/out \
+          rankings-backend:e2e \
+          uv run main.py --year ${{ inputs.year || '2026' }} predict
+
+    - name: Verify output files exist
+      run: |
+        year=${{ inputs.year || '2026' }}
+        
+        echo "Checking for required output files..."
+        
+        # Check team list exists
+        if [ ! -f "out/${year}/mcla/teams.json" ]; then
+          echo "ERROR: teams.json not found"
+          exit 1
+        fi
+        
+        # Check schedules exist
+        if [ ! -d "out/${year}/mcla/schedules" ]; then
+          echo "ERROR: schedules directory not found"
+          exit 1
+        fi
+        
+        # Count schedule files (should be <= 5 due to --limit 5)
+        schedule_count=$(ls -1 out/${year}/mcla/schedules/*.json 2>/dev/null | wc -l)
+        echo "Found ${schedule_count} schedule files"
+        if [ "$schedule_count" -eq 0 ]; then
+          echo "ERROR: No schedule files found"
+          exit 1
+        fi
+        if [ "$schedule_count" -gt 5 ]; then
+          echo "WARNING: Expected max 5 schedule files due to --limit, found ${schedule_count}"
+        fi
+        
+        # Check predictions exist
+        if [ ! -f "out/${year}/predictions.json" ]; then
+          echo "ERROR: predictions.json not found"
+          exit 1
+        fi
+        
+        echo "✓ All required output files exist"
+
+    - name: Sync to dev S3
+      run: |
+        docker run --rm \
+          -v $(pwd)/out:/app/out \
+          -e AWS_REGION=$AWS_REGION \
+          -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+          -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+          -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
+          rankings-backend:e2e \
+          uv run main.py sync --bucket-url s3://sportnumerics-rankings-bucket-dev/data
+
+    - name: Verify dev S3 sync
+      run: |
+        year=${{ inputs.year || '2026' }}
+        
+        echo "Verifying files were synced to S3..."
+        
+        # Check if year directory exists in S3
+        if ! aws s3 ls s3://sportnumerics-rankings-bucket-dev/data/${year}/ > /dev/null 2>&1; then
+          echo "ERROR: Year directory not found in S3"
+          exit 1
+        fi
+        
+        # Check for teams.json
+        if ! aws s3 ls s3://sportnumerics-rankings-bucket-dev/data/${year}/mcla/teams.json > /dev/null 2>&1; then
+          echo "ERROR: teams.json not found in S3"
+          exit 1
+        fi
+        
+        # Check for predictions
+        if ! aws s3 ls s3://sportnumerics-rankings-bucket-dev/data/${year}/predictions.json > /dev/null 2>&1; then
+          echo "ERROR: predictions.json not found in S3"
+          exit 1
+        fi
+        
+        echo "✓ Files successfully synced to dev S3"
+
+    - name: Upload output artifacts (on failure)
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-e2e-output
+        path: backend/out/
+        if-no-files-found: ignore
