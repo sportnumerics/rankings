@@ -195,14 +195,15 @@ class Mcla():
             away_name = away_team_div.find('span', class_='team__name').string
             home_name = home_team_div.find('span', class_='team__name').string
             
-            away_link = away_team_div.find('a')
-            home_link = home_team_div.find('a')
-            away_id = self._parse_team_link_into_id(sport, source, away_link['href']) if away_link else None
-            home_id = self._parse_team_link_into_id(sport, source, home_link['href']) if home_link else None
+            # New structure doesn't include team links, derive IDs from names
+            away_id = sport + '-' + source + '-' + self._generate_slug(away_name)
+            home_id = sport + '-' + source + '-' + self._generate_slug(home_name)
             
             info_div = game_page_header.find('div', class_='game-page-header__info')
             date_str = info_div.find('span', class_='info__date').string
-            date = parser.parse(date_str + ' ' + home_team.year, tzinfos=TIMEZONES).isoformat()
+            # New structure doesn't include time or timezone, default to noon EST
+            # (games will have proper timezone set when full schedule data is available)
+            date = parser.parse(date_str + ' ' + home_team.year + ' 12:00 EST', tzinfos=TIMEZONES).isoformat()
         else:
             # Old structure (pre-2026)
             header = soup.find('div', class_='page-header').h2
@@ -253,7 +254,7 @@ class Mcla():
                 home_score = None
         result = GameResult(
             home_score=home_score,
-            away_score=away_score) if home_score and away_score else None
+            away_score=away_score) if home_score is not None and away_score is not None else None
 
         roster_groups = soup.find('div', class_='roster-groups')
         (away_container,
@@ -429,6 +430,9 @@ class Mcla():
 
     def _normalize_slug(self, slug):
         return re.sub(r'\_', '-', slug)
+
+    def _generate_slug(self, name):
+        return re.sub(r'[^a-z-]', '', name.lower().replace(' ', '-'))
 
     def _parse_team_link_into_id(self, sport, source, link):
         link_parts = link.split('/')
