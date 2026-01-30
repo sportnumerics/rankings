@@ -72,7 +72,7 @@ class TestMcla(unittest.TestCase):
         html = fixtures.mcla_game_details()
         m = mcla.Mcla()
         away_team = Team(name='UNC-Wilmington',
-                         id='ml-mcla-unc-wilmington',
+                         id='ml-mcla-university-of-north-carolina-wilmington',
                          year='2026',
                          div='mcla1',
                          sport='ml',
@@ -100,7 +100,7 @@ class TestMcla(unittest.TestCase):
         self.assertEqual(game_details.home_team,
                          TeamSummary(name='High Point', id='ml-mcla-high-point'))
         self.assertEqual(game_details.away_team,
-                         TeamSummary(name='UNC-Wilmington', id='ml-mcla-unc-wilmington'))
+                         TeamSummary(name='UNC-Wilmington', id='ml-mcla-university-of-north-carolina-wilmington'))
         self.assertEqual(game_details.result,
                          GameResult(home_score=0, away_score=0))
         # Note: This 2026 game has no player stats recorded yet, so stats arrays should be empty

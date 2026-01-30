@@ -195,9 +195,19 @@ class Mcla():
             away_name = away_team_div.find('span', class_='team__name').string
             home_name = home_team_div.find('span', class_='team__name').string
             
-            # New structure doesn't include team links, derive IDs from names
-            away_id = sport + '-' + source + '-' + self._generate_slug(away_name)
-            home_id = sport + '-' + source + '-' + self._generate_slug(home_name)
+            # Extract stable team IDs from scoring summary tables
+            # These have div.team-info with links containing the team slug
+            team_info_divs = soup.find_all('div', class_='team-info')
+            if len(team_info_divs) >= 2:
+                # First team-info is away, second is home (appears twice in different tables)
+                away_link = team_info_divs[0].find('a')
+                home_link = team_info_divs[1].find('a')
+                away_id = self._parse_team_link_into_id(sport, source, away_link['href']) if away_link else None
+                home_id = self._parse_team_link_into_id(sport, source, home_link['href']) if home_link else None
+            else:
+                # Fallback: no scoring data yet, use names (will be inconsistent but better than crashing)
+                away_id = None
+                home_id = None
             
             info_div = game_page_header.find('div', class_='game-page-header__info')
             date_str = info_div.find('span', class_='info__date').string
@@ -430,9 +440,6 @@ class Mcla():
 
     def _normalize_slug(self, slug):
         return re.sub(r'\_', '-', slug)
-
-    def _generate_slug(self, name):
-        return re.sub(r'[^a-z-]', '', name.lower().replace(' ', '-'))
 
     def _parse_team_link_into_id(self, sport, source, link):
         link_parts = link.split('/')
