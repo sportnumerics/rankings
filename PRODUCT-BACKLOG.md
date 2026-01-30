@@ -34,24 +34,11 @@ A lightweight, assistant-run task management system.
      - Covers: which workflows deploy what, which IAM role, where Terraform state lives
      - Includes "how to debug" checklist
 
-3) **Add backend end-to-end smoke test in CI**
-   - Outcome: catch backend scraping/prediction bugs before merge + keep dev populated with realistic data.
-   - First increment: add `.github/workflows/backend-e2e.yml` that:
-     - Triggers on backend PRs
-     - Builds the Docker container
-     - Runs `scrape --source mcla teams` + `scrape schedules --limit 5`
-     - Runs `predict` on the limited dataset
-     - Syncs to dev S3 (sportnumerics-rankings-bucket-dev)
-     - Verifies output files exist and contain valid JSON/parquet
-   - Acceptance checks:
-     - Workflow passes on a backend PR
-     - Dev site shows the limited dataset after workflow completes
-     - Workflow fails if scraping or prediction throws exceptions
-
 ### In Progress
 - (none)
 
 ### PR
+- **Add backend end-to-end smoke test in CI** (PR #20) - validates scrape→predict→sync pipeline on PRs, syncs to dev
 - **Add Next.js build caching** (PR #13) - caches npm + .next/cache for faster deploys
 
 ---
