@@ -130,7 +130,7 @@ resource "aws_iam_policy" "deployment_role_prod" {
 }
 
 # =============================================================================
-# DEV DEPLOYMENT ROLE - only dev environment can assume
+# DEV DEPLOYMENT ROLE - dev environment and PR workflows can assume
 # =============================================================================
 resource "aws_iam_role" "deployment_role_dev" {
   name = "rankings-deployment-role-dev"
@@ -146,7 +146,12 @@ resource "aws_iam_role" "deployment_role_dev" {
         Condition = {
           StringEquals : {
             "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com"
-            "token.actions.githubusercontent.com:sub" : "repo:sportnumerics/rankings:environment:dev"
+          }
+          StringLike : {
+            "token.actions.githubusercontent.com:sub" : [
+              "repo:sportnumerics/rankings:environment:dev",
+              "repo:sportnumerics/rankings:pull_request"
+            ]
           }
         }
       }
