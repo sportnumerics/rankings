@@ -78,41 +78,7 @@ jobs:
           uv run main.py --year ${{ steps.set-year.outputs.year }} predict
 
     - name: Verify output files exist
-      run: |
-        year=${{ steps.set-year.outputs.year }}
-        
-        echo "Checking for required output files..."
-        
-        # Check team list exists
-        if [ ! -f "out/${year}/mcla/teams.json" ]; then
-          echo "ERROR: teams.json not found"
-          exit 1
-        fi
-        
-        # Check schedules exist
-        if [ ! -d "out/${year}/mcla/schedules" ]; then
-          echo "ERROR: schedules directory not found"
-          exit 1
-        fi
-        
-        # Count schedule files (should be <= 5 due to --limit 5)
-        schedule_count=$(ls -1 out/${year}/mcla/schedules/*.json 2>/dev/null | wc -l)
-        echo "Found ${schedule_count} schedule files"
-        if [ "$schedule_count" -eq 0 ]; then
-          echo "ERROR: No schedule files found"
-          exit 1
-        fi
-        if [ "$schedule_count" -gt 5 ]; then
-          echo "WARNING: Expected max 5 schedule files due to --limit, found ${schedule_count}"
-        fi
-        
-        # Check predictions exist
-        if [ ! -f "out/${year}/predictions.json" ]; then
-          echo "ERROR: predictions.json not found"
-          exit 1
-        fi
-        
-        echo "✓ All required output files exist"
+      run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5
 
     - name: Sync to dev S3
       run: |
@@ -126,30 +92,7 @@ jobs:
           uv run main.py sync --bucket-url s3://sportnumerics-rankings-bucket-dev/data
 
     - name: Verify dev S3 sync
-      run: |
-        year=${{ steps.set-year.outputs.year }}
-        
-        echo "Verifying files were synced to S3..."
-        
-        # Check if year directory exists in S3
-        if ! aws s3 ls s3://sportnumerics-rankings-bucket-dev/data/${year}/ > /dev/null 2>&1; then
-          echo "ERROR: Year directory not found in S3"
-          exit 1
-        fi
-        
-        # Check for teams.json
-        if ! aws s3 ls s3://sportnumerics-rankings-bucket-dev/data/${year}/mcla/teams.json > /dev/null 2>&1; then
-          echo "ERROR: teams.json not found in S3"
-          exit 1
-        fi
-        
-        # Check for predictions
-        if ! aws s3 ls s3://sportnumerics-rankings-bucket-dev/data/${year}/predictions.json > /dev/null 2>&1; then
-          echo "ERROR: predictions.json not found in S3"
-          exit 1
-        fi
-        
-        echo "✓ Files successfully synced to dev S3"
+      run: ./scripts/verify-s3-sync.sh ${{ steps.set-year.outputs.year }} s3://sportnumerics-rankings-bucket-dev/data
 
     - name: Upload output artifacts (on failure)
       if: failure()
