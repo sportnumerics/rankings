@@ -72,7 +72,7 @@ jobs:
           rankings-backend:e2e \
           run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla schedules --limit 5
 
-    - name: Run predictions
+    - name: Run predictions (MCLA)
       run: |
         docker run --rm \
           -v $(pwd)/out:/app/out \
@@ -80,8 +80,35 @@ jobs:
           rankings-backend:e2e \
           run main.py --year ${{ steps.set-year.outputs.year }} predict
 
-    - name: Verify output files exist
-      run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5
+    - name: Verify MCLA output files exist
+      run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5 mcla
+
+    - name: Scrape NCAA teams
+      run: |
+        docker run --rm \
+          -v $(pwd)/out-ncaa:/app/out \
+          --entrypoint uv \
+          rankings-backend:e2e \
+          run main.py --year ${{ steps.set-year.outputs.year }} scrape --source ncaa teams --out-dir out
+
+    - name: Scrape NCAA schedules (limited to 5 teams)
+      run: |
+        docker run --rm \
+          -v $(pwd)/out-ncaa:/app/out \
+          --entrypoint uv \
+          rankings-backend:e2e \
+          run main.py --year ${{ steps.set-year.outputs.year }} scrape --source ncaa schedules --limit 5 --out-dir out
+
+    - name: Run predictions (NCAA)
+      run: |
+        docker run --rm \
+          -v $(pwd)/out-ncaa:/app/out \
+          --entrypoint uv \
+          rankings-backend:e2e \
+          run main.py --year ${{ steps.set-year.outputs.year }} predict --input-dir out --out-dir out
+
+    - name: Verify NCAA output files exist
+      run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out-ncaa 5 ncaa
 
     - name: Sync to dev S3
       run: |
@@ -103,5 +130,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: backend-e2e-output
-        path: backend/out/
+        path: |
+          backend/out/
+          backend/out-ncaa/
         if-no-files-found: ignore

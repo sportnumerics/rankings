@@ -2,20 +2,21 @@
 set -euo pipefail
 
 # Verify that the backend pipeline produced the expected output files.
-# Usage: ./verify-output-files.sh <year> [output_dir] [max_schedules]
+# Usage: ./verify-output-files.sh <year> [output_dir] [max_schedules] [source]
 
-YEAR="${1:?Usage: $0 <year> [output_dir] [max_schedules]}"
+YEAR="${1:?Usage: $0 <year> [output_dir] [max_schedules] [source]}"
 OUTPUT_DIR="${2:-out}"
 MAX_SCHEDULES="${3:-}"
+SOURCE="${4:-mcla}"
 
-echo "Checking for required output files in ${OUTPUT_DIR}/${YEAR}..."
+echo "Checking for required output files in ${OUTPUT_DIR}/${YEAR} (${SOURCE})..."
 
 # Check team list exists
-if [ ! -f "${OUTPUT_DIR}/${YEAR}/mcla-teams.json" ]; then
-  echo "ERROR: mcla-teams.json not found"
+if [ ! -f "${OUTPUT_DIR}/${YEAR}/${SOURCE}-teams.json" ]; then
+  echo "ERROR: ${SOURCE}-teams.json not found"
   exit 1
 fi
-echo "  Found mcla-teams.json"
+echo "  Found ${SOURCE}-teams.json"
 
 # Check schedules directory exists
 if [ ! -d "${OUTPUT_DIR}/${YEAR}/schedules" ]; then
