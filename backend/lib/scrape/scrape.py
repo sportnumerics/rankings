@@ -205,6 +205,9 @@ class ScrapeRunner():
     def scrape_teams(self) -> Iterator[Team]:
         for url in self.scraper.get_team_list_urls(self.year):
             html = self.fetch(url)
+            if not html:
+                self.log.warning(f'No HTML returned for {url}, skipping')
+                continue
             try:
                 yield from self.scraper.convert_team_list_html(
                     html, self.year, url)
