@@ -100,7 +100,7 @@ jobs:
       run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5 mcla
 
     - name: Verify NCAA output files exist
-      run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5 ncaa skip
+      run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5 ncaa
 
     - name: Sync to dev S3
       run: |
