@@ -20,7 +20,14 @@ A lightweight, assistant-run task management system.
 ## Now (top priority)
 
 ### Ready
-- (none)
+1) **Goalie statistics data model extension**
+   - Outcome: Enable tracking goalie-specific stats (saves, save %, GAA) for future goalie rankings
+   - First increment: Extend GameStatLine/PlayerStatLine data model to include goalie stats; scrape NCAA goalie leaderboard as validation
+   - Acceptance checks:
+     - Data model includes: saves (int), save_percentage (float), goals_against_average (float), minutes_played (int)
+     - Script successfully scrapes top 25 goalies from NCAA leaderboard
+     - Unit test with fixture validates goalie stat parsing
+     - No breaking changes to existing team scraping/ranking pipeline
 
 ### In Progress
 - (none)

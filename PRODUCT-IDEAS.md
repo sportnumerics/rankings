@@ -8,6 +8,46 @@ This is a raw capture of ideas, research notes, and hypotheses. Not all ideas be
 
 ## Ideas (newest first)
 
+### 2026-02-04 — Goalie-specific rankings and statistics
+- **Opportunity**: Goalies are underserved - current site shows general team rankings but no goalie-specific rankings
+- **Data available**: 
+  - NCAA tracks: Save Percentage, Goals Against Average, Saves Per Game ([example](https://www.ncaa.com/stats/lacrosse-men/d1/current/individual/224))
+  - MCLA has goalie stat pages with similar metrics
+- **Key metrics for goalies**:
+  - Save Percentage (saves / (saves + goals allowed)) - primary metric
+  - Goals Against Average (GAA)
+  - Saves Per Game
+  - Minutes Played
+- **Value proposition**: Goalies, coaches, and scouts want to see goalie-specific performance comparisons
+- **Current gap**: GameStatLine has `ga` (goals allowed) and `s` (shots), but doesn't distinguish goalie-specific stats vs team defensive stats
+- **First step**: 
+  - Extend data model to include goalie-specific stat line (saves, save %, GAA)
+  - Scrape NCAA goalie leaderboard to validate data structure
+  - Create /goalies rankings page (top N goalies by save % with min games played)
+- **Similar for defenders**: Could extend to caused turnovers, ground balls for defenders
+
+### 2026-02-04 — Prediction accuracy tracking and display
+- **Opportunity**: Validate and improve the ranking algorithm by measuring prediction accuracy
+- **What to track**:
+  - Pre-game predictions (based on current rankings/ratings)
+  - Actual game outcomes
+  - Prediction accuracy over time (% correct, margin of error)
+- **Value proposition**:
+  - Users see how accurate the rankings are (builds trust)
+  - Algorithm improvements can be measured objectively
+  - Identify where model performs well/poorly (home vs away, rivalry games, etc.)
+- **Implementation ideas**:
+  - Store pre-game predictions when scraping schedules
+  - Compare predictions to actual results after games
+  - Display accuracy metrics on site ("/accuracy" page)
+  - Show prediction confidence alongside game predictions
+- **First step**:
+  - Add prediction storage to database (predicted_winner, predicted_margin, confidence)
+  - Write script to backfill predictions for already-played games (using ratings at that time)
+  - Calculate accuracy metrics (correct picks, ATS accuracy, avg margin error)
+  - Create simple accuracy dashboard page
+- **Advanced**: Use accuracy data to tune algorithm parameters, display "upset alerts" for low-confidence predictions
+
 ### 2026-02-04 — High school lacrosse data source: MaxPreps
 - **Site**: https://www.maxpreps.com/lacrosse/
 - **Coverage**: Comprehensive national boys/girls high school lacrosse rankings, stats, schedules, scores
