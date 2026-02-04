@@ -34,7 +34,8 @@ jobs:
       run: |
         YEAR="${{ inputs.year }}"
         if [ -z "$YEAR" ]; then
-          YEAR=$(date +%Y)
+          # Use previous year for PR tests (current year may not have completed games yet)
+          YEAR=$(($(date +%Y) - 1))
         fi
         echo "year=$YEAR" >> $GITHUB_OUTPUT
         echo "Using year: $YEAR"
