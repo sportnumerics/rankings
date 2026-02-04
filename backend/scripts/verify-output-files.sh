@@ -11,20 +11,20 @@ MAX_SCHEDULES="${3:-}"
 echo "Checking for required output files in ${OUTPUT_DIR}/${YEAR}..."
 
 # Check team list exists
-if [ ! -f "${OUTPUT_DIR}/${YEAR}/mcla/teams.json" ]; then
-  echo "ERROR: teams.json not found"
+if [ ! -f "${OUTPUT_DIR}/${YEAR}/mcla-teams.json" ]; then
+  echo "ERROR: mcla-teams.json not found"
   exit 1
 fi
-echo "  Found teams.json"
+echo "  Found mcla-teams.json"
 
 # Check schedules directory exists
-if [ ! -d "${OUTPUT_DIR}/${YEAR}/mcla/schedules" ]; then
+if [ ! -d "${OUTPUT_DIR}/${YEAR}/schedules" ]; then
   echo "ERROR: schedules directory not found"
   exit 1
 fi
 
 # Count schedule files
-schedule_count=$(find "${OUTPUT_DIR}/${YEAR}/mcla/schedules" -name "*.json" -type f 2>/dev/null | wc -l)
+schedule_count=$(find "${OUTPUT_DIR}/${YEAR}/schedules" -name "*.json" -type f 2>/dev/null | wc -l)
 echo "  Found ${schedule_count} schedule files"
 
 if [ "$schedule_count" -eq 0 ]; then
@@ -36,11 +36,11 @@ if [ -n "$MAX_SCHEDULES" ] && [ "$schedule_count" -gt "$MAX_SCHEDULES" ]; then
   echo "WARNING: Expected max ${MAX_SCHEDULES} schedule files, found ${schedule_count}"
 fi
 
-# Check predictions exist
-if [ ! -f "${OUTPUT_DIR}/${YEAR}/predictions.json" ]; then
-  echo "ERROR: predictions.json not found"
+# Check team ratings exist
+if [ ! -f "${OUTPUT_DIR}/${YEAR}/team-ratings.json" ]; then
+  echo "ERROR: team-ratings.json not found"
   exit 1
 fi
-echo "  Found predictions.json"
+echo "  Found team-ratings.json"
 
 echo "All required output files exist"
