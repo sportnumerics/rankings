@@ -205,6 +205,10 @@ class ScrapeRunner():
     def scrape_teams(self) -> Iterator[Team]:
         for url in self.scraper.get_team_list_urls(self.year):
             html = self.fetch(url)
+            if not html:
+                self.log.warning(
+                    f'No team list html returned from {url}, skipping')
+                continue
             try:
                 yield from self.scraper.convert_team_list_html(
                     html, self.year, url)
@@ -246,6 +250,8 @@ class ScrapeRunner():
     def scrape_game_details(self, location: Location, game_id: str, sport: str,
                             source: str, home_team: Team, away_team: Team):
         html = self.fetch(location)
+        if not html:
+            return None
         try:
             return self.scraper.convert_game_details_html(
                 html, location, game_id, sport, source, home_team, away_team)

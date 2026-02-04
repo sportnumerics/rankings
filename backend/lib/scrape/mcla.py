@@ -192,8 +192,8 @@ class Mcla():
             away_team_div = game_page_header.find('div', class_='game-page-header__team--away')
             home_team_div = game_page_header.find('div', class_='game-page-header__team--home')
             
-            away_name = away_team_div.find('span', class_='team__name').string
-            home_name = home_team_div.find('span', class_='team__name').string
+            away_name = away_team_div.find('span', class_='team__name').get_text(strip=True)
+            home_name = home_team_div.find('span', class_='team__name').get_text(strip=True)
             
             # Extract stable team IDs from scoring summary tables
             # These have div.team-info with links containing the team slug
@@ -210,10 +210,13 @@ class Mcla():
                 home_id = None
             
             info_div = game_page_header.find('div', class_='game-page-header__info')
-            date_str = info_div.find('span', class_='info__date').string
+            date_str = info_div.find('span', class_='info__date').get_text(strip=True)
             # New structure doesn't include time or timezone, default to noon EST
             # (games will have proper timezone set when full schedule data is available)
-            date = parser.parse(date_str + ' ' + home_team.year + ' 12:00 EST', tzinfos=TIMEZONES).isoformat()
+            year = getattr(home_team, 'year', None) or getattr(away_team, 'year', None)
+            if not year:
+                year = str(datetime.date.today().year)
+            date = parser.parse(date_str + ' ' + year + ' 12:00 EST', tzinfos=TIMEZONES).isoformat()
         else:
             # Old structure (pre-2026)
             header = soup.find('div', class_='page-header').h2
@@ -242,12 +245,12 @@ class Mcla():
             try:
                 info_div = game_page_header.find('div', class_='game-page-header__info')
                 away_score_tag = info_div.find('span', class_='info__result--away')
-                away_score = int(away_score_tag.string) if away_score_tag else None
+                away_score = int(away_score_tag.get_text(strip=True)) if away_score_tag else None
             except:
                 away_score = None
             try:
                 home_score_tag = info_div.find('span', class_='info__result-home')
-                home_score = int(home_score_tag.string) if home_score_tag else None
+                home_score = int(home_score_tag.get_text(strip=True)) if home_score_tag else None
             except:
                 home_score = None
         else:
@@ -413,15 +416,20 @@ class Mcla():
         if col_name == '#':
             return {'number': int(cell.string) if cell.string else None}
         if col_name == 'Player':
+            link = cell.find('a')
+            if not link:
+                return None
+            name = link.get_text(strip=True)
+            pos_tag = cell.find('span', class_='position')
+            position = pos_tag.get_text(strip=True) if pos_tag else None
             return {
                 'player':
                 PlayerSummary(id=self._parse_player_link_into_id(
-                    sport, source, cell.a['href']),
-                              name=cell.a.string,
+                    sport, source, link['href']),
+                              name=name,
                               external_link=self._convert_url_to_absolute(
-                                  cell.a['href'])),
-                'position':
-                cell.find('span', class_='position').string
+                                  link['href'])),
+                'position': position
             }
         if col_name == 'FO-W':
             return {'fow': int(cell.string)}
