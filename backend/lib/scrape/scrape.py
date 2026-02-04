@@ -15,6 +15,13 @@ import pathlib
 import logging
 import traceback
 
+try:
+    from .akamai_bypass import AkamaiSession
+    AKAMAI_AVAILABLE = True
+except ImportError:
+    AKAMAI_AVAILABLE = False
+    logging.warning("curl_cffi not available, NCAA scraping may be blocked")
+
 USER_AGENT = 'sportnumerics-scraper/1.0 (https://sportnumerics.com)'
 
 
@@ -73,17 +80,23 @@ class ScrapeRunner():
 
         self.out_dir = out_dir
 
-        cache_name = os.path.join(self.out_dir, 'cache')
-        session_args = self.scraper.get_limiter_session_args()
-        Session = LimitedCachedSession if session_args else CachedSession
-        self.cache = Session(cache_name=cache_name,
-                             expire_after=timedelta(days=1),
-                             **session_args)
+        # Use AkamaiSession for NCAA to bypass bot protection
+        if source == 'ncaa' and AKAMAI_AVAILABLE:
+            self.cache = AkamaiSession()
+            self.log = logging.getLogger(type(self.scraper).__name__)
+            self.log.info("Using Akamai bypass session for NCAA")
+        else:
+            cache_name = os.path.join(self.out_dir, 'cache')
+            session_args = self.scraper.get_limiter_session_args()
+            Session = LimitedCachedSession if session_args else CachedSession
+            self.cache = Session(cache_name=cache_name,
+                                 expire_after=timedelta(days=1),
+                                 **session_args)
+            self.log = logging.getLogger(type(self.scraper).__name__)
 
         self.team = team
         self.div = div
         self.limit = int(limit) if limit else None
-        self.log = logging.getLogger(type(self.scraper).__name__)
 
     def scrape_and_write_team_lists(self):
         self.log.info(
