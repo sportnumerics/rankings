@@ -45,9 +45,13 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
     out_dir = args.out_dir
     year = args.year
 
+    games_path = shared.parquet_path(args.input_dir, year, 'games')
+    if not os.path.exists(games_path):
+        logging.warning(f'No games data found at {games_path}, skipping player ranking')
+        return
+    
     games = list(
-        shared.load_parquet_dataset(
-            Game, shared.parquet_path(args.input_dir, year, 'games')))
+        shared.load_parquet_dataset(Game, games_path))
 
     teams_by_id: Mapping[str, Team] = {}
     players: Mapping[str, Player] = {}
