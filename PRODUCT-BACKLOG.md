@@ -20,24 +20,20 @@ A lightweight, assistant-run task management system.
 ## Now (top priority)
 
 ### Ready
-1) **Add a minimal /api/health endpoint with version info**
-   - Outcome: quick way to confirm deploy + data connectivity from the outside.
-   - First increment: implement `/api/health` returning `{ ok: true, gitSha, buildTime }` (and optionally a cheap S3 list/head to confirm bucket access).
+1) **MaxPreps high school lacrosse scraper (proof of concept)**
+   - Outcome: Validate feasibility of scraping MaxPreps rankings + basic team data
+   - First increment: Write parser to extract team data from one rankings page (rank, name, location, record) from `__NEXT_DATA__` JSON
    - Acceptance checks:
-     - Endpoint returns 200 in dev
-     - Included in README for debugging
-
-2) **Document "how deploy works" (1-page ops doc)**
-   - Outcome: reduce friction when something breaks (IAM/Terraform/CloudFront).
-   - First increment: add `infrastructure/DEPLOYMENT.md` describing roles, workflows, and common failure modes.
-   - Acceptance checks:
-     - Covers: which workflows deploy what, which IAM role, where Terraform state lives
-     - Includes "how to debug" checklist
+     - Script successfully extracts ≥10 teams from https://www.maxpreps.com/lacrosse/rankings/1/
+     - Unit test with fixture (saved `__NEXT_DATA__` JSON)
+     - Output includes: rank, team name, school, city, state, record
 
 ### In Progress
 - (none)
 
 ### PR
+- **PLL data source reconnaissance (stats site)** (PR #27) - documents GraphQL endpoints, auth requirements, and scraping feasibility
+- **Document "how deploy works" (1-page ops doc)** (PR #26)
 - **Add backend end-to-end smoke test in CI** (PR #20) - validates scrape→predict→sync pipeline on PRs, syncs to dev
 - **Add Next.js build caching** (PR #13) - caches npm + .next/cache for faster deploys
 

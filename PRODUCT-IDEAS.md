@@ -8,6 +8,19 @@ This is a raw capture of ideas, research notes, and hypotheses. Not all ideas be
 
 ## Ideas (newest first)
 
+### 2026-02-04 — High school lacrosse data source: MaxPreps
+- **Site**: https://www.maxpreps.com/lacrosse/
+- **Coverage**: Comprehensive national boys/girls high school lacrosse rankings, stats, schedules, scores
+- **Scrapability**: ✅ HIGH - Next.js app with `__NEXT_DATA__` JSON embedded in pages
+- **robots.txt**: Allows rankings pages (no disallow for `/lacrosse/rankings/`)
+- **Data structure**: Ranking data embedded in page as JSON (easy parsing)
+- **Opportunity**: Massive user base (high school parents/players/coaches), currently underserved
+- **First step**: Parse one rankings page to extract team data (name, rank, location, record)
+
+### 2026-02-04 — PLL data source reconnaissance
+- The PLL runs a public stats site: https://stats.premierlacrosseleague.com/ (player/team/game stats). Potentially scrapeable endpoints for league expansion.
+- Official stats provider: Champion Data (may imply structured feeds behind the site).
+
 ### 2026-01-27 — Speed up CI + reduce noise
 - Add Next.js build caching in GitHub Actions (`actions/cache` for `.next/cache` + npm cache). Speeds deploy runs and reduces “No build cache found” warnings.
 
