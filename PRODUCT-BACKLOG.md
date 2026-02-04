@@ -20,18 +20,14 @@ A lightweight, assistant-run task management system.
 ## Now (top priority)
 
 ### Ready
-1) **MaxPreps high school lacrosse scraper (proof of concept)**
-   - Outcome: Validate feasibility of scraping MaxPreps rankings + basic team data
-   - First increment: Write parser to extract team data from one rankings page (rank, name, location, record) from `__NEXT_DATA__` JSON
-   - Acceptance checks:
-     - Script successfully extracts ≥10 teams from https://www.maxpreps.com/lacrosse/rankings/1/
-     - Unit test with fixture (saved `__NEXT_DATA__` JSON)
-     - Output includes: rank, team name, school, city, state, record
+- (none)
 
 ### In Progress
 - (none)
 
 ### PR
+- **MaxPreps high school lacrosse scraper (POC)** (PR #29) - validates scrapability, extracts 25 teams with tests
+- **Product research: MaxPreps high school lacrosse** (PR #28) - documents findings and feasibility
 - **PLL data source reconnaissance (stats site)** (PR #27) - documents GraphQL endpoints, auth requirements, and scraping feasibility
 - **Document "how deploy works" (1-page ops doc)** (PR #26)
 - **Add backend end-to-end smoke test in CI** (PR #20) - validates scrape→predict→sync pipeline on PRs, syncs to dev
