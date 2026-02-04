@@ -72,6 +72,22 @@ jobs:
           rankings-backend:e2e \
           run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla schedules --limit 5
 
+    - name: Scrape NCAA teams
+      run: |
+        docker run --rm \
+          -v $(pwd)/out:/app/out \
+          --entrypoint uv \
+          rankings-backend:e2e \
+          run main.py --year ${{ steps.set-year.outputs.year }} scrape --source ncaa teams
+
+    - name: Scrape NCAA schedules (limited to 5 teams)
+      run: |
+        docker run --rm \
+          -v $(pwd)/out:/app/out \
+          --entrypoint uv \
+          rankings-backend:e2e \
+          run main.py --year ${{ steps.set-year.outputs.year }} scrape --source ncaa schedules --limit 5
+
     - name: Run predictions
       run: |
         docker run --rm \
@@ -80,8 +96,11 @@ jobs:
           rankings-backend:e2e \
           run main.py --year ${{ steps.set-year.outputs.year }} predict
 
-    - name: Verify output files exist
-      run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5
+    - name: Verify MCLA output files exist
+      run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5 mcla
+
+    - name: Verify NCAA output files exist
+      run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5 ncaa skip
 
     - name: Sync to dev S3
       run: |
