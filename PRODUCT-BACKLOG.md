@@ -20,17 +20,13 @@ A lightweight, assistant-run task management system.
 ## Now (top priority)
 
 ### Ready
-1) **Document "how deploy works" (1-page ops doc)**
-   - Outcome: reduce friction when something breaks (IAM/Terraform/CloudFront).
-   - First increment: add `infrastructure/DEPLOYMENT.md` describing roles, workflows, and common failure modes.
-   - Acceptance checks:
-     - Covers: which workflows deploy what, which IAM role, where Terraform state lives
-     - Includes "how to debug" checklist
+- (none)
 
 ### In Progress
 - (none)
 
 ### PR
+- **Document "how deploy works" (1-page ops doc)** (PR #26)
 - **Add backend end-to-end smoke test in CI** (PR #20) - validates scrape→predict→sync pipeline on PRs, syncs to dev
 - **Add Next.js build caching** (PR #13) - caches npm + .next/cache for faster deploys
 
