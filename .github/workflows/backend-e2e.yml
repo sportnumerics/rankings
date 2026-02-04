@@ -60,22 +60,25 @@ jobs:
       run: |
         docker run --rm \
           -v $(pwd)/out:/app/out \
+          --entrypoint uv \
           rankings-backend:e2e \
-          uv run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla teams
+          run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla teams
 
     - name: Scrape MCLA schedules (limited to 5 teams)
       run: |
         docker run --rm \
           -v $(pwd)/out:/app/out \
+          --entrypoint uv \
           rankings-backend:e2e \
-          uv run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla schedules --limit 5
+          run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla schedules --limit 5
 
     - name: Run predictions
       run: |
         docker run --rm \
           -v $(pwd)/out:/app/out \
+          --entrypoint uv \
           rankings-backend:e2e \
-          uv run main.py --year ${{ steps.set-year.outputs.year }} predict
+          run main.py --year ${{ steps.set-year.outputs.year }} predict
 
     - name: Verify output files exist
       run: ./scripts/verify-output-files.sh ${{ steps.set-year.outputs.year }} out 5
@@ -88,8 +91,9 @@ jobs:
           -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
           -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
           -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
+          --entrypoint uv \
           rankings-backend:e2e \
-          uv run main.py sync --bucket-url s3://sportnumerics-rankings-bucket-dev/data
+          run main.py sync --bucket-url s3://sportnumerics-rankings-bucket-dev/data
 
     - name: Verify dev S3 sync
       run: ./scripts/verify-s3-sync.sh ${{ steps.set-year.outputs.year }} s3://sportnumerics-rankings-bucket-dev/data
