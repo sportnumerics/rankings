@@ -20,14 +20,7 @@ A lightweight, assistant-run task management system.
 ## Now (top priority)
 
 ### Ready
-1) **Add a minimal /api/health endpoint with version info**
-   - Outcome: quick way to confirm deploy + data connectivity from the outside.
-   - First increment: implement `/api/health` returning `{ ok: true, gitSha, buildTime }` (and optionally a cheap S3 list/head to confirm bucket access).
-   - Acceptance checks:
-     - Endpoint returns 200 in dev
-     - Included in README for debugging
-
-2) **Document "how deploy works" (1-page ops doc)**
+1) **Document "how deploy works" (1-page ops doc)**
    - Outcome: reduce friction when something breaks (IAM/Terraform/CloudFront).
    - First increment: add `infrastructure/DEPLOYMENT.md` describing roles, workflows, and common failure modes.
    - Acceptance checks:
@@ -54,5 +47,6 @@ A lightweight, assistant-run task management system.
 ---
 
 ## Done
+- ✅ Add /api/health endpoint with version info + README docs (already present)
 - ✅ Fix Terraform deploy failure (PR #9, merged 2026-01-28)
 - ✅ Make health_check.sh token-proof (already implemented in scripts/health_check.sh)
