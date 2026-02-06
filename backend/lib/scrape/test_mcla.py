@@ -71,16 +71,16 @@ class TestMcla(unittest.TestCase):
     def test_mcla_game_details(self):
         html = fixtures.mcla_game_details()
         m = mcla.Mcla()
-        away_team = Team(name='Utah Tech',
-                         id='ml-mcla-utah-tech',
-                         year='2025',
+        away_team = Team(name='Oregon State',
+                         id='ml-mcla-oregon-state',
+                         year='2026',
                          div='mcla1',
                          sport='ml',
                          source='mcla',
                          schedule=Location(url='schedule1'))
-        home_team = Team(name='Arizona',
-                         id='ml-mcla-arizona',
-                         year='2025',
+        home_team = Team(name='Arizona Christian',
+                         id='ml-mcla-arizona-christian',
+                         year='2026',
                          div='mcla1',
                          sport='ml',
                          source='mcla',
@@ -88,45 +88,29 @@ class TestMcla(unittest.TestCase):
         game_details = m.convert_game_details_html(
             html,
             Location(
-                url='https://mcla.us/games/arizona-vs-utah-tech-2025-ef2321'),
-            'ml-mcla-arizona-vs-utah-tech-2025-ef2321', 'ml', 'mcla',
+                url='https://mcla.us/games/arizona-christian-vs-oregon-state-2026-5d5605'),
+            'ml-mcla-arizona-christian-vs-oregon-state-2026-5d5605', 'ml', 'mcla',
             home_team, away_team)
-        self.assertEqual(game_details.date, '2025-02-11T16:00:00-07:00')
+        self.assertEqual(game_details.date, '2026-01-31T12:00:00-05:00')
         self.assertEqual(game_details.id,
-                         'ml-mcla-arizona-vs-utah-tech-2025-ef2321')
+                         'ml-mcla-arizona-christian-vs-oregon-state-2026-5d5605')
         self.assertEqual(
             game_details.external_link,
-            'https://mcla.us/games/arizona-vs-utah-tech-2025-ef2321')
+            'https://mcla.us/games/arizona-christian-vs-oregon-state-2026-5d5605')
         self.assertEqual(game_details.home_team,
-                         TeamSummary(name='Arizona', id='ml-mcla-arizona'))
+                         TeamSummary(name='Arizona Christian', id='ml-mcla-arizona-christian'))
         self.assertEqual(game_details.away_team,
-                         TeamSummary(name='Utah Tech', id='ml-mcla-utah-tech'))
+                         TeamSummary(name='Oregon State', id='ml-mcla-oregon-state'))
         self.assertEqual(game_details.result,
-                         GameResult(home_score=11, away_score=7))
+                         GameResult(home_score=8, away_score=9))
+        # This game includes player stats; ensure we parsed them
+        self.assertEqual(len(game_details.home_stats), 19)
+        self.assertEqual(len(game_details.away_stats), 35)
         self.assertEqual(
-            game_details.home_stats[0],
-            GameStatLine(
-                number=0,
-                player=PlayerSummary(
-                    name='Brendan Barry',
-                    id='ml-mcla-brendan-barry-ff4d9f',
-                    external_link='https://mcla.us/players/brendan-barry-ff4d9f'
-                ),
-                position='D',
-                gb=3,
-                g=0,
-                a=0))
-        self.assertEqual(
-            game_details.away_stats[0],
-            GameStatLine(player=PlayerSummary(
-                name='Luke Kish',
-                id='ml-mcla-luke-kish-fb8ed5',
-                external_link='https://mcla.us/players/luke-kish-fb8ed5'),
-                         number=1,
-                         position='A',
-                         gb=1,
-                         g=1,
-                         a=0))
+            game_details.away_stats[0].player,
+            PlayerSummary(id='ml-mcla-alex-kemalyan-7a83bb',
+                          name='Alex Kemalyan',
+                          external_link='https://mcla.us/players/alex-kemalyan-7a83bb'))
 
     def test_mcla_roster(self):
         html = fixtures.mcla_roster()

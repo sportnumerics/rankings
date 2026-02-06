@@ -15,7 +15,9 @@ import pathlib
 import logging
 import traceback
 
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
+from .interstitial_bypass import InterstitialBypassSession
+
+USER_AGENT = 'sportnumerics-scraper/1.0 (https://sportnumerics.com)'
 
 
 def scrape_team_list(args: ScrapeArgs):
@@ -72,18 +74,24 @@ class ScrapeRunner():
         self.year = year
 
         self.out_dir = out_dir
+        self.log = logging.getLogger(type(self.scraper).__name__)
 
+        # Create cached + rate-limited session
         cache_name = os.path.join(self.out_dir, 'cache')
         session_args = self.scraper.get_limiter_session_args()
         Session = LimitedCachedSession if session_args else CachedSession
-        self.cache = Session(cache_name=cache_name,
-                             expire_after=timedelta(days=1),
-                             **session_args)
-
+        session = Session(cache_name=cache_name,
+                         expire_after=timedelta(days=1),
+                         **session_args)
+        
+        # Wrap with interstitial bypass for NCAA
+        if source == 'ncaa':
+            session = InterstitialBypassSession(session)
+        
+        self.cache = session
         self.team = team
         self.div = div
         self.limit = int(limit) if limit else None
-        self.log = logging.getLogger(type(self.scraper).__name__)
 
     def scrape_and_write_team_lists(self):
         self.log.info(
@@ -205,6 +213,10 @@ class ScrapeRunner():
     def scrape_teams(self) -> Iterator[Team]:
         for url in self.scraper.get_team_list_urls(self.year):
             html = self.fetch(url)
+            if not html:
+                self.log.warning(
+                    f'No team list html returned from {url}, skipping')
+                continue
             try:
                 yield from self.scraper.convert_team_list_html(
                     html, self.year, url)
@@ -246,6 +258,8 @@ class ScrapeRunner():
     def scrape_game_details(self, location: Location, game_id: str, sport: str,
                             source: str, home_team: Team, away_team: Team):
         html = self.fetch(location)
+        if not html:
+            return None
         try:
             return self.scraper.convert_game_details_html(
                 html, location, game_id, sport, source, home_team, away_team)
