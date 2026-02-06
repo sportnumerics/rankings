@@ -42,67 +42,43 @@ class Mcla():
                                location: Location) -> Iterator[Team]:
         soup = BeautifulSoup(html, 'html.parser')
         
-        # Try new structure first (2026+): <h4 class="box__title">Division X</h4>
         box_titles = soup.find_all('h4', class_='box__title')
-        if box_titles:
-            for title in box_titles:
-                # Extract division text (e.g., "Division 1")
-                division_text = title.get_text(strip=True)
+        for title in box_titles:
+            # Extract division text (e.g., "Division 1")
+            division_text = title.get_text(strip=True)
+            
+            # Find the table following this title
+            table_wrapper = title.find_next('div', class_='table__wrapper--embedded')
+            if not table_wrapper:
+                continue
                 
-                # Find the table following this title
-                table_wrapper = title.find_next('div', class_='table__wrapper--embedded')
-                if not table_wrapper:
+            table = table_wrapper.find('table')
+            if not table or not table.tbody:
+                continue
+            
+            for row in table.tbody.find_all('tr'):
+                links = row.find_all('a')
+                if len(links) < 2:
                     continue
-                    
-                table = table_wrapper.find('table')
-                if not table or not table.tbody:
+                team = links[0]
+                conf = links[1]
+                
+                if conf.string == 'NON-MCLA':
                     continue
                 
-                for row in table.tbody.find_all('tr'):
-                    links = row.find_all('a')
-                    if len(links) < 2:
-                        continue
-                    team = links[0]
-                    conf = links[1]
-                    
-                    if conf.string == 'NON-MCLA':
-                        continue
-                    
-                    link_parts = team['href'].split('/')
-                    slug = link_parts[2]
-                    yield Team(
-                        name=next(team.stripped_strings),
-                        schedule=Location(
-                            url=f'https://mcla.us/teams/{slug}/{year}/schedule'),
-                        roster=Location(
-                            url=f'https://mcla.us/teams/{slug}/{year}/roster'),
-                        year=year,
-                        id=f'ml-mcla-{self._normalize_slug(slug)}',
-                        div='mcla' + DIVISION_MAP[division_text],
-                        sport='ml',
-                        source='mcla')
-        else:
-            # Fall back to old structure (pre-2026): <div id="teams-table">
-            division_tables = soup.find_all('div', id='teams-table')
-            for table_div in division_tables:
-                division_text = next(table_div.thead.stripped_strings)
-                for row in table_div.tbody.find_all('tr'):
-                    (team, conf) = row.find_all('a', limit=2)
-                    if conf.string == 'NON-MCLA':
-                        continue
-                    link_parts = team['href'].split('/')
-                    slug = link_parts[2]
-                    yield Team(
-                        name=next(team.stripped_strings),
-                        schedule=Location(
-                            url=f'https://mcla.us/teams/{slug}/{year}/schedule'),
-                        roster=Location(
-                            url=f'https://mcla.us/teams/{slug}/{year}/roster'),
-                        year=year,
-                        id=f'ml-mcla-{self._normalize_slug(slug)}',
-                        div='mcla' + DIVISION_MAP[division_text],
-                        sport='ml',
-                        source='mcla')
+                link_parts = team['href'].split('/')
+                slug = link_parts[2]
+                yield Team(
+                    name=next(team.stripped_strings),
+                    schedule=Location(
+                        url=f'https://mcla.us/teams/{slug}/{year}/schedule'),
+                    roster=Location(
+                        url=f'https://mcla.us/teams/{slug}/{year}/roster'),
+                    year=year,
+                    id=f'ml-mcla-{self._normalize_slug(slug)}',
+                    div='mcla' + DIVISION_MAP[division_text],
+                    sport='ml',
+                    source='mcla')
 
     def convert_schedule_html(self, html: str,
                               team: Team) -> Iterator[ScheduleGame]:
@@ -185,86 +161,50 @@ class Mcla():
                                   home_team: Team, away_team: Team) -> Game:
         soup = BeautifulSoup(html, 'html.parser')
         
-        # Try new 2026+ structure first
         game_page_header = soup.find('div', class_='game-page-header')
-        if game_page_header:
-            # New structure
-            away_team_div = game_page_header.find('div', class_='game-page-header__team--away')
-            home_team_div = game_page_header.find('div', class_='game-page-header__team--home')
-            
-            away_name = away_team_div.find('span', class_='team__name').get_text(strip=True)
-            home_name = home_team_div.find('span', class_='team__name').get_text(strip=True)
-            
-            # Extract stable team IDs from scoring summary tables
-            # These have div.team-info with links containing the team slug
-            team_info_divs = soup.find_all('div', class_='team-info')
-            if len(team_info_divs) >= 2:
-                # First team-info is away, second is home (appears twice in different tables)
-                away_link = team_info_divs[0].find('a')
-                home_link = team_info_divs[1].find('a')
-                away_id = self._parse_team_link_into_id(sport, source, away_link['href']) if away_link else None
-                home_id = self._parse_team_link_into_id(sport, source, home_link['href']) if home_link else None
-            else:
-                # Fallback: no scoring data yet, use names (will be inconsistent but better than crashing)
-                away_id = None
-                home_id = None
-            
-            info_div = game_page_header.find('div', class_='game-page-header__info')
-            date_str = info_div.find('span', class_='info__date').get_text(strip=True)
-            # New structure doesn't include time or timezone, default to noon EST
-            # (games will have proper timezone set when full schedule data is available)
-            year = getattr(home_team, 'year', None) or getattr(away_team, 'year', None)
-            if not year:
-                year = str(datetime.date.today().year)
-            date = parser.parse(date_str + ' ' + year + ' 12:00 EST', tzinfos=TIMEZONES).isoformat()
+        away_team_div = game_page_header.find('div', class_='game-page-header__team--away')
+        home_team_div = game_page_header.find('div', class_='game-page-header__team--home')
+        
+        away_name = away_team_div.find('span', class_='team__name').get_text(strip=True)
+        home_name = home_team_div.find('span', class_='team__name').get_text(strip=True)
+        
+        # Extract stable team IDs from scoring summary tables
+        # These have div.team-info with links containing the team slug
+        team_info_divs = soup.find_all('div', class_='team-info')
+        if len(team_info_divs) >= 2:
+            # First team-info is away, second is home (appears twice in different tables)
+            away_link = team_info_divs[0].find('a')
+            home_link = team_info_divs[1].find('a')
+            away_id = self._parse_team_link_into_id(sport, source, away_link['href']) if away_link else None
+            home_id = self._parse_team_link_into_id(sport, source, home_link['href']) if home_link else None
         else:
-            # Old structure (pre-2026)
-            header = soup.find('div', class_='page-header').h2
-            header_match = re.match(r'(?P<away_team>.+) @ (?P<home_team>.+)',
-                                    header.string)
-            home_name = header_match.group('home_team')
-            away_name = header_match.group('away_team')
-
-            game_stats_meta = soup.find('div', class_='game-stats__meta')
-            (date_str, time, *_) = list(game_stats_meta.stripped_strings)
-            date = parser.parse(date_str + ' ' + home_team.year + ' ' + time,
-                                tzinfos=TIMEZONES).isoformat()
-            game_score = soup.find('div', class_='game-stats__header')
-            away_team_tag = game_score.find(class_='game-stats__team--away')
-            home_team_tag = game_score.find(class_='game-stats__team--home')
-            away_id = self._parse_team_link_into_id(sport, source,
-                                                    away_team_tag.a['href'])
-            home_id = self._parse_team_link_into_id(sport, source,
-                                                    home_team_tag.a['href'])
+            # Fallback: no scoring data yet, use names (will be inconsistent but better than crashing)
+            away_id = None
+            home_id = None
+        
+        info_div = game_page_header.find('div', class_='game-page-header__info')
+        date_str = info_div.find('span', class_='info__date').get_text(strip=True)
+        # Game details don't include time or timezone, default to noon EST
+        year = getattr(home_team, 'year', None) or getattr(away_team, 'year', None)
+        if not year:
+            year = str(datetime.date.today().year)
+        date = parser.parse(date_str + ' ' + year + ' 12:00 EST', tzinfos=TIMEZONES).isoformat()
+        
         home_team = TeamSummary(id=home_id, name=home_name)
         away_team = TeamSummary(id=away_id, name=away_name)
         
-        # Parse scores - try new structure first
-        if game_page_header:
-            # New 2026+ structure
-            try:
-                info_div = game_page_header.find('div', class_='game-page-header__info')
-                away_score_tag = info_div.find('span', class_='info__result--away')
-                away_score = int(away_score_tag.get_text(strip=True)) if away_score_tag else None
-            except:
-                away_score = None
-            try:
-                home_score_tag = info_div.find('span', class_='info__result-home')
-                home_score = int(home_score_tag.get_text(strip=True)) if home_score_tag else None
-            except:
-                home_score = None
-        else:
-            # Old structure
-            try:
-                away_score = int(
-                    away_team_tag.find(class_='team__score--final').string)
-            except:
-                away_score = None
-            try:
-                home_score = int(
-                    home_team_tag.find(class_='team__score--final').string)
-            except:
-                home_score = None
+        # Parse scores
+        try:
+            info_div = game_page_header.find('div', class_='game-page-header__info')
+            away_score_tag = info_div.find('span', class_='info__result--away')
+            away_score = int(away_score_tag.get_text(strip=True)) if away_score_tag else None
+        except:
+            away_score = None
+        try:
+            home_score_tag = info_div.find('span', class_='info__result-home')
+            home_score = int(home_score_tag.get_text(strip=True)) if home_score_tag else None
+        except:
+            home_score = None
         result = GameResult(
             home_score=home_score,
             away_score=away_score) if home_score is not None and away_score is not None else None
