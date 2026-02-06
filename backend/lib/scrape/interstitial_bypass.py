@@ -26,15 +26,25 @@ class InterstitialBypassSession:
     def get(self, url: str, **kwargs) -> Any:
         """
         Fetch a URL, automatically solving Akamai challenges if encountered.
+        Invalidates cache on 403 to ensure fresh interstitial challenges.
         """
         # Make initial request through the base session
         resp = self.session.get(url, **kwargs)
+        
+        # If we got a 403, invalidate cache and retry (might be cached block)
+        if resp.status_code == 403:
+            logger.info(f"Got 403 for {url}, invalidating cache and retrying...")
+            self._invalidate_cache(url)
+            resp = self.session.get(url, **kwargs)
         
         # Check if we got an Akamai interstitial
         if self._is_interstitial(resp):
             logger.info(f"Akamai interstitial detected for {url}, solving...")
             
             if self._solve_interstitial(resp):
+                # Invalidate cache before retry to force fresh request
+                self._invalidate_cache(url)
+                
                 # Retry the original URL
                 resp = self.session.get(url, **kwargs)
                 
@@ -46,6 +56,15 @@ class InterstitialBypassSession:
                 logger.error("Could not parse Akamai challenge")
         
         return resp
+    
+    def _invalidate_cache(self, url: str):
+        """Invalidate cached response for a URL if session has a cache."""
+        if hasattr(self.session, 'cache') and hasattr(self.session.cache, 'delete'):
+            try:
+                self.session.cache.delete(urls=[url])
+                logger.debug(f"Invalidated cache for {url}")
+            except Exception as e:
+                logger.debug(f"Could not invalidate cache: {e}")
     
     def _is_interstitial(self, resp) -> bool:
         """Check if response is an Akamai interstitial challenge."""

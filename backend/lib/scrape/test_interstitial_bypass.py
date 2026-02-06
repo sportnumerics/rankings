@@ -90,6 +90,30 @@ class TestInterstitialBypass(unittest.TestCase):
         
         self.assertEqual(result, mock_response)
         mock_session.post.assert_called_once_with("https://example.com/api", json={"test": "data"})
+    
+    def test_403_invalidates_cache(self):
+        """Should invalidate cache and retry on 403."""
+        mock_session = Mock()
+        mock_cache = Mock()
+        mock_session.cache = mock_cache
+        
+        # First call returns 403, second returns 200
+        mock_403 = Mock()
+        mock_403.status_code = 403
+        mock_200 = Mock()
+        mock_200.status_code = 200
+        mock_200.text = "<html>Normal content</html>"
+        mock_session.get.side_effect = [mock_403, mock_200]
+        
+        session = InterstitialBypassSession(mock_session)
+        result = session.get("https://example.com")
+        
+        # Should have invalidated cache
+        mock_cache.delete.assert_called_once_with(urls=["https://example.com"])
+        
+        # Should have called get twice (initial + retry)
+        self.assertEqual(mock_session.get.call_count, 2)
+        self.assertEqual(result, mock_200)
 
 
 if __name__ == '__main__':
