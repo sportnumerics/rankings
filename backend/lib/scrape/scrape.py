@@ -16,10 +16,6 @@ import logging
 import traceback
 
 from .interstitial_bypass import InterstitialBypassSession
-try:
-    from .curl_cffi_session import CurlCffiSession, CURL_CFFI_AVAILABLE
-except ImportError:
-    CURL_CFFI_AVAILABLE = False
 
 USER_AGENT = 'sportnumerics-scraper/1.0 (https://sportnumerics.com)'
 
@@ -80,8 +76,7 @@ class ScrapeRunner():
         self.out_dir = out_dir
         self.log = logging.getLogger(type(self.scraper).__name__)
 
-        # Build session by composing wrappers
-        # Start with rate-limited + cached base session
+        # Create cached + rate-limited session
         cache_name = os.path.join(self.out_dir, 'cache')
         session_args = self.scraper.get_limiter_session_args()
         Session = LimitedCachedSession if session_args else CachedSession
@@ -92,13 +87,6 @@ class ScrapeRunner():
         # Wrap with interstitial bypass for NCAA
         if source == 'ncaa':
             session = InterstitialBypassSession(session)
-            self.log.info("Enabled Akamai interstitial bypass")
-        
-        # TODO: Optionally wrap with curl_cffi impersonation for testing
-        # Enable this if regular requests get blocked:
-        # if source == 'ncaa' and CURL_CFFI_AVAILABLE:
-        #     session = CurlCffiSession(base_session=session)
-        #     self.log.info("Enabled curl_cffi browser impersonation")
         
         self.cache = session
         self.team = team
