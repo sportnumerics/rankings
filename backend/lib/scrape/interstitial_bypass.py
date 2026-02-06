@@ -1,47 +1,44 @@
 """
-DEPRECATED: This module combines interstitial bypass with curl_cffi impersonation.
-
-Use the new modular approach instead:
-- interstitial_bypass.py: Pure interstitial solving (works with any session)
-- curl_cffi_session.py: Optional browser impersonation (composable)
-
-This file is kept for reference but should not be used in new code.
+Akamai interstitial bypass wrapper for any HTTP session.
+Detects and solves interstitial challenges, delegates to underlying session.
 """
 import re
 import logging
-from curl_cffi import requests
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class AkamaiSession:
+class InterstitialBypassSession:
     """
-    Session that can solve Akamai interstitial challenges.
-    Uses curl_cffi to impersonate Chrome and bypass TLS fingerprinting.
+    Wrapper that automatically solves Akamai interstitial challenges.
+    Can wrap any session object with a get() method.
     """
     
-    def __init__(self):
-        self.session = requests.Session()
-        self.impersonate = "chrome120"
+    def __init__(self, base_session):
+        """
+        Args:
+            base_session: Any session with a get() method (requests.Session, 
+                         CachedSession, LimitedCachedSession, etc.)
+        """
+        self.session = base_session
     
-    def get(self, url: str, headers=None, **kwargs) -> requests.Response:
+    def get(self, url: str, **kwargs) -> Any:
         """
         Fetch a URL, automatically solving Akamai challenges if encountered.
-        Note: headers parameter is accepted but ignored since impersonation sets its own headers.
         """
-        # Make initial request with Chrome impersonation
-        # Note: We ignore custom headers since Chrome impersonation provides complete headers
-        resp = self.session.get(url, impersonate=self.impersonate, **kwargs)
+        # Make initial request through the base session
+        resp = self.session.get(url, **kwargs)
         
         # Check if we got an Akamai interstitial
-        if resp.status_code == 200 and 'bm-verify' in resp.text:
+        if self._is_interstitial(resp):
             logger.info(f"Akamai interstitial detected for {url}, solving...")
             
-            if self._solve_interstitial(resp.text):
+            if self._solve_interstitial(resp):
                 # Retry the original URL
-                resp = self.session.get(url, impersonate=self.impersonate, **kwargs)
+                resp = self.session.get(url, **kwargs)
                 
-                if 'bm-verify' not in resp.text:
+                if not self._is_interstitial(resp):
                     logger.info("Akamai challenge solved successfully")
                 else:
                     logger.warning("Failed to solve Akamai challenge")
@@ -50,11 +47,20 @@ class AkamaiSession:
         
         return resp
     
-    def _solve_interstitial(self, html: str) -> bool:
+    def _is_interstitial(self, resp) -> bool:
+        """Check if response is an Akamai interstitial challenge."""
+        try:
+            return resp.status_code == 200 and 'bm-verify' in resp.text
+        except:
+            return False
+    
+    def _solve_interstitial(self, resp) -> bool:
         """
         Solve the Akamai interstitial challenge by computing PoW and submitting.
         Returns True if verification was submitted successfully.
         """
+        html = resp.text
+        
         # Extract bm-verify token from the inline JSON
         verify_match = re.search(r'"bm-verify": "([^"]+)"', html)
         if not verify_match:
@@ -74,12 +80,11 @@ class AkamaiSession:
         num2 = pow_match.group(3)
         j = i + int(num1 + num2)
         
-        # Submit verification
+        # Submit verification using the same session
         try:
             verify_resp = self.session.post(
                 'https://stats.ncaa.org/_sec/verify?provider=interstitial',
                 json={"bm-verify": bm_verify, "pow": j},
-                impersonate=self.impersonate,
                 headers={'Content-Type': 'application/json'}
             )
             
@@ -93,3 +98,7 @@ class AkamaiSession:
         except Exception as e:
             logger.error(f"Error submitting verification: {e}")
             return False
+    
+    def post(self, url: str, **kwargs) -> Any:
+        """Delegate POST to base session."""
+        return self.session.post(url, **kwargs)
