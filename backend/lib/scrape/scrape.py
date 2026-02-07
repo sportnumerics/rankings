@@ -233,28 +233,18 @@ class ScrapeRunner():
         if not html:
             return
         try:
-            games = self.scraper.convert_schedule_html(html, team)
-            if (os.environ.get('DUMP_NCAA_SCHEDULE_HTML') == '1'
-                    and team.source == 'ncaa' and not games):
-                debug_dir = os.path.join(self.out_dir, 'debug')
-                os.makedirs(debug_dir, exist_ok=True)
-                with open(
-                        os.path.join(debug_dir,
-                                     f'ncaa-schedule-{team.id}.html'),
-                        'w') as f:
-                    f.write(html)
-            return games
+            return self.scraper.convert_schedule_html(html, team)
         except Exception as e:
             self.log.error(
                 f'Unable to convert schedule html from {schedule_location}: {e}'
             )
             traceback.print_exception(e)
-            if os.environ.get('DUMP_NCAA_SCHEDULE_HTML') == '1':
+            if os.environ.get('DUMP_SCHEDULE_HTML') == '1':
                 debug_dir = os.path.join(self.out_dir, 'debug')
                 os.makedirs(debug_dir, exist_ok=True)
                 with open(
                         os.path.join(debug_dir,
-                                     f'ncaa-schedule-{team.id}.html'),
+                                     f'schedule-{team.id}.html'),
                         'w') as f:
                     f.write(html)
 
