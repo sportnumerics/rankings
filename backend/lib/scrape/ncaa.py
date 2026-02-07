@@ -58,16 +58,19 @@ class Ncaa(Scraper):
     def convert_schedule_html(self, html: str,
                               team: Team) -> Iterator[ScheduleGame]:
         soup = BeautifulSoup(html, 'html.parser')
-        alt_id = soup.find(id='year_list').find('option',
-                                                attrs={
-                                                    'selected': 'selected'
-                                                }).attrs['value']
-        if alt_id:
-            team.alt_id = alt_id
+        year_list = soup.find(id='year_list')
+        if year_list:
+            selected = year_list.find('option', attrs={'selected': 'selected'})
+            if selected and selected.attrs.get('value'):
+                team.alt_id = selected.attrs['value']
         schedule_header = soup.find('div',
                                     class_='card-header',
                                     string='Schedule/Results')
+        if not schedule_header or not schedule_header.parent:
+            return []
         schedule_div = schedule_header.parent
+        if not schedule_div.table or not schedule_div.table.tbody:
+            return []
         rows = schedule_div.table.tbody.find_all('tr')
         games = []
         for row in rows:
@@ -80,7 +83,9 @@ class Ncaa(Scraper):
 
             date = self._to_iso_format(date_col.string)
 
-            opp_link = opp_col.a
+            opp_link = opp_col.find('a')
+            if not opp_link:
+                continue
             name_string = ' '.join(opp_link.stripped_strings)
             name_match = self.OPPONENT_NAME_REGEX.match(name_string)
             opp_string = ' '.join(opp_col.stripped_strings)
