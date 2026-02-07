@@ -224,8 +224,13 @@ class ScrapeRunner():
                 self.log.error(
                     f'Unable to convert team list html from {url}: {e}')
                 traceback.print_exception(e)
-                with open(os.path.join(self.out_dir, 'error.html'), 'w') as f:
-                    f.write(html)
+                self._dump_html('team-list-error.html', html)
+
+    def _dump_html(self, filename: str, html: str):
+        debug_dir = os.path.join(self.out_dir, 'debug')
+        os.makedirs(debug_dir, exist_ok=True)
+        with open(os.path.join(debug_dir, filename), 'w') as f:
+            f.write(html)
 
     def scrape_schedule(self, team: Team):
         schedule_location = team.schedule
@@ -239,14 +244,7 @@ class ScrapeRunner():
                 f'Unable to convert schedule html from {schedule_location}: {e}'
             )
             traceback.print_exception(e)
-            if os.environ.get('DUMP_SCHEDULE_HTML') == '1':
-                debug_dir = os.path.join(self.out_dir, 'debug')
-                os.makedirs(debug_dir, exist_ok=True)
-                with open(
-                        os.path.join(debug_dir,
-                                     f'schedule-{team.id}.html'),
-                        'w') as f:
-                    f.write(html)
+            self._dump_html(f'schedule-{team.id}.html', html)
 
     def scrape_roster(self, team: Team):
         if not team.roster:
@@ -259,6 +257,7 @@ class ScrapeRunner():
             self.log.error(
                 f'Unable to convert roster html from {roster_location}: {e}')
             traceback.print_exception(e)
+            self._dump_html(f'roster-{team.id}.html', html)
 
     def cross_link_schedules(self, schedules: list[TeamDetail]):
         self.scraper.cross_link_schedules(schedules)
@@ -275,6 +274,7 @@ class ScrapeRunner():
             self.log.error(
                 f'Unable to convert game details html from {location}:')
             traceback.print_exception(e)
+            self._dump_html(f'game-details-{game_id}.html', html)
 
     def fetch(self, location):
         response = self.cache.get(location.url,
