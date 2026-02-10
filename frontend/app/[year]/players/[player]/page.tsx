@@ -6,6 +6,7 @@ import Opponent from "@/app/components/Opponent";
 import { getRankedTeams } from "@/app/server/teams";
 import GameDate from "@/app/components/GameLink";
 import LastUpdated from "@/app/components/LastModified";
+import { NotFoundError } from "@/app/server/source";
 
 interface Params {
     year: string;
@@ -13,7 +14,24 @@ interface Params {
 }
 
 export default async function Page({ params }: { params: Params }) {
-    const { body: player, lastModified } = await getPlayerStats(params);
+    let player;
+    let lastModified;
+
+    try {
+        ({ body: player, lastModified } = await getPlayerStats(params));
+    } catch (err) {
+        if (err instanceof NotFoundError) {
+            return <>
+                <H1>Player not found</H1>
+                <Card title="No data for this season">
+                    <p className="mb-4">We don’t have a profile for this player in {params.year}.</p>
+                    <p><Link href={`/${params.year}`}>Browse the {params.year} season</Link></p>
+                </Card>
+            </>
+        }
+        throw err;
+    }
+
     const { body: teams } = await getRankedTeams({ div: player.team.div, ...params });
 
     const stats = player.stats.map(line => {
