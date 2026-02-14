@@ -3,13 +3,14 @@ import { getDiv } from "@/app/server/divs";
 import { getRankedPlayers } from "@/app/server/players";
 import { getRankedTeams, getTeam, getTeamRatings, getTeams } from "@/app/server/teams";
 import { ScheduleGameResult, TeamRating } from "@/app/server/types";
-import { Card, ExternalLink, H1, Table, TableHeader, H2, by } from "@/app/shared";
+import { Card, ExternalLink, H1, Table, TableHeader, H2, by, Link } from "@/app/shared";
 import PlayersCard from "@/app/components/PlayersCard";
 import Opponent from "@/app/components/Opponent";
 import Rank from "@/app/components/Rank";
 import GameDate from "@/app/components/GameLink";
 import LastUpdated from "@/app/components/LastModified";
 import { ReactElement } from "react";
+import { NotFoundError } from "@/app/server/source";
 
 interface Params {
     year: string;
@@ -18,7 +19,24 @@ interface Params {
 }
 
 export default async function Page({ params }: { params: Params }) {
-    const { body: schedule, lastModified } = await getTeam(params);
+    let schedule;
+    let lastModified;
+
+    try {
+        ({ body: schedule, lastModified } = await getTeam(params));
+    } catch (err) {
+        if (err instanceof NotFoundError) {
+            return <>
+                <H1>Team schedule not found</H1>
+                <Card title="No schedule data for this season">
+                    <p className="mb-4">We don&apos;t have a schedule for this team in {params.year}.</p>
+                    <p><Link href={`/${params.year}`}>Browse the {params.year} season</Link></p>
+                </Card>
+            </>
+        }
+        throw err;
+    }
+
     const allTeamsPromise = getTeamRatings({ year: params.year });
     const rankedTeamsPromise = getRankedTeams({ year: params.year, div: schedule.team.div });
     const playersPromise = getRankedPlayers({ year: params.year, team: schedule.team.id });
