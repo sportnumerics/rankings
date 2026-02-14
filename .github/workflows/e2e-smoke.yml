@@ -1,11 +1,7 @@
 name: E2E smoke (Playwright)
 
 on:
-  # Runs after Deploy PR Preview completes, testing the exact revision that was deployed.
-  workflow_run:
-    workflows: ["Deploy PR Preview"]
-    types: [completed]
-
+  # Manual runs only - PR deploys now include e2e tests inline
   workflow_dispatch:
     inputs:
       base_url:
@@ -15,17 +11,12 @@ on:
 
 jobs:
   e2e-smoke:
-    # Only run when the triggering deploy workflow succeeded (or on manual dispatch).
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          # When triggered by workflow_run, test the exact revision that was deployed.
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
