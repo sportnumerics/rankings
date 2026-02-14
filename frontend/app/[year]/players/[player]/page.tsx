@@ -24,7 +24,7 @@ export default async function Page({ params }: { params: Params }) {
             return <>
                 <H1>Player not found</H1>
                 <Card title="No data for this season">
-                    <p className="mb-4">We don't have a profile for this player in {params.year}.</p>
+                    <p className="mb-4">We don&apos;t have a profile for this player in {params.year}.</p>
                     <p><Link href={`/${params.year}`}>Browse the {params.year} season</Link></p>
                 </Card>
             </>
