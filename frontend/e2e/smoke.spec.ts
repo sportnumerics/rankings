@@ -15,3 +15,8 @@ test('about page loads', async ({ page }) => {
   await page.goto('/about');
   await expect(page).toHaveTitle(/Sportnumerics/i);
 });
+
+test('missing player shows friendly message', async ({ page }) => {
+  await page.goto('/2024/players/definitely-not-a-player');
+  await expect(page.getByRole('heading', { name: /player not found/i })).toBeVisible();
+});
