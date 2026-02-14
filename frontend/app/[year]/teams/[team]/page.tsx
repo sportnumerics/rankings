@@ -1,7 +1,7 @@
 'use server';
 import { getDiv } from "@/app/server/divs";
 import { getRankedPlayers } from "@/app/server/players";
-import { getRankedTeams, getTeam, getTeamRatings } from "@/app/server/teams";
+import { getRankedTeams, getTeam, getTeamRatings, getTeams } from "@/app/server/teams";
 import { ScheduleGameResult, TeamRating } from "@/app/server/types";
 import { Card, ExternalLink, H1, Table, TableHeader, H2, by } from "@/app/shared";
 import PlayersCard from "@/app/components/PlayersCard";
@@ -23,7 +23,8 @@ export default async function Page({ params }: { params: Params }) {
     const rankedTeamsPromise = getRankedTeams({ year: params.year, div: schedule.team.div });
     const playersPromise = getRankedPlayers({ year: params.year, team: schedule.team.id });
     const divPromise = getDiv(schedule.team.div);
-    const [{ body: teams }, { body: allTeams }, { body: players }, div] = await Promise.all([rankedTeamsPromise, allTeamsPromise, playersPromise, divPromise]);
+    const divTeamsPromise = getTeams({ year: params.year, div: schedule.team.div });
+    const [{ body: teams }, { body: allTeams }, { body: players }, div, { body: divTeams }] = await Promise.all([rankedTeamsPromise, allTeamsPromise, playersPromise, divPromise, divTeamsPromise]);
 
     const rankedPlayers = Object.values(players);
     rankedPlayers.sort(by(t => t.rank));
@@ -35,7 +36,7 @@ export default async function Page({ params }: { params: Params }) {
         const prediction = predict({ team, opponent });
         return {
             ...game,
-            knownOpponent: Boolean(allTeams[game.opponent.id]),
+            knownOpponent: Boolean(divTeams[game.opponent.id]),
             divisional: Boolean(rankedOpponent),
             opponent,
             team,
