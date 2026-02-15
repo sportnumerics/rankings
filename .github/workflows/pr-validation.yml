@@ -27,12 +27,12 @@ jobs:
     - name: Run backend unit tests
       working-directory: backend
       run: |
-        if command -v uv &> /dev/null; then
-          uv run python -m unittest discover -s lib -p 'test_*.py'
-        else
+        if ! command -v uv &> /dev/null; then
           pip install uv
-          uv run python -m unittest discover -s lib -p 'test_*.py'
         fi
+        # Find all test files and convert to module names
+        test_modules=$(find lib -name 'test_*.py' -type f | sed 's|/|.|g' | sed 's|.py$||')
+        uv run python -m unittest $test_modules
 
     # ===== 2. DEPLOY FRONTEND & BACKEND TO DEV =====
     - name: Setup Node
