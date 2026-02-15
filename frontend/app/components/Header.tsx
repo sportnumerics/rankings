@@ -14,6 +14,8 @@ export default function Header({ years, divs, currentYear }: Props) {
     const location = useLocation();
     const playersHref = linkToPlayers(location, currentYear);
     const teamsHref = linkToTeams(location, currentYear);
+    const year = (location as HasYear)?.year ?? currentYear;
+    const gamesHref = `/${year}/games`;
     const type = (location as HasType).type;
     const division = divs.find(div => div.id === (location as HasDivision).div);
     return <HeaderPresenter
@@ -24,10 +26,11 @@ export default function Header({ years, divs, currentYear }: Props) {
         currentYear={currentYear}
         type={type}
         teamsHref={teamsHref}
-        playersHref={playersHref} />
+        playersHref={playersHref}
+        gamesHref={gamesHref} />
 }
 
-function HeaderPresenter({ years, divs, location, division, currentYear, type, teamsHref, playersHref }: { years: Year[], divs: Division[], location: Location, division?: Division, currentYear: string, type: string, teamsHref?: string, playersHref?: string }) {
+function HeaderPresenter({ years, divs, location, division, currentYear, type, teamsHref, playersHref, gamesHref }: { years: Year[], divs: Division[], location: Location, division?: Division, currentYear: string, type: string, teamsHref?: string, playersHref?: string, gamesHref: string }) {
     return <NavBar>
         <Nav>
             <div className="text-2xl font-black tracking-widest italic"><NavLink href="/">S#</NavLink></div>
@@ -48,6 +51,9 @@ function HeaderPresenter({ years, divs, location, division, currentYear, type, t
             <DropdownItem isActive={!teamsHref} href={teamsHref}>Teams</DropdownItem>
             <DropdownItem isActive={!playersHref} href={playersHref}>Players</DropdownItem>
         </DropdownNav>}
+        <Nav>
+            <NavLink href={gamesHref}>Games</NavLink>
+        </Nav>
         <Nav>
             <NavLink href="/about">About</NavLink>
         </Nav>

@@ -2,6 +2,7 @@
 from ..shared.types import PredictArgs, ScrapeArgs, SyncArgs
 from ..scrape import scrape
 from ..predict import predict
+from ..games import games
 from ..sync import sync
 from ..shared import shared
 import logging
@@ -22,6 +23,10 @@ def run(args):
             PredictArgs(input_dir=args.out_dir,
                         year=year,
                         out_dir=args.out_dir))
+
+        # Generate consolidated games file
+        games.generate_games_file(
+            type('GamesArgs', (), {'year': year, 'input_dir': args.out_dir})())
 
         if args.bucket_url:
             sync.sync(
