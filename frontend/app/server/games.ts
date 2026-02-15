@@ -1,8 +1,9 @@
 import 'server-only';
 import source from "./source";
+import { Game } from "./types";
 import Data from './Data';
 
-export interface Game {
+export interface ScheduledGame {
     date: string;
     homeTeam: string;
     homeTeamId: string;
@@ -17,7 +18,11 @@ export interface Game {
     };
 }
 
-export type GamesByDate = Record<string, Game[]>;
+export type GamesByDate = Record<string, ScheduledGame[]>;
+
+export async function getGame({ year, game }: { year: string, game: string }): Promise<Data<Game>> {
+    return await source.get(`${year}/games/${game}.json`);
+}
 
 export async function getGames({ year }: { year: string }): Promise<Data<GamesByDate>> {
     return await source.get(`${year}/games.json`);
