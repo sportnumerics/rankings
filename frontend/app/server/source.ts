@@ -17,17 +17,24 @@ class S3Source implements Source {
     readonly prefix = process.env.DATA_BUCKET_PREFIX || 'data';
 
     async get(key: string) {
-        const response = await this.client.send(new GetObjectCommand({
-            Bucket: this.bucket,
-            Key: `${this.prefix}/${key}`
-        }))
-        if (!response.Body) {
-            throw new NotFoundError();
+        try {
+            const response = await this.client.send(new GetObjectCommand({
+                Bucket: this.bucket,
+                Key: `${this.prefix}/${key}`
+            }))
+            if (!response.Body) {
+                throw new NotFoundError();
+            }
+            return create(
+                JSON.parse(await response.Body?.transformToString()),
+                response.LastModified
+            );
+        } catch (err: any) {
+            if (err.name === 'NoSuchKey' || err.$metadata?.httpStatusCode === 404) {
+                throw new NotFoundError();
+            }
+            throw err;
         }
-        return create(
-            JSON.parse(await response.Body?.transformToString()),
-            response.LastModified
-        );
     }
 
     async list(key: string): Promise<string[]> {
@@ -50,12 +57,19 @@ class LocalFileSource implements Source {
     readonly basePath = process.env.DATA_PATH || '';
 
     async get(key: string) {
-        const filename = join(this.basePath, key);
-        const [stats, file] = await Promise.all([promises.stat(filename), promises.readFile(filename, 'utf8')]);
-        return create(
-            JSON.parse(file),
-            stats.mtime
-        );
+        try {
+            const filename = join(this.basePath, key);
+            const [stats, file] = await Promise.all([promises.stat(filename), promises.readFile(filename, 'utf8')]);
+            return create(
+                JSON.parse(file),
+                stats.mtime
+            );
+        } catch (err: any) {
+            if (err.code === 'ENOENT') {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
     }
 
     async list(key: string) {
