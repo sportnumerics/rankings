@@ -20,3 +20,8 @@ test('missing player shows friendly message', async ({ page }) => {
   await page.goto('/2024/players/definitely-not-a-player');
   await expect(page.getByRole('heading', { name: /player not found/i })).toBeVisible();
 });
+
+test('missing team schedule shows friendly message', async ({ page }) => {
+  await page.goto('/2024/teams/definitely-not-a-team');
+  await expect(page.getByRole('heading', { name: /team schedule not found/i })).toBeVisible();
+});
