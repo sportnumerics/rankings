@@ -3,12 +3,13 @@ import { getDiv } from "@/app/server/divs";
 import { getRankedPlayers } from "@/app/server/players";
 import { getRankedTeams, getTeam, getTeamRatings, getTeams } from "@/app/server/teams";
 import { ScheduleGameResult, TeamRating } from "@/app/server/types";
-import { Card, ExternalLink, H1, Table, TableHeader, H2, by, Link } from "@/app/shared";
+import { Card, ExternalLink, H1, Table, TableHeader, H2, by } from "@/app/shared";
 import PlayersCard from "@/app/components/PlayersCard";
 import Opponent from "@/app/components/Opponent";
 import Rank from "@/app/components/Rank";
 import GameDate from "@/app/components/GameLink";
 import LastUpdated from "@/app/components/LastModified";
+import Link from "@/app/components/Link";
 import { ReactElement } from "react";
 import { NotFoundError } from "@/app/server/source";
 
