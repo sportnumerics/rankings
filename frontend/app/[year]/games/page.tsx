@@ -2,13 +2,28 @@
 import { getGames } from "@/app/server/games";
 import { H1, H2, Card } from "@/app/shared";
 import Link from "@/app/components/Link";
+import { NotFoundError } from "@/app/server/source";
 
 interface Params {
     year: string;
 }
 
 export default async function Page({ params }: { params: Params }) {
-    const { body: gamesByDate } = await getGames({ year: params.year });
+    let gamesByDate;
+    
+    try {
+        ({ body: gamesByDate } = await getGames({ year: params.year }));
+    } catch (err) {
+        if (err instanceof NotFoundError) {
+            return <>
+                <H1>Upcoming Games</H1>
+                <Card title="No games data available">
+                    <p>Games schedule data is not yet available for {params.year}.</p>
+                </Card>
+            </>;
+        }
+        throw err;
+    }
     
     // Get today's date and 2 weeks from now
     const today = new Date();
