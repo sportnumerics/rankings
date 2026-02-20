@@ -294,35 +294,19 @@ resource "aws_iam_policy" "deployment_role_dev" {
         }
       },
       {
-        Sid    = "DevECSTagResource"
+        Sid    = "DevTagResource"
         Effect = "Allow"
         Action = [
           "ecs:TagResource",
-          "ecs:UntagResource"
-        ]
-        # Scope to *dev* ECS resources by name pattern
-        Resource = [
-          "arn:aws:ecs:us-west-2:${local.account_id}:cluster/*-dev",
-          "arn:aws:ecs:us-west-2:${local.account_id}:task-definition/*-dev:*"
-        ],
-        Condition = {
-          StringEquals = {
-            "aws:RequestTag/Stage" = "dev"
-          }
-          "ForAllValues:StringEquals" = {
-            "aws:TagKeys" = ["Stage", "App"]
-          }
-        }
-      },
-      {
-        Sid    = "DevEventsTagResource"
-        Effect = "Allow"
-        Action = [
+          "ecs:UntagResource",
           "events:TagResource",
           "events:UntagResource"
         ]
-        # EventBridge rules don't have a consistent naming pattern, so use tag constraints only
-        Resource = ["arn:aws:events:us-west-2:${local.account_id}:rule/*"],
+        Resource = [
+          "arn:aws:ecs:us-west-2:${local.account_id}:cluster/*-dev",
+          "arn:aws:ecs:us-west-2:${local.account_id}:task-definition/*-dev:*",
+          "arn:aws:events:us-west-2:${local.account_id}:rule/*"
+        ]
         Condition = {
           StringEquals = {
             "aws:RequestTag/Stage" = "dev"
