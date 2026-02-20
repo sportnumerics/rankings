@@ -177,7 +177,7 @@ resource "aws_iam_policy" "deployment_role_dev" {
         Sid    = "DevResourcesWrite"
         Effect = "Allow"
         Action = [
-          # ECS - write actions only
+          # ECS - write actions only (TagResource handled separately)
           "ecs:CreateCluster",
           "ecs:DeleteCluster",
           "ecs:UpdateCluster",
@@ -188,7 +188,6 @@ resource "aws_iam_policy" "deployment_role_dev" {
           "ecs:UpdateService",
           "ecs:CreateService",
           "ecs:DeleteService",
-          "ecs:TagResource",
           "ecs:UntagResource",
           # ECR - write actions only (read actions are in ReadOnly)
           "ecr:CreateRepository",
@@ -251,14 +250,13 @@ resource "aws_iam_policy" "deployment_role_dev" {
           "cloudfront:CreateCachePolicy",
           "cloudfront:UpdateCachePolicy",
           "cloudfront:DeleteCachePolicy",
-          # EventBridge - write actions only
+          # EventBridge - write actions only (TagResource handled separately)
           "events:PutRule",
           "events:DeleteRule",
           "events:EnableRule",
           "events:DisableRule",
           "events:PutTargets",
           "events:RemoveTargets",
-          "events:TagResource",
           "events:UntagResource",
           # Route53 - write actions only
           "route53:ChangeResourceRecordSets",
@@ -286,6 +284,29 @@ resource "aws_iam_policy" "deployment_role_dev" {
         # Scope to *dev* Lambdas by name to avoid retagging prod resources.
         # (Lambda ARN wildcards are supported in IAM resource statements.)
         Resource = ["arn:aws:lambda:us-west-2:${local.account_id}:function:*-dev"],
+        Condition = {
+          StringEquals = {
+            "aws:RequestTag/Stage" = "dev"
+          }
+          "ForAllValues:StringEquals" = {
+            "aws:TagKeys" = ["Stage", "App"]
+          }
+        }
+      },
+      {
+        Sid    = "DevTagResource"
+        Effect = "Allow"
+        Action = [
+          "ecs:TagResource",
+          "ecs:UntagResource",
+          "events:TagResource",
+          "events:UntagResource"
+        ]
+        Resource = [
+          "arn:aws:ecs:us-west-2:${local.account_id}:cluster/*-dev",
+          "arn:aws:ecs:us-west-2:${local.account_id}:task-definition/*-dev:*",
+          "arn:aws:events:us-west-2:${local.account_id}:rule/*"
+        ]
         Condition = {
           StringEquals = {
             "aws:RequestTag/Stage" = "dev"
