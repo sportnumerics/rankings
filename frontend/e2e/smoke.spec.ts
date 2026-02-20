@@ -27,7 +27,7 @@ test('missing team schedule shows friendly message', async ({ page }) => {
 });
 
 test('games page loads', async ({ page }) => {
-  await page.goto('/2026/games');
+  await page.goto('/2026/mcla/games');
   await expect(page).toHaveTitle(/Sportnumerics/i);
   await expect(page.getByRole('heading', { name: /upcoming games/i })).toBeVisible();
 });

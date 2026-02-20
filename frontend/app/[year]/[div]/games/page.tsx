@@ -6,6 +6,7 @@ import { NotFoundError } from "@/app/server/source";
 
 interface Params {
     year: string;
+    div: string;
 }
 
 export default async function Page({ params }: { params: Params }) {
@@ -31,8 +32,13 @@ export default async function Page({ params }: { params: Params }) {
     const twoWeeksFromNow = new Date(today);
     twoWeeksFromNow.setDate(today.getDate() + 14);
     
-    // Filter games to upcoming + today (next 2 weeks)
+    // Filter games to upcoming + today (next 2 weeks) and by division
     const upcomingGames = Object.entries(gamesByDate)
+        .map(([date, games]) => {
+            const filteredGames = games.filter(game => game.homeDiv === params.div);
+            return [date, filteredGames] as [string, typeof games];
+        })
+        .filter(([_, games]) => games.length > 0)
         .filter(([dateStr]) => {
             const gameDate = new Date(dateStr + 'T00:00:00');
             return gameDate >= today && gameDate <= twoWeeksFromNow;
@@ -43,7 +49,7 @@ export default async function Page({ params }: { params: Params }) {
         return <>
             <H1>Upcoming Games</H1>
             <Card title="No upcoming games">
-                <p>No games scheduled for the next two weeks.</p>
+                <p>No games scheduled for the next two weeks in this division.</p>
             </Card>
         </>;
     }
