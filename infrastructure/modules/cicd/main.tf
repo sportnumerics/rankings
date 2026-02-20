@@ -321,11 +321,13 @@ resource "aws_iam_policy" "deployment_role_dev" {
         Action = [
           "ecs:DeregisterTaskDefinition"
         ]
-        # DeregisterTaskDefinition can't use aws:ResourceTag conditions reliably,
-        # so scope by task definition name pattern instead
-        Resource = [
-          "arn:aws:ecs:us-west-2:${local.account_id}:task-definition/*-dev:*"
-        ]
+        # DeregisterTaskDefinition requires Resource: "*" but we scope it by family name pattern
+        Resource = "*"
+        Condition = {
+          StringLike = {
+            "ecs:TaskDefinitionArn" = "arn:aws:ecs:us-west-2:${local.account_id}:task-definition/*-dev:*"
+          }
+        }
       },
       {
         Sid    = "ReadOnly"
