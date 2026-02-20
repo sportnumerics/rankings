@@ -177,12 +177,11 @@ resource "aws_iam_policy" "deployment_role_dev" {
         Sid    = "DevResourcesWrite"
         Effect = "Allow"
         Action = [
-          # ECS - write actions only (TagResource handled separately)
+          # ECS - write actions only (TagResource/DeregisterTaskDefinition handled separately)
           "ecs:CreateCluster",
           "ecs:DeleteCluster",
           "ecs:UpdateCluster",
           "ecs:RegisterTaskDefinition",
-          "ecs:DeregisterTaskDefinition",
           "ecs:RunTask",
           "ecs:StopTask",
           "ecs:UpdateService",
@@ -315,6 +314,18 @@ resource "aws_iam_policy" "deployment_role_dev" {
             "aws:TagKeys" = ["Stage", "App"]
           }
         }
+      },
+      {
+        Sid    = "DevECSDeregisterTaskDefinition"
+        Effect = "Allow"
+        Action = [
+          "ecs:DeregisterTaskDefinition"
+        ]
+        # DeregisterTaskDefinition can't use aws:ResourceTag conditions reliably,
+        # so scope by task definition name pattern instead
+        Resource = [
+          "arn:aws:ecs:us-west-2:${local.account_id}:task-definition/*-dev:*"
+        ]
       },
       {
         Sid    = "ReadOnly"
