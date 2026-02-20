@@ -321,13 +321,10 @@ resource "aws_iam_policy" "deployment_role_dev" {
         Action = [
           "ecs:DeregisterTaskDefinition"
         ]
-        # DeregisterTaskDefinition requires Resource: "*" but we scope it by family name pattern
+        # DeregisterTaskDefinition requires Resource: "*" and doesn't support conditions.
+        # Security: This role can only be assumed during dev deployments via GitHub OIDC,
+        # so the blast radius is limited to PR validation workflows.
         Resource = "*"
-        Condition = {
-          StringLike = {
-            "ecs:TaskDefinitionArn" = "arn:aws:ecs:us-west-2:${local.account_id}:task-definition/*-dev:*"
-          }
-        }
       },
       {
         Sid    = "ReadOnly"
