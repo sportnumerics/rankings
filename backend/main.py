@@ -1,3 +1,4 @@
+# Backend entry point for scraping and predictions
 import os
 import datetime
 import argparse
