@@ -151,7 +151,7 @@ export default async function Page({ params }: { params: Params }) {
 
         {Object.entries(byDay).map(([dayKey, dayRows]) => {
             const dayDate = dayRows[0].gameDate;
-            return <Card key={dayKey} title={labelForDay(dayDate, todayKey)} className="w-full">
+            return <Card key={dayKey} title={labelForDay(dayDate, todayKey)} className="w-full max-w-3xl">
                 <div className="overflow-x-auto">
                     <table className="w-full table-auto text-sm">
                         <thead className="text-left">
