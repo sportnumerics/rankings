@@ -212,12 +212,6 @@ resource "aws_iam_policy" "deployment_role_dev" {
           "logs:UntagResource",
           "logs:PutResourcePolicy",
           "logs:DeleteResourcePolicy",
-          # Scheduler - write actions only
-          "scheduler:CreateSchedule",
-          "scheduler:UpdateSchedule",
-          "scheduler:DeleteSchedule",
-          "scheduler:TagResource",
-          "scheduler:UntagResource",
           # Lambda - write actions only
           "lambda:CreateFunction",
           "lambda:UpdateFunctionCode",
@@ -325,6 +319,21 @@ resource "aws_iam_policy" "deployment_role_dev" {
         # Security: This role can only be assumed during dev deployments via GitHub OIDC,
         # so the blast radius is limited to PR validation workflows.
         Resource = "*"
+      },
+      {
+        Sid    = "DevSchedulerActions"
+        Effect = "Allow"
+        Action = [
+          "scheduler:CreateSchedule",
+          "scheduler:UpdateSchedule",
+          "scheduler:DeleteSchedule",
+          "scheduler:TagResource",
+          "scheduler:UntagResource"
+        ]
+        # Scope to schedules ending in -dev by ARN pattern
+        Resource = [
+          "arn:aws:scheduler:us-west-2:${local.account_id}:schedule/*/*-dev"
+        ]
       },
       {
         Sid    = "ReadOnly"
