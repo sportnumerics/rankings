@@ -135,47 +135,17 @@ jobs:
           role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role-dev
           role-session-name: RankingsPRValidation
       
-      - name: Get task definition ARN
-        id: task-def
-        run: |
-          TASK_DEF=$(aws ecs list-task-definitions \
-            --family-prefix rankings-backend-dev \
-            --sort DESC \
-            --max-items 1 \
-            --query 'taskDefinitionArns[0]' \
-            --output text)
-          echo "arn=$TASK_DEF" >> $GITHUB_OUTPUT
-      
-      - name: Get subnets
-        id: subnets
-        run: |
-          SUBNETS=$(aws ec2 describe-subnets \
-            --filters "Name=default-for-az,Values=true" \
-            --query 'Subnets[*].SubnetId' \
-            --output json | jq -c .)
-          echo "list=$SUBNETS" >> $GITHUB_OUTPUT
-      
       - name: Trigger backend ECS task with SCRAPE_LIMIT
         id: run-task
         run: |
-          TASK_ARN=$(aws ecs run-task \
-            --cluster rankings-backend-dev \
-            --task-definition ${{ steps.task-def.outputs.arn }} \
-            --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=${{ steps.subnets.outputs.list }},assignPublicIp=ENABLED}" \
-            --overrides '{
-              "containerOverrides": [{
-                "name": "rankings-backend",
-                "command": ["all", "--all-sources", "--bucket-url", "s3://sportnumerics-rankings-bucket-dev/data"],
-                "environment": [
-                  {"name": "SCRAPE_LIMIT", "value": "10"}
-                ]
-              }]
-            }' \
-            --query 'tasks[0].taskArn' \
-            --output text)
+          TASK_ARN=$(SCRAPE_LIMIT=10 ./backend/run.sh dev | jq -r '.tasks[0].taskArn')
           
-          echo "task_arn=$TASK_ARN" >> $GITHUB_OUTPUT
+          if [ -z "$TASK_ARN" ] || [ "$TASK_ARN" = "null" ]; then
+            echo "Failed to start backend task."
+            exit 1
+          fi
+          
+          echo "task_arn=$TASK_ARN" >> "$GITHUB_OUTPUT"
           echo "Triggered task: $TASK_ARN"
       
       - name: Wait for backend task to complete
