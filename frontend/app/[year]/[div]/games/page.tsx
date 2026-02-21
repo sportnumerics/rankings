@@ -5,8 +5,9 @@ import Link from "@/app/components/Link";
 import { NotFoundError } from "@/app/server/source";
 import { getDiv } from "@/app/server/divs";
 import { notFound } from "next/navigation";
-import { getTeamRatings } from "@/app/server/teams";
+import { getRankedTeams, getTeamRatings } from "@/app/server/teams";
 import { TeamRating } from "@/app/server/types";
+import Rank from "@/app/components/Rank";
 
 interface Params {
     year: string;
@@ -119,7 +120,10 @@ export default async function Page({ params }: { params: Params }) {
         throw err;
     }
 
-    const { body: ratings } = await getTeamRatings({ year: params.year });
+    const [{ body: ratings }, { body: rankedTeams }] = await Promise.all([
+        getTeamRatings({ year: params.year }),
+        getRankedTeams({ year: params.year, div: params.div }),
+    ]);
 
     const now = new Date();
     const todayKey = dayKeyInTz(now);
@@ -187,18 +191,18 @@ export default async function Page({ params }: { params: Params }) {
                                     <td className="py-1 pr-2 break-words">
                                         {game.awayTeamId ? (
                                             <Link href={`/${params.year}/teams/${game.awayTeamId}`} className="font-semibold">
-                                                {game.awayTeam}
+                                                <Rank rank={rankedTeams[game.awayTeamId]?.rank} />{game.awayTeam}
                                             </Link>
                                         ) : (
-                                            <span className="font-semibold">{game.awayTeam}</span>
+                                            <span className="font-semibold"><Rank rank={rankedTeams[game.awayTeamId]?.rank} />{game.awayTeam}</span>
                                         )}
                                         <span className="mx-2 text-gray-500">@</span>
                                         {game.homeTeamId ? (
                                             <Link href={`/${params.year}/teams/${game.homeTeamId}`} className="font-semibold">
-                                                {game.homeTeam}
+                                                <Rank rank={rankedTeams[game.homeTeamId]?.rank} />{game.homeTeam}
                                             </Link>
                                         ) : (
-                                            <span className="font-semibold">{game.homeTeam}</span>
+                                            <span className="font-semibold"><Rank rank={rankedTeams[game.homeTeamId]?.rank} />{game.homeTeam}</span>
                                         )}
                                     </td>
                                     <td className="py-1 whitespace-nowrap">
