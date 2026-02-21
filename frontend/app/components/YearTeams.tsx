@@ -31,7 +31,11 @@ export default async function YearTeams({ params: { year } }: { params: HasYear 
                 <H2>{div.name}</H2>
                 <div className="flex flex-row">
                     <div>
-                        <H3><Link href={`/${year}/${div.id}/teams`}>Top Teams</Link></H3>
+                        <H3>
+                            <Link href={`/${year}/${div.id}/teams`}>Top Teams</Link>
+                            <span className="mx-2 text-gray-400">|</span>
+                            <Link href={`/${year}/${div.id}/games`}>Upcoming Games</Link>
+                        </H3>
                         <TeamsTable teams={div.teams.slice(0, 5)} params={{ year, div: div.id }} />
                     </div>
                     {divPlayers.length > 0 && <div className="hidden md:block">
