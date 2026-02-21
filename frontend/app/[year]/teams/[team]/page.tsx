@@ -78,7 +78,7 @@ export default async function Page({ params }: { params: Params }) {
             <H2>{div.name}</H2>
             <ExternalLink href={schedule.team.schedule.url} />
         </div>
-        <Card title="Schedule" className="w-full max-w-3xl">
+        <Card title="Schedule" className="w-full max-w-2xl">
             <Table>
                 <TableHeader><tr><th>Date</th><th>Opponent</th><th>Result</th></tr></TableHeader>
                 <tbody>
@@ -98,7 +98,7 @@ export default async function Page({ params }: { params: Params }) {
                 </tbody>
             </Table>
         </Card>
-        <PlayersCard title="Top Scoring Players" players={rankedPlayers.slice(0, 20)} params={params} cardClassName="w-full max-w-3xl" />
+        <PlayersCard title="Top Scoring Players" players={rankedPlayers.slice(0, 20)} params={params} cardClassName="w-full max-w-2xl" />
         <LastUpdated lastModified={lastModified} />
     </>
 }
