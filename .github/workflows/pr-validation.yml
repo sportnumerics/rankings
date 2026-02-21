@@ -116,13 +116,100 @@ jobs:
       
       - name: Deploy backend
         run: ./deploy.sh dev
+
+  # Populate dev with limited data (scrape + predict)
+  populate-dev-data:
+    name: Populate Dev Data
+    runs-on: ubuntu-latest
+    needs: [detect-changes, deploy-backend]
+    if: needs.detect-changes.outputs.backend == 'true'
+    environment: dev
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
       
-      - name: Wait for ECS service stability
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role-dev
+          role-session-name: RankingsPRValidation
+      
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Set year
+        id: set-year
+        run: echo "year=$(date +%Y)" >> $GITHUB_OUTPUT
+      
+      - name: Build backend container
+        run: docker build --platform linux/amd64 -t rankings-backend:dev-populate .
+      
+      - name: Create output directory
+        run: mkdir -p out
+      
+      - name: Scrape MCLA teams
         run: |
-          aws ecs wait services-stable \
-            --cluster rankings-ecs-cluster-dev \
-            --services rankings-backend-service-dev \
-            --region us-west-2
+          docker run --rm \
+            -v $(pwd)/out:/app/out \
+            --entrypoint uv \
+            rankings-backend:dev-populate \
+            run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla teams
+      
+      - name: Scrape MCLA schedules (limited to 10 teams)
+        run: |
+          docker run --rm \
+            -v $(pwd)/out:/app/out \
+            --entrypoint uv \
+            rankings-backend:dev-populate \
+            run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla schedules --limit 10
+      
+      - name: Scrape NCAA teams
+        run: |
+          docker run --rm \
+            -v $(pwd)/out:/app/out \
+            --entrypoint uv \
+            rankings-backend:dev-populate \
+            run main.py --year ${{ steps.set-year.outputs.year }} scrape --source ncaa teams
+      
+      - name: Scrape NCAA schedules (limited to 10 teams)
+        run: |
+          docker run --rm \
+            -v $(pwd)/out:/app/out \
+            --entrypoint uv \
+            rankings-backend:dev-populate \
+            run main.py --year ${{ steps.set-year.outputs.year }} scrape --source ncaa schedules --limit 10
+      
+      - name: Run predictions
+        run: |
+          docker run --rm \
+            -v $(pwd)/out:/app/out \
+            --entrypoint uv \
+            rankings-backend:dev-populate \
+            run main.py --year ${{ steps.set-year.outputs.year }} predict
+      
+      - name: Sync to dev S3
+        run: |
+          docker run --rm \
+            -v $(pwd)/out:/app/out \
+            -e AWS_REGION=$AWS_REGION \
+            -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+            -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+            -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
+            --entrypoint uv \
+            rankings-backend:dev-populate \
+            run main.py sync --bucket-url s3://sportnumerics-rankings-bucket-dev/data
+      
+      - name: Upload output artifacts (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dev-populate-output
+          path: backend/out/
+          if-no-files-found: ignore
 
   # Deploy frontend to dev environment
   deploy-frontend:
@@ -171,12 +258,13 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: [detect-changes, deploy-backend, deploy-frontend]
+    needs: [detect-changes, deploy-backend, populate-dev-data, deploy-frontend]
     # Run if backend OR frontend changed (using always() to not skip if either deploy was skipped)
     if: |
       always() && 
       (needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.frontend == 'true') &&
       (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped') &&
+      (needs.populate-dev-data.result == 'success' || needs.populate-dev-data.result == 'skipped') &&
       (needs.deploy-frontend.result == 'success' || needs.deploy-frontend.result == 'skipped')
     defaults:
       run:
@@ -214,7 +302,7 @@ jobs:
   post-summary:
     name: Post Summary
     runs-on: ubuntu-latest
-    needs: [detect-changes, backend-unit-tests, frontend-unit-tests, deploy-backend, deploy-frontend, e2e-tests]
+    needs: [detect-changes, backend-unit-tests, frontend-unit-tests, deploy-backend, populate-dev-data, deploy-frontend, e2e-tests]
     if: always()
     steps:
       - name: Comment on PR
@@ -227,6 +315,7 @@ jobs:
             const backendTests = '${{ needs.backend-unit-tests.result }}';
             const frontendTests = '${{ needs.frontend-unit-tests.result }}';
             const backendDeploy = '${{ needs.deploy-backend.result }}';
+            const populateDevData = '${{ needs.populate-dev-data.result }}';
             const frontendDeploy = '${{ needs.deploy-frontend.result }}';
             const e2eTests = '${{ needs.e2e-tests.result }}';
             
@@ -242,7 +331,8 @@ jobs:
             if (backendChanged) {
               body += '### Backend\n';
               body += `- ${statusIcon(backendTests)} Unit Tests\n`;
-              body += `- ${statusIcon(backendDeploy)} Deploy to Dev\n\n`;
+              body += `- ${statusIcon(backendDeploy)} Deploy to Dev\n`;
+              body += `- ${statusIcon(populateDevData)} Populate Dev Data (scrape 10 teams/div + predict)\n\n`;
             }
             
             if (frontendChanged) {
@@ -261,7 +351,7 @@ jobs:
             }
             
             const allSuccess = 
-              (!backendChanged || (backendTests === 'success' && backendDeploy === 'success')) &&
+              (!backendChanged || (backendTests === 'success' && backendDeploy === 'success' && populateDevData === 'success')) &&
               (!frontendChanged || (frontendTests === 'success' && frontendDeploy === 'success')) &&
               (!(backendChanged || frontendChanged) || e2eTests === 'success');
             
