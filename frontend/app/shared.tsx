@@ -10,8 +10,8 @@ export function ExternalLink({ href }: { href: string }) {
     </div>;
 }
 
-export function Card({ children, title }: PropsWithChildren<{ title?: string }>) {
-    return <div className="border rounded my-4 p-4 shadow-md w-fit min-w-48 md:min-w-96 min-h-18">
+export function Card({ children, title, className }: PropsWithChildren<{ title?: string, className?: string }>) {
+    return <div className={classNames("border rounded my-4 p-4 shadow-md w-fit min-w-48 md:min-w-96 min-h-18", className)}>
         {title && <H2>{title}</H2>}
         {children}
     </div>
