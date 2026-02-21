@@ -188,18 +188,6 @@ resource "aws_iam_policy" "deployment_role_dev" {
           "ecs:CreateService",
           "ecs:DeleteService",
           "ecs:UntagResource",
-          # ECR - write actions only (read actions are in ReadOnly)
-          "ecr:CreateRepository",
-          "ecr:DeleteRepository",
-          "ecr:PutImage",
-          "ecr:BatchDeleteImage",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "ecr:PutLifecyclePolicy",
-          "ecr:DeleteLifecyclePolicy",
-          "ecr:TagResource",
-          "ecr:UntagResource",
           # Logs - write actions only
           "logs:CreateLogGroup",
           "logs:DeleteLogGroup",
@@ -333,6 +321,28 @@ resource "aws_iam_policy" "deployment_role_dev" {
         # Scope to schedules ending in -dev by ARN pattern
         Resource = [
           "arn:aws:scheduler:us-west-2:${local.account_id}:schedule/*/*-dev"
+        ]
+      },
+      {
+        Sid    = "DevECRActions"
+        Effect = "Allow"
+        Action = [
+          "ecr:CreateRepository",
+          "ecr:DeleteRepository",
+          "ecr:PutImage",
+          "ecr:BatchDeleteImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload",
+          "ecr:PutLifecyclePolicy",
+          "ecr:DeleteLifecyclePolicy",
+          "ecr:TagResource",
+          "ecr:UntagResource",
+          "ecr:BatchCheckLayerAvailability"
+        ]
+        # Scope to ECR repositories ending in -dev
+        Resource = [
+          "arn:aws:ecr:us-west-2:${local.account_id}:repository/*-dev"
         ]
       },
       {
