@@ -3,6 +3,8 @@ import { getGames } from "@/app/server/games";
 import { H1, H2, Card } from "@/app/shared";
 import Link from "@/app/components/Link";
 import { NotFoundError } from "@/app/server/source";
+import { getDiv } from "@/app/server/divs";
+import { notFound } from "next/navigation";
 
 interface Params {
     year: string;
@@ -10,6 +12,15 @@ interface Params {
 }
 
 export default async function Page({ params }: { params: Params }) {
+    try {
+        await getDiv(params.div);
+    } catch (err) {
+        if (err instanceof NotFoundError) {
+            notFound();
+        }
+        throw err;
+    }
+
     let gamesByDate;
     
     try {
