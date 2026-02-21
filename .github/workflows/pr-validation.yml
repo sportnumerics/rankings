@@ -152,11 +152,33 @@ jobs:
         run: |
           echo "Waiting for task ${{ steps.run-task.outputs.task_arn }} to complete..."
           TASK_ARN="${{ steps.run-task.outputs.task_arn }}"
+          TASK_ID="${TASK_ARN##*/}"
+          LOG_GROUP="/rankings/dev/backend"
+          LOG_STREAM_PREFIX="rankings-backend/rankings-backend/${TASK_ID}"
           MAX_POLLS=60
           POLL_DELAY=10
           POLL=0
+          LAST_TS=$(( $(date +%s) * 1000 ))
+
+          print_new_logs() {
+            EVENTS_JSON=$(aws logs filter-log-events \
+              --log-group-name "$LOG_GROUP" \
+              --log-stream-name-prefix "$LOG_STREAM_PREFIX" \
+              --start-time "$LAST_TS" \
+              --limit 200 \
+              --output json 2>/dev/null || true)
+
+            EVENT_COUNT=$(echo "$EVENTS_JSON" | jq -r '.events | length')
+            if [ "$EVENT_COUNT" -gt 0 ]; then
+              echo "$EVENTS_JSON" | jq -r '.events[] | "[task-log] \(.message)"'
+              NEWEST_TS=$(echo "$EVENTS_JSON" | jq -r '[.events[].timestamp] | max')
+              LAST_TS=$((NEWEST_TS + 1))
+            fi
+          }
 
           while true; do
+            print_new_logs
+
             STATUS=$(aws ecs describe-tasks \
               --cluster rankings-backend-dev \
               --tasks "$TASK_ARN" \
@@ -166,6 +188,7 @@ jobs:
             echo "Current task status: $STATUS"
 
             if [ "$STATUS" = "STOPPED" ]; then
+              print_new_logs
               break
             fi
 

@@ -18,4 +18,6 @@ docker buildx build \
     --push \
     --platform linux/arm64,linux/amd64 \
     --tag "$image_url" \
+    --cache-from "type=registry,ref=${repository}:buildcache" \
+    --cache-to "type=registry,ref=${repository}:buildcache,mode=max" \
     .
