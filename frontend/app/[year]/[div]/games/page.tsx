@@ -5,6 +5,8 @@ import Link from "@/app/components/Link";
 import { NotFoundError } from "@/app/server/source";
 import { getDiv } from "@/app/server/divs";
 import { notFound } from "next/navigation";
+import { getTeamRatings } from "@/app/server/teams";
+import { TeamRating } from "@/app/server/types";
 
 interface Params {
     year: string;
@@ -82,6 +84,15 @@ function scoreString(value?: { awayScore?: number; homeScore?: number; away_scor
     return `${away}-${home}`;
 }
 
+function predictScore(away?: TeamRating, home?: TeamRating) {
+    if (!away || !home) return null;
+    if (!away.group || !home.group || away.group !== home.group) return null;
+
+    const awayScore = Math.max(0, Math.round(away.offense - home.defense));
+    const homeScore = Math.max(0, Math.round(home.offense - away.defense));
+    return `${awayScore}-${homeScore}`;
+}
+
 export default async function Page({ params }: { params: Params }) {
     try {
         await getDiv(params.div);
@@ -108,6 +119,8 @@ export default async function Page({ params }: { params: Params }) {
         throw err;
     }
 
+    const { body: ratings } = await getTeamRatings({ year: params.year });
+
     const now = new Date();
     const todayKey = dayKeyInTz(now);
     const twoWeeksFromNow = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
@@ -123,7 +136,12 @@ export default async function Page({ params }: { params: Params }) {
 
             return games
                 .filter(game => game.homeDiv === params.div)
-                .map(game => ({ gameDate: parsedDate, dayKey, game }));
+                .map(game => {
+                    const awayRating = ratings[game.awayTeamId];
+                    const homeRating = ratings[game.homeTeamId];
+                    const projection = predictScore(awayRating, homeRating);
+                    return { gameDate: parsedDate, dayKey, game, projection };
+                });
         })
         .sort((a, b) => {
             if (a.dayKey !== b.dayKey) return a.dayKey.localeCompare(b.dayKey);
@@ -162,9 +180,8 @@ export default async function Page({ params }: { params: Params }) {
                             </tr>
                         </thead>
                         <tbody>
-                            {dayRows.map(({ game, gameDate }, idx) => {
+                            {dayRows.map(({ game, gameDate, projection }, idx) => {
                                 const result = scoreString(game.result as any);
-                                const prediction = scoreString((game as any).prediction);
                                 return <tr key={`${dayKey}-${game.awayTeam || 'away'}-${game.homeTeam || 'home'}-${idx}`}>
                                     <td className="py-1 pr-2 text-gray-600 whitespace-nowrap">{timeLabel(gameDate)}</td>
                                     <td className="py-1 pr-2 break-words">
@@ -187,8 +204,8 @@ export default async function Page({ params }: { params: Params }) {
                                     <td className="py-1 whitespace-nowrap">
                                         {result ? (
                                             <span className="text-gray-900">{result}</span>
-                                        ) : prediction ? (
-                                            <span className="text-slate-400 italic">{prediction}<sup>*</sup></span>
+                                        ) : projection ? (
+                                            <span className="text-slate-400 italic">{projection}<sup>*</sup></span>
                                         ) : (
                                             <span className="text-gray-400">—</span>
                                         )}
