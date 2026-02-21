@@ -2,7 +2,7 @@
 import { useContext, useMemo } from "react";
 import { LinkProps, default as NextLink } from "next/link";
 import { useLocation } from "../hooks";
-import { HasDivision, HasType, HasYear, Location, linkToDiv, linkToPlayers, linkToTeams, linkToYear } from "../navigation";
+import { HasDivision, HasType, HasYear, Location, linkToDiv, linkToPlayers, linkToTeams, linkToGames, linkToYear } from "../navigation";
 import { Bars3Icon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { Division, Year } from "../server/types";
 import Overlay, { OverlayContext, OverlayControlProps } from "./Overlay";
@@ -14,6 +14,7 @@ export default function Header({ years, divs, currentYear }: Props) {
     const location = useLocation();
     const playersHref = linkToPlayers(location, currentYear);
     const teamsHref = linkToTeams(location, currentYear);
+    const gamesHref = linkToGames(location, currentYear);
     const type = (location as HasType).type;
     const division = divs.find(div => div.id === (location as HasDivision).div);
     return <HeaderPresenter
@@ -24,10 +25,11 @@ export default function Header({ years, divs, currentYear }: Props) {
         currentYear={currentYear}
         type={type}
         teamsHref={teamsHref}
-        playersHref={playersHref} />
+        playersHref={playersHref}
+        gamesHref={gamesHref} />
 }
 
-function HeaderPresenter({ years, divs, location, division, currentYear, type, teamsHref, playersHref }: { years: Year[], divs: Division[], location: Location, division?: Division, currentYear: string, type: string, teamsHref?: string, playersHref?: string }) {
+function HeaderPresenter({ years, divs, location, division, currentYear, type, teamsHref, playersHref, gamesHref }: { years: Year[], divs: Division[], location: Location, division?: Division, currentYear: string, type: string, teamsHref?: string, playersHref?: string, gamesHref?: string }) {
     return <NavBar>
         <Nav>
             <div className="text-2xl font-black tracking-widest italic"><NavLink href="/">S#</NavLink></div>
@@ -44,9 +46,10 @@ function HeaderPresenter({ years, divs, location, division, currentYear, type, t
                 return <DropdownItem key={div.id} href={href} isActive={!href} >{div.name}</DropdownItem>
             })}
         </DropdownNav>
-        {type && <DropdownNav content={type.includes("player") ? "Players" : "Teams"}>
+        {type && <DropdownNav content={type.includes("player") ? "Players" : type.includes("game") ? "Games" : "Teams"}>
             <DropdownItem isActive={!teamsHref} href={teamsHref}>Teams</DropdownItem>
             <DropdownItem isActive={!playersHref} href={playersHref}>Players</DropdownItem>
+            <DropdownItem isActive={!gamesHref} href={gamesHref}>Games</DropdownItem>
         </DropdownNav>}
         <Nav>
             <NavLink href="/about">About</NavLink>

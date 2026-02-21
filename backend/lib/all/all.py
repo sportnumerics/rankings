@@ -2,6 +2,7 @@
 from ..shared.types import PredictArgs, ScrapeArgs, SyncArgs
 from ..scrape import scrape
 from ..predict import predict
+from ..games import games
 from ..sync import sync
 from ..shared import shared
 import logging
@@ -15,13 +16,21 @@ def run(args):
 
     for year in shared.years(args.year):
         for source in sources:
-            scrape.scrape_schedules(
-                ScrapeArgs(source=source, year=year, out_dir=args.out_dir))
+            scrape_args = ScrapeArgs(source=source, year=year, out_dir=args.out_dir)
+            if args.limit:
+                scrape_args.limit = args.limit
+                LOGGER.info(f"Limiting scrape to {args.limit} teams per source")
+            
+            scrape.scrape_schedules(scrape_args)
 
         predict.predict(
             PredictArgs(input_dir=args.out_dir,
                         year=year,
                         out_dir=args.out_dir))
+
+        # Generate consolidated games file
+        games.generate_games_file(
+            type('GamesArgs', (), {'year': year, 'input_dir': args.out_dir})())
 
         if args.bucket_url:
             sync.sync(

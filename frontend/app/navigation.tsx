@@ -20,6 +20,10 @@ export interface TeamsList extends HasType {
     type: "teams";
 }
 
+export interface GamesList extends HasType {
+    type: "games";
+}
+
 export interface Game extends HasType {
     type: "game";
     game: string;
@@ -43,7 +47,7 @@ export interface Loading {
     loading: true;
 }
 
-export type Location = PlayersList | TeamsList | Game | Player | Team | Home | Loading;
+export type Location = PlayersList | TeamsList | GamesList | Game | Player | Team | Home | Loading;
 
 function isPlayersList(location: Location): location is PlayersList {
     return (location as PlayersList).type === "players";
@@ -51,6 +55,10 @@ function isPlayersList(location: Location): location is PlayersList {
 
 function isTeamsList(location: Location): location is TeamsList {
     return (location as TeamsList).type === "teams";
+}
+
+function isGamesList(location: Location): location is GamesList {
+    return (location as GamesList).type === "games";
 }
 
 export function isGame(location: Location): location is Game {
@@ -95,6 +103,8 @@ export function linkToYear(year: string, location: Location): string | null {
         return `/${year}/${location.div}/players`;
     } else if (isTeamsList(location) || isGame(location)) {
         return `/${year}/${location.div}/teams`;
+    } else if (isGamesList(location)) {
+        return `/${year}/${location.div}/games`;
     } else if (isPlayer(location)) {
         return `/${year}/players/${location.player}`;
     } else if (isTeam(location)) {
@@ -109,6 +119,8 @@ export function linkToDiv(div: string, location: Location, currentYear: string):
         return null;
     } else if (isPlayersList(location)) {
         return `/${location.year}/${div}/players`;
+    } else if (isGamesList(location)) {
+        return `/${location.year}/${div}/games`;
     } else if (hasYear(location)) {
         return `/${location.year}/${div}/teams`;
     } else {
@@ -133,6 +145,16 @@ export function linkToTeams(location: Location, currentYear: string): string | u
         return `/${location.year}/${location.div}/teams`;
     } else if (hasYear(location)) {
         return `/${location.year}`;
+    } else {
+        return `/${currentYear}`;
+    }
+}
+
+export function linkToGames(location: Location, currentYear: string): string | undefined {
+    if (isGamesList(location)) {
+        return undefined;
+    } else if (hasYear(location) && hasDiv(location)) {
+        return `/${location.year}/${location.div}/games`;
     } else {
         return `/${currentYear}`;
     }

@@ -5,12 +5,12 @@ import { HasDivision } from '../navigation';
 import { RankedPlayer } from '../server/types';
 import EmptyCard from './EmptyCard';
 
-export default function PlayersCard({ title, players, showTeam, hideRank, params }: { title?: string, players: RankedPlayer[], showTeam?: boolean, hideRank?: boolean, params: HasDivision }) {
+export default function PlayersCard({ title, players, showTeam, hideRank, params, cardClassName }: { title?: string, players: RankedPlayer[], showTeam?: boolean, hideRank?: boolean, params: HasDivision, cardClassName?: string }) {
     if (players.length === 0) {
         return <EmptyCard text='No player rankings yet...' />;
     }
 
-    return <Card title={title}>
+    return <Card title={title} className={cardClassName}>
         <PlayersTable players={players} showTeam={showTeam} hideRank={hideRank} params={params} />
     </Card>;
 }

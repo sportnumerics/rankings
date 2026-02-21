@@ -68,6 +68,8 @@ function getType(pathname: string) {
         return 'players';
     } else if (pathname.endsWith('teams')) {
         return 'teams';
+    } else if (pathname.endsWith('games')) {
+        return 'games';
     } else if (pathname.includes('players')) {
         return 'player';
     } else if (pathname.includes('teams')) {

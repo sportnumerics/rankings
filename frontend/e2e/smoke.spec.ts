@@ -25,3 +25,9 @@ test('missing team schedule shows friendly message', async ({ page }) => {
   await page.goto('/2024/teams/definitely-not-a-team');
   await expect(page.getByRole('heading', { name: /team schedule not found/i })).toBeVisible();
 });
+
+test('games page loads', async ({ page }) => {
+  await page.goto('/2026/mcla1/games');
+  await expect(page).toHaveTitle(/Sportnumerics/i);
+  await expect(page.getByRole('heading', { name: 'Upcoming Games', exact: true })).toBeVisible();
+});
