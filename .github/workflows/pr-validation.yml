@@ -166,9 +166,9 @@ jobs:
               --log-stream-name-prefix "$LOG_STREAM_PREFIX" \
               --start-time "$LAST_TS" \
               --limit 200 \
-              --output json 2>/dev/null || true)
+              --output json 2>/dev/null || echo '{"events":[]}')
 
-            EVENT_COUNT=$(echo "$EVENTS_JSON" | jq -r '.events | length')
+            EVENT_COUNT=$(echo "$EVENTS_JSON" | jq -r '.events | length // 0')
             if [ "$EVENT_COUNT" -gt 0 ]; then
               echo "$EVENTS_JSON" | jq -r '.events[] | "[task-log] \(.message)"'
               NEWEST_TS=$(echo "$EVENTS_JSON" | jq -r '[.events[].timestamp] | max')

@@ -11,6 +11,10 @@ interface Params {
     div: string;
 }
 
+function parseGameDateKey(dateStr: string): Date {
+    return dateStr.includes('T') ? new Date(dateStr) : new Date(`${dateStr}T00:00:00`);
+}
+
 export default async function Page({ params }: { params: Params }) {
     try {
         await getDiv(params.div);
@@ -51,7 +55,10 @@ export default async function Page({ params }: { params: Params }) {
         })
         .filter(([_, games]) => games.length > 0)
         .filter(([dateStr]) => {
-            const gameDate = new Date(dateStr + 'T00:00:00');
+            const gameDate = parseGameDateKey(dateStr);
+            if (Number.isNaN(gameDate.getTime())) {
+                return false;
+            }
             return gameDate >= today && gameDate <= twoWeeksFromNow;
         })
         .sort(([dateA], [dateB]) => dateA.localeCompare(dateB));
@@ -70,7 +77,10 @@ export default async function Page({ params }: { params: Params }) {
         <p className="text-sm text-gray-600 mb-4">Next 14 days</p>
         
         {upcomingGames.map(([date, games]) => {
-            const gameDate = new Date(date + 'T00:00:00');
+            const gameDate = parseGameDateKey(date);
+            if (Number.isNaN(gameDate.getTime())) {
+                return null;
+            }
             const isToday = gameDate.toDateString() === today.toDateString();
             const dayOfWeek = gameDate.toLocaleDateString('en-US', { weekday: 'long' });
             const formattedDate = gameDate.toLocaleDateString('en-US', { 
@@ -89,13 +99,21 @@ export default async function Page({ params }: { params: Params }) {
                         <Card key={idx}>
                             <div className="flex items-center justify-between">
                                 <div className="flex-1">
-                                    <Link href={`/${params.year}/teams/${game.awayTeamId}`} className="font-semibold">
-                                        {game.awayTeam}
-                                    </Link>
+                                    {game.awayTeamId ? (
+                                        <Link href={`/${params.year}/teams/${game.awayTeamId}`} className="font-semibold">
+                                            {game.awayTeam}
+                                        </Link>
+                                    ) : (
+                                        <span className="font-semibold">{game.awayTeam}</span>
+                                    )}
                                     <span className="mx-2 text-gray-500">@</span>
-                                    <Link href={`/${params.year}/teams/${game.homeTeamId}`} className="font-semibold">
-                                        {game.homeTeam}
-                                    </Link>
+                                    {game.homeTeamId ? (
+                                        <Link href={`/${params.year}/teams/${game.homeTeamId}`} className="font-semibold">
+                                            {game.homeTeam}
+                                        </Link>
+                                    ) : (
+                                        <span className="font-semibold">{game.homeTeam}</span>
+                                    )}
                                 </div>
                                 {game.result && (
                                     <div className="text-sm text-gray-600">
