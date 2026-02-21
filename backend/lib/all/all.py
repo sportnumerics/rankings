@@ -16,8 +16,12 @@ def run(args):
 
     for year in shared.years(args.year):
         for source in sources:
-            scrape.scrape_schedules(
-                ScrapeArgs(source=source, year=year, out_dir=args.out_dir))
+            scrape_args = ScrapeArgs(source=source, year=year, out_dir=args.out_dir)
+            if args.limit:
+                scrape_args.limit = args.limit
+                LOGGER.info(f"Limiting scrape to {args.limit} teams per source")
+            
+            scrape.scrape_schedules(scrape_args)
 
         predict.predict(
             PredictArgs(input_dir=args.out_dir,

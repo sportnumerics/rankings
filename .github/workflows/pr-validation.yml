@@ -117,17 +117,14 @@ jobs:
       - name: Deploy backend
         run: ./deploy.sh dev
 
-  # Populate dev with limited data (scrape + predict)
-  populate-dev-data:
-    name: Populate Dev Data
+  # Run backend task to populate dev with limited data
+  run-backend:
+    name: Run Backend (Limited Scrape)
     runs-on: ubuntu-latest
     needs: [detect-changes, deploy-backend]
     if: needs.detect-changes.outputs.backend == 'true'
     environment: dev
     timeout-minutes: 30
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - uses: actions/checkout@v4
       
@@ -138,78 +135,70 @@ jobs:
           role-to-assume: arn:aws:iam::265978616089:role/rankings-deployment-role-dev
           role-session-name: RankingsPRValidation
       
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Set year
-        id: set-year
-        run: echo "year=$(date +%Y)" >> $GITHUB_OUTPUT
-      
-      - name: Build backend container
-        run: docker build --platform linux/amd64 -t rankings-backend:dev-populate .
-      
-      - name: Create output directory
-        run: mkdir -p out
-      
-      - name: Scrape MCLA teams
+      - name: Get task definition ARN
+        id: task-def
         run: |
-          docker run --rm \
-            -v $(pwd)/out:/app/out \
-            --entrypoint uv \
-            rankings-backend:dev-populate \
-            run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla teams
+          TASK_DEF=$(aws ecs list-task-definitions \
+            --family-prefix rankings-backend-dev \
+            --sort DESC \
+            --max-items 1 \
+            --query 'taskDefinitionArns[0]' \
+            --output text)
+          echo "arn=$TASK_DEF" >> $GITHUB_OUTPUT
       
-      - name: Scrape MCLA schedules (limited to 10 teams)
+      - name: Get subnets
+        id: subnets
         run: |
-          docker run --rm \
-            -v $(pwd)/out:/app/out \
-            --entrypoint uv \
-            rankings-backend:dev-populate \
-            run main.py --year ${{ steps.set-year.outputs.year }} scrape --source mcla schedules --limit 10
+          SUBNETS=$(aws ec2 describe-subnets \
+            --filters "Name=default-for-az,Values=true" \
+            --query 'Subnets[*].SubnetId' \
+            --output json | jq -c .)
+          echo "list=$SUBNETS" >> $GITHUB_OUTPUT
       
-      - name: Scrape NCAA teams
+      - name: Trigger backend ECS task with SCRAPE_LIMIT
+        id: run-task
         run: |
-          docker run --rm \
-            -v $(pwd)/out:/app/out \
-            --entrypoint uv \
-            rankings-backend:dev-populate \
-            run main.py --year ${{ steps.set-year.outputs.year }} scrape --source ncaa teams
+          TASK_ARN=$(aws ecs run-task \
+            --cluster rankings-backend-dev \
+            --task-definition ${{ steps.task-def.outputs.arn }} \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=${{ steps.subnets.outputs.list }},assignPublicIp=ENABLED}" \
+            --overrides '{
+              "containerOverrides": [{
+                "name": "rankings-backend",
+                "command": ["all", "--all-sources", "--bucket-url", "s3://sportnumerics-rankings-bucket-dev/data"],
+                "environment": [
+                  {"name": "SCRAPE_LIMIT", "value": "10"}
+                ]
+              }]
+            }' \
+            --query 'tasks[0].taskArn' \
+            --output text)
+          
+          echo "task_arn=$TASK_ARN" >> $GITHUB_OUTPUT
+          echo "Triggered task: $TASK_ARN"
       
-      - name: Scrape NCAA schedules (limited to 10 teams)
+      - name: Wait for backend task to complete
         run: |
-          docker run --rm \
-            -v $(pwd)/out:/app/out \
-            --entrypoint uv \
-            rankings-backend:dev-populate \
-            run main.py --year ${{ steps.set-year.outputs.year }} scrape --source ncaa schedules --limit 10
-      
-      - name: Run predictions
-        run: |
-          docker run --rm \
-            -v $(pwd)/out:/app/out \
-            --entrypoint uv \
-            rankings-backend:dev-populate \
-            run main.py --year ${{ steps.set-year.outputs.year }} predict
-      
-      - name: Sync to dev S3
-        run: |
-          docker run --rm \
-            -v $(pwd)/out:/app/out \
-            -e AWS_REGION=$AWS_REGION \
-            -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-            -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-            -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
-            --entrypoint uv \
-            rankings-backend:dev-populate \
-            run main.py sync --bucket-url s3://sportnumerics-rankings-bucket-dev/data
-      
-      - name: Upload output artifacts (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-dev-populate-output
-          path: backend/out/
-          if-no-files-found: ignore
+          echo "Waiting for task ${{ steps.run-task.outputs.task_arn }} to complete..."
+          aws ecs wait tasks-stopped \
+            --cluster rankings-backend-dev \
+            --tasks ${{ steps.run-task.outputs.task_arn }} \
+            --max-attempts 60 \
+            --delay 10
+          
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster rankings-backend-dev \
+            --tasks ${{ steps.run-task.outputs.task_arn }} \
+            --query 'tasks[0].containers[0].exitCode' \
+            --output text)
+          
+          echo "Task exited with code: $EXIT_CODE"
+          
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "Backend task failed!"
+            exit 1
+          fi
 
   # Deploy frontend to dev environment
   deploy-frontend:
@@ -258,13 +247,13 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: [detect-changes, deploy-backend, populate-dev-data, deploy-frontend]
+    needs: [detect-changes, deploy-backend, run-backend, deploy-frontend]
     # Run if backend OR frontend changed (using always() to not skip if either deploy was skipped)
     if: |
       always() && 
       (needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.frontend == 'true') &&
       (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped') &&
-      (needs.populate-dev-data.result == 'success' || needs.populate-dev-data.result == 'skipped') &&
+      (needs.run-backend.result == 'success' || needs.run-backend.result == 'skipped') &&
       (needs.deploy-frontend.result == 'success' || needs.deploy-frontend.result == 'skipped')
     defaults:
       run:
@@ -302,7 +291,7 @@ jobs:
   post-summary:
     name: Post Summary
     runs-on: ubuntu-latest
-    needs: [detect-changes, backend-unit-tests, frontend-unit-tests, deploy-backend, populate-dev-data, deploy-frontend, e2e-tests]
+    needs: [detect-changes, backend-unit-tests, frontend-unit-tests, deploy-backend, run-backend, deploy-frontend, e2e-tests]
     if: always()
     steps:
       - name: Comment on PR
@@ -315,7 +304,7 @@ jobs:
             const backendTests = '${{ needs.backend-unit-tests.result }}';
             const frontendTests = '${{ needs.frontend-unit-tests.result }}';
             const backendDeploy = '${{ needs.deploy-backend.result }}';
-            const populateDevData = '${{ needs.populate-dev-data.result }}';
+            const runBackend = '${{ needs.run-backend.result }}';
             const frontendDeploy = '${{ needs.deploy-frontend.result }}';
             const e2eTests = '${{ needs.e2e-tests.result }}';
             
@@ -332,7 +321,7 @@ jobs:
               body += '### Backend\n';
               body += `- ${statusIcon(backendTests)} Unit Tests\n`;
               body += `- ${statusIcon(backendDeploy)} Deploy to Dev\n`;
-              body += `- ${statusIcon(populateDevData)} Populate Dev Data (scrape 10 teams/div + predict)\n\n`;
+              body += `- ${statusIcon(runBackend)} Run Backend (scrape 10 teams/div + predict + sync)\n\n`;
             }
             
             if (frontendChanged) {
@@ -351,7 +340,7 @@ jobs:
             }
             
             const allSuccess = 
-              (!backendChanged || (backendTests === 'success' && backendDeploy === 'success' && populateDevData === 'success')) &&
+              (!backendChanged || (backendTests === 'success' && backendDeploy === 'success' && runBackend === 'success')) &&
               (!frontendChanged || (frontendTests === 'success' && frontendDeploy === 'success')) &&
               (!(backendChanged || frontendChanged) || e2eTests === 'success');
             

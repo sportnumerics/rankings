@@ -1,6 +1,9 @@
 from . import all
 
 
+import os
+
+
 def add_parsers(parsers):
     all_parser = parsers.add_parser('all', help='scrape and predict')
     all_parser.add_argument('--out-dir',
@@ -17,4 +20,9 @@ def add_parsers(parsers):
     all_parser.add_argument('--all-sources',
                             action='store_true',
                             help='Scrape all available sources')
+    all_parser.add_argument(
+        '--limit',
+        default=os.environ.get('SCRAPE_LIMIT'),
+        help='Limit number of teams scraped per source (defaults to SCRAPE_LIMIT env var)'
+    )
     all_parser.set_defaults(func=all.run)
