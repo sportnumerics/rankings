@@ -153,12 +153,12 @@ export default async function Page({ params }: { params: Params }) {
             const dayDate = dayRows[0].gameDate;
             return <Card key={dayKey} title={labelForDay(dayDate, todayKey)}>
                 <div className="overflow-x-auto">
-                    <table className="table-fixed min-w-[28rem]">
+                    <table className="w-full table-auto text-sm">
                         <thead className="text-left">
                             <tr>
-                                <th className="w-24">Time</th>
-                                <th className="w-56">Matchup</th>
-                                <th className="w-28">Prediction / Result</th>
+                                <th className="w-20 pr-2">Time</th>
+                                <th className="pr-2">Matchup</th>
+                                <th className="w-16">Score</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -166,8 +166,8 @@ export default async function Page({ params }: { params: Params }) {
                                 const result = scoreString(game.result as any);
                                 const prediction = scoreString((game as any).prediction);
                                 return <tr key={`${dayKey}-${game.awayTeam || 'away'}-${game.homeTeam || 'home'}-${idx}`}>
-                                    <td className="py-1 pr-3 text-gray-600 whitespace-nowrap">{timeLabel(gameDate)}</td>
-                                    <td className="py-1 pr-3">
+                                    <td className="py-1 pr-2 text-gray-600 whitespace-nowrap">{timeLabel(gameDate)}</td>
+                                    <td className="py-1 pr-2 break-words">
                                         {game.awayTeamId ? (
                                             <Link href={`/${params.year}/teams/${game.awayTeamId}`} className="font-semibold">
                                                 {game.awayTeam}
