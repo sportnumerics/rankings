@@ -3,6 +3,18 @@ import source from "./source";
 import { Game } from "./types";
 import Data from './Data';
 
+export interface GameScore {
+    // camelCase (frontend-normalized)
+    homeScore?: number;
+    awayScore?: number;
+    // snake_case (raw backend JSON)
+    home_score?: number;
+    away_score?: number;
+    // team schedule style
+    points_for?: number;
+    points_against?: number;
+}
+
 export interface ScheduledGame {
     date: string;
     homeTeam: string;
@@ -12,10 +24,8 @@ export interface ScheduledGame {
     homeDiv?: string;
     sport?: string;
     source?: string;
-    result?: {
-        homeScore: number;
-        awayScore: number;
-    };
+    result?: GameScore;
+    prediction?: GameScore;
 }
 
 export type GamesByDate = Record<string, ScheduledGame[]>;

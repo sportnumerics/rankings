@@ -1,5 +1,5 @@
 'use server';
-import { getGames } from "@/app/server/games";
+import { GameScore, getGames } from "@/app/server/games";
 import { H1, Card } from "@/app/shared";
 import Link from "@/app/components/Link";
 import { NotFoundError } from "@/app/server/source";
@@ -75,7 +75,7 @@ function timeLabel(date: Date): string {
     }).format(date);
 }
 
-function scoreString(value?: { awayScore?: number; homeScore?: number; away_score?: number; home_score?: number; points_for?: number; points_against?: number; }) {
+function scoreString(value?: GameScore) {
     if (!value) return null;
 
     const away = value.awayScore ?? value.away_score ?? value.points_for;
@@ -185,7 +185,7 @@ export default async function Page({ params }: { params: Params }) {
                         </thead>
                         <tbody>
                             {dayRows.map(({ game, gameDate, projection }, idx) => {
-                                const result = scoreString(game.result as any);
+                                const result = scoreString(game.result);
                                 return <tr key={`${dayKey}-${game.awayTeam || 'away'}-${game.homeTeam || 'home'}-${idx}`}>
                                     <td className="py-1 pr-2 text-gray-600 whitespace-nowrap">{timeLabel(gameDate)}</td>
                                     <td className="py-1 pr-2 break-words">
