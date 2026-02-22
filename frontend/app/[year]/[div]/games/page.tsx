@@ -53,33 +53,36 @@ function labelForDay(date: Date, todayKey: string): string {
         : `${dayOfWeek}, ${formattedDate}`;
 }
 
-function timeLabel(date: Date): string {
-    const parts = new Intl.DateTimeFormat("en-US", {
-        timeZone: DISPLAY_TIMEZONE,
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-    }).formatToParts(date);
-
-    const hour = Number(parts.find(part => part.type === "hour")?.value ?? "0");
-    const minute = Number(parts.find(part => part.type === "minute")?.value ?? "0");
-
-    if (hour === 0 && minute === 0) {
+function timeLabel(dateString: string, source?: string): string {
+    // NCAA dates are date-only (no reliable local kickoff time), so omit.
+    if (source !== "mcla") {
         return "—";
     }
 
-    return new Intl.DateTimeFormat("en-US", {
-        timeZone: DISPLAY_TIMEZONE,
-        hour: "numeric",
-        minute: "2-digit",
-    }).format(date);
+    const match = dateString.match(/T(\d{2}):(\d{2})/);
+    if (!match) {
+        return "—";
+    }
+
+    const hour24 = Number(match[1]);
+    const minute = Number(match[2]);
+
+    if (hour24 === 0 && minute === 0) {
+        return "—";
+    }
+
+    const hour12 = hour24 % 12 || 12;
+    const ampm = hour24 >= 12 ? "PM" : "AM";
+    return `${hour12}:${String(minute).padStart(2, "0")} ${ampm}`;
 }
 
 function scoreString(value?: GameScore) {
     if (!value) return null;
 
-    const away = value.awayScore ?? value.away_score ?? value.points_for;
-    const home = value.homeScore ?? value.home_score ?? value.points_against;
+    // For schedule-style scores, points_for/against are from home-team perspective
+    // in this view (we aggregate from home schedules), so map to away-home display.
+    const away = value.awayScore ?? value.away_score ?? value.points_against;
+    const home = value.homeScore ?? value.home_score ?? value.points_for;
 
     if (away === undefined || home === undefined) return null;
     return `${away}-${home}`;
@@ -184,10 +187,10 @@ export default async function Page({ params }: { params: Params }) {
                             </tr>
                         </thead>
                         <tbody>
-                            {dayRows.map(({ game, gameDate, projection }, idx) => {
+                            {dayRows.map(({ game, projection }, idx) => {
                                 const result = scoreString(game.result);
                                 return <tr key={`${dayKey}-${game.awayTeam || 'away'}-${game.homeTeam || 'home'}-${idx}`}>
-                                    <td className="py-1 pr-2 text-gray-600 whitespace-nowrap">{timeLabel(gameDate)}</td>
+                                    <td className="py-1 pr-2 text-gray-600 whitespace-nowrap">{timeLabel(game.date, game.source)}</td>
                                     <td className="py-1 pr-2 break-words">
                                         {game.awayTeamId ? (
                                             <Link href={`/${params.year}/teams/${game.awayTeamId}`} className="font-semibold">
