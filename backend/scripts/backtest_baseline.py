@@ -11,11 +11,20 @@ from typing import Dict, List, Tuple
 import numpy as np
 from scipy.sparse import coo_matrix
 from scipy.sparse.linalg import lsqr
-from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from lib.predict.predict import calculate_ratings
+from lib.shared.types import (
+    Game,
+    Location,
+    ScheduleGame,
+    ScheduleGameResult,
+    Team,
+    TeamDetail,
+    TeamRating,
+    TeamSummary,
+)
 
 
 @dataclass
@@ -31,7 +40,7 @@ class TeamGame:
 
 @dataclass
 class TeamModel:
-    ratings: Dict[str, object]
+    ratings: Dict[str, TeamRating]
     hfa: float
 
 
@@ -58,74 +67,126 @@ def parse_day(date_str: str) -> date:
     return date.fromisoformat(date_str[:10])
 
 
-def load_team_games(games_json_path: Path, games_dir: Path) -> List[TeamGame]:
-    rows: List[TeamGame] = []
+def _deserialize_game(payload: dict, fallback_id: str) -> Game:
+    # Production game shape (preferred)
+    if 'home_team' in payload and 'away_team' in payload:
+        return Game.from_dict(payload)
 
-    if games_json_path.exists():
+    # Legacy shape fallback
+    home_id = payload.get('homeTeamId')
+    away_id = payload.get('awayTeamId')
+    result = payload.get('result')
+
+    game_dict = {
+        'id': payload.get('id') or fallback_id,
+        'external_link': payload.get('external_link') or '',
+        'date': payload['date'],
+        'home_team': {
+            'id': home_id,
+            'name': home_id,
+        },
+        'away_team': {
+            'id': away_id,
+            'name': away_id,
+        },
+        'result': {
+            'home_score': int(result['points_for']) if result else 0,
+            'away_score': int(result['points_against']) if result else 0,
+        } if result else None,
+    }
+    return Game.from_dict(game_dict)
+
+
+def load_games(games_json_path: Path, games_dir: Path) -> List[Game]:
+    games: List[Game] = []
+
+    if games_dir.exists():
+        for idx, file in enumerate(sorted(games_dir.glob('*.json'))):
+            raw = json.loads(file.read_text())
+            game = _deserialize_game(raw, fallback_id=f'file-{idx}')
+            if game.result is None:
+                continue
+            games.append(game)
+    elif games_json_path.exists():
         raw = json.loads(games_json_path.read_text())
-        for _, games in raw.items():
-            for g in games:
+        idx = 0
+        for _, schedule_games in raw.items():
+            for g in schedule_games:
                 result = g.get('result')
                 if not result:
                     continue
-                rows.append(
-                    TeamGame(
-                        day=parse_day(g['date']),
-                        home_team=g['homeTeamId'],
-                        away_team=g['awayTeamId'],
-                        home_div=g['homeDiv'],
-                        sport=g.get('sport', 'ml'),
-                        home_score=int(result['points_for']),
-                        away_score=int(result['points_against']),
-                    ))
-    elif games_dir.exists():
-        for f in sorted(games_dir.glob('*.json')):
-            g = json.loads(f.read_text())
-            result = g.get('result')
-            if not result:
-                continue
-            rows.append(
-                TeamGame(
-                    day=parse_day(g['date']),
-                    home_team=g['home_team']['id'],
-                    away_team=g['away_team']['id'],
-                    home_div=(g.get('home_team') or {}).get('div', 'unknown'),
-                    sport=g.get('sport', 'ml'),
-                    home_score=int(result['home_score']),
-                    away_score=int(result['away_score']),
-                ))
+                game = _deserialize_game(g, fallback_id=f'legacy-{idx}')
+                idx += 1
+                if game.result is None:
+                    continue
+                games.append(game)
     else:
         raise FileNotFoundError(f'No games source found at {games_json_path} or {games_dir}')
 
+    games.sort(key=lambda g: parse_day(g.date))
+    return games
+
+
+def load_team_games(games: List[Game]) -> List[TeamGame]:
+    rows: List[TeamGame] = []
+    for g in games:
+        if not g.result:
+            continue
+        rows.append(
+            TeamGame(
+                day=parse_day(g.date),
+                home_team=g.home_team.id,
+                away_team=g.away_team.id,
+                home_div='unknown',
+                sport='ml',
+                home_score=int(g.result.home_score),
+                away_score=int(g.result.away_score),
+            ))
     rows.sort(key=lambda x: x.day)
     return rows
+
+
+def _stub_team(team_id: str) -> Team:
+    return Team(
+        name=team_id,
+        schedule=Location(url=''),
+        year='unknown',
+        id=team_id,
+        div='unknown',
+        sport='ml',
+        source='backtest',
+    )
 
 
 def fit_team_model(games: List[TeamGame]) -> TeamModel | None:
     if not games:
         return None
 
-    schedules_by_team: Dict[str, object] = {}
+    schedules_by_team: Dict[str, TeamDetail] = {}
 
     def schedule_for(team_id: str):
         if team_id not in schedules_by_team:
-            schedules_by_team[team_id] = SimpleNamespace(team=SimpleNamespace(id=team_id), games=[])
+            schedules_by_team[team_id] = TeamDetail(team=_stub_team(team_id), games=[])
         return schedules_by_team[team_id]
 
     for g in games:
         schedule_for(g.home_team).games.append(
-            SimpleNamespace(
-                opponent=SimpleNamespace(id=g.away_team, alt_id=None),
+            ScheduleGame(
                 date=g.day.isoformat(),
+                opponent=TeamSummary(name=g.away_team, id=g.away_team),
+                sport=g.sport,
+                source='backtest',
                 home=True,
-                result=SimpleNamespace(points_for=g.home_score, points_against=g.away_score),
+                result=ScheduleGameResult(points_for=g.home_score, points_against=g.away_score),
             ))
         schedule_for(g.away_team).games.append(
-            SimpleNamespace(
-                opponent=SimpleNamespace(id=g.home_team, alt_id=None),
+            ScheduleGame(
                 date=g.day.isoformat(),
+                opponent=TeamSummary(name=g.home_team, id=g.home_team),
+                sport=g.sport,
+                source='backtest',
                 home=False,
-                result=SimpleNamespace(points_for=g.away_score, points_against=g.home_score),
+                result=ScheduleGameResult(points_for=g.away_score, points_against=g.home_score),
             ))
 
     ratings, hfa = calculate_ratings(schedules_by_team.values())
@@ -191,25 +252,27 @@ def run_team_backtest(games: List[TeamGame], min_train_games: int = 50):
     }
 
 
-def load_player_obs(games_dir: Path) -> List[PlayerObs]:
+def load_player_obs(games: List[Game]) -> List[PlayerObs]:
     obs: List[PlayerObs] = []
-    for f in sorted(games_dir.glob('*.json')):
-        g = json.loads(f.read_text())
-        if 'home_stats' not in g or 'away_stats' not in g:
+    for g in games:
+        if not g.home_stats or not g.away_stats:
             continue
-        d = parse_day(g['date'])
-        home = g['home_team']['id']
-        away = g['away_team']['id']
-        for line in g.get('home_stats') or []:
-            pid = (line.get('player') or {}).get('id')
+        d = parse_day(g.date)
+        home = g.home_team.id
+        away = g.away_team.id
+
+        for line in g.home_stats:
+            pid = line.player.id if line.player else None
             if not pid:
                 continue
-            obs.append(PlayerObs(d, pid, home, away, int(line.get('g', 0)), int(line.get('a', 0))))
-        for line in g.get('away_stats') or []:
-            pid = (line.get('player') or {}).get('id')
+            obs.append(PlayerObs(d, pid, home, away, int(line.g), int(line.a)))
+
+        for line in g.away_stats:
+            pid = line.player.id if line.player else None
             if not pid:
                 continue
-            obs.append(PlayerObs(d, pid, away, home, int(line.get('g', 0)), int(line.get('a', 0))))
+            obs.append(PlayerObs(d, pid, away, home, int(line.g), int(line.a)))
+
     obs.sort(key=lambda x: x.day)
     return obs
 
@@ -318,10 +381,12 @@ def main():
     games_json = data_dir / 'games.json'
     games_dir = data_dir / 'games'
 
-    team_games = load_team_games(games_json, games_dir)
+    games = load_games(games_json, games_dir)
+
+    team_games = load_team_games(games)
     team_metrics = run_team_backtest(team_games)
 
-    player_obs = load_player_obs(games_dir)
+    player_obs = load_player_obs(games)
     player_metrics = run_player_backtest(player_obs)
 
     report = {
