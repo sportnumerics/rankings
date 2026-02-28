@@ -186,7 +186,7 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
         return ratings
 
     goal_ratings = get_ratings(lambda e: e.g)
-    assist_ratings = get_ratings(lambda e: e.g)
+    assist_ratings = get_ratings(lambda e: e.a)
 
     player_ratings: list[PlayerRating] = []
     for i in range(0, n_players):
