@@ -144,11 +144,15 @@ export default async function Page({ params }: { params: Params }) {
                     const awayRating = ratings[game.awayTeamId];
                     const homeRating = ratings[game.homeTeamId];
                     const projection = predictScore(awayRating, homeRating);
-                    return { gameDate: parsedDate, dayKey, game, projection };
+                    const awayRank = rankedTeams[game.awayTeamId]?.rank;
+                    const homeRank = rankedTeams[game.homeTeamId]?.rank;
+                    const quality = (awayRank ?? 999) + (homeRank ?? 999);
+                    return { gameDate: parsedDate, dayKey, game, projection, quality };
                 });
         })
         .sort((a, b) => {
             if (a.dayKey !== b.dayKey) return a.dayKey.localeCompare(b.dayKey);
+            if (a.quality !== b.quality) return a.quality - b.quality;
             return a.gameDate.getTime() - b.gameDate.getTime();
         });
 
