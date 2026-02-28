@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -8,10 +9,12 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 import numpy as np
-from scipy.sparse import coo_matrix
-from scipy.sparse.linalg import lsqr
+from types import SimpleNamespace
 
-from lib.predict.predict import PlayerRatingObservation, solve_player_ratings
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from lib.predict.predict import (PlayerRatingObservation, calculate_ratings,
+                                 solve_player_ratings)
 
 
 @dataclass
@@ -27,9 +30,7 @@ class TeamGame:
 
 @dataclass
 class TeamModel:
-    team_to_idx: Dict[str, int]
-    offense: np.ndarray
-    defense: np.ndarray
+    ratings: Dict[str, object]
     hfa: float
 
 
@@ -99,50 +100,46 @@ def load_team_games(games_json_path: Path, games_dir: Path) -> List[TeamGame]:
     return rows
 
 
-def fit_team_model(games: List[TeamGame], damp: float = 0.2) -> TeamModel | None:
-    teams = sorted({g.home_team for g in games} | {g.away_team for g in games})
-    if len(teams) < 2 or not games:
+def fit_team_model(games: List[TeamGame]) -> TeamModel | None:
+    if not games:
         return None
 
-    team_to_idx = {t: i for i, t in enumerate(teams)}
-    n_teams = len(teams)
+    schedules_by_team: Dict[str, object] = {}
 
-    data = []
-    i_idx = []
-    j_idx = []
-    constants = []
+    def schedule_for(team_id: str):
+        if team_id not in schedules_by_team:
+            schedules_by_team[team_id] = SimpleNamespace(team=SimpleNamespace(id=team_id), games=[])
+        return schedules_by_team[team_id]
 
-    def add_eq(row_idx: int, off_team: str, def_team: str, hfa_coeff: float, y: float):
-        data.extend([1.0, -1.0, hfa_coeff])
-        i_idx.extend([row_idx, row_idx, row_idx])
-        j_idx.extend([team_to_idx[off_team], n_teams + team_to_idx[def_team], 2 * n_teams])
-        constants.append(y)
-
-    row = 0
     for g in games:
-        add_eq(row, g.home_team, g.away_team, 1.0, float(g.home_score))
-        row += 1
-        add_eq(row, g.away_team, g.home_team, -1.0, float(g.away_score))
-        row += 1
+        schedule_for(g.home_team).games.append(
+            SimpleNamespace(
+                opponent=SimpleNamespace(id=g.away_team, alt_id=None),
+                date=g.day.isoformat(),
+                home=True,
+                result=SimpleNamespace(points_for=g.home_score, points_against=g.away_score),
+            ))
+        schedule_for(g.away_team).games.append(
+            SimpleNamespace(
+                opponent=SimpleNamespace(id=g.home_team, alt_id=None),
+                date=g.day.isoformat(),
+                home=False,
+                result=SimpleNamespace(points_for=g.away_score, points_against=g.home_score),
+            ))
 
-    a = coo_matrix((data, (i_idx, j_idx)), shape=(len(constants), 2 * n_teams + 1))
-    x = lsqr(a, np.array(constants), damp=damp)[0]
-
-    return TeamModel(
-        team_to_idx=team_to_idx,
-        offense=x[0:n_teams],
-        defense=x[n_teams:2 * n_teams],
-        hfa=float(x[2 * n_teams]),
-    )
+    ratings, hfa = calculate_ratings(schedules_by_team.values())
+    if not ratings:
+        return None
+    return TeamModel(ratings=ratings, hfa=float(hfa))
 
 
 def predict_team_scores(model: TeamModel, home_team: str, away_team: str) -> Tuple[float, float] | None:
-    if home_team not in model.team_to_idx or away_team not in model.team_to_idx:
+    home = model.ratings.get(home_team)
+    away = model.ratings.get(away_team)
+    if not home or not away:
         return None
-    h = model.team_to_idx[home_team]
-    a = model.team_to_idx[away_team]
-    home_pred = model.offense[h] - model.defense[a] + model.hfa
-    away_pred = model.offense[a] - model.defense[h] - model.hfa
+    home_pred = home.offense - away.defense + model.hfa
+    away_pred = away.offense - home.defense - model.hfa
     return float(home_pred), float(away_pred)
 
 
