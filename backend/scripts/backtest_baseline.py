@@ -9,12 +9,11 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 import numpy as np
-from scipy.sparse import coo_matrix
-from scipy.sparse.linalg import lsqr
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from lib.predict.predict import calculate_ratings
+from lib.predict.predict import (PlayerRatingObservation, calculate_ratings,
+                                 solve_player_ratings)
 from lib.shared.types import (
     Game,
     Location,
@@ -287,27 +286,22 @@ def fit_player_model(obs: List[PlayerObs], damp: float = 1.0) -> PlayerModel | N
 
     p_idx = {p: i for i, p in enumerate(players)}
     t_idx = {t: i for i, t in enumerate(teams)}
-    n_p = len(players)
-    n_t = len(teams)
 
-    def solve(target: str):
-        data = []
-        ii = []
-        jj = []
-        y = []
-        row = 0
-        for o in obs:
-            val = o.goals if target == 'goals' else o.assists
-            data.extend([1.0, 1.0, -1.0])
-            ii.extend([row, row, row])
-            jj.extend([p_idx[o.player_id], n_p + t_idx[o.team_id], n_p + n_t + t_idx[o.opp_id]])
-            y.append(float(val))
-            row += 1
-        a = coo_matrix((data, (ii, jj)), shape=(len(y), n_p + 2 * n_t))
-        return lsqr(a, np.array(y), damp=damp)[0]
+    goal_obs = [
+        PlayerRatingObservation(player=o.player_id,
+                                team=o.team_id,
+                                opponent=o.opp_id,
+                                value=float(o.goals)) for o in obs
+    ]
+    assist_obs = [
+        PlayerRatingObservation(player=o.player_id,
+                                team=o.team_id,
+                                opponent=o.opp_id,
+                                value=float(o.assists)) for o in obs
+    ]
 
-    g_r = solve('goals')
-    a_r = solve('assists')
+    g_r = solve_player_ratings(goal_obs, p_idx, t_idx, damp=damp, normalize=False)
+    a_r = solve_player_ratings(assist_obs, p_idx, t_idx, damp=damp, normalize=False)
 
     return PlayerModel(player_to_idx=p_idx, team_to_idx=t_idx, goal_ratings=g_r, assist_ratings=a_r)
 
