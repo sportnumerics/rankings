@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import json
-import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -9,8 +8,6 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 import numpy as np
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from lib.predict.predict import (PlayerRatingObservation, calculate_ratings,
                                  solve_player_ratings)
@@ -367,8 +364,8 @@ def run_player_backtest(obs: List[PlayerObs], start_train_days: int = 21, step_d
 
 def main():
     p = argparse.ArgumentParser(description='Backtest current team/player models')
-    p.add_argument('--data-dir', default='/tmp/sportnumerics-prod-data', help='Local synced data root')
-    p.add_argument('--year', default='2026')
+    p.add_argument('--data-dir', required=True, help='Local synced data root (e.g. /tmp/sportnumerics-prod-data)')
+    p.add_argument('--year', required=True, help='Season year (e.g. 2025)')
     args = p.parse_args()
 
     data_dir = Path(args.data_dir) / args.year
