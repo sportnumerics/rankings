@@ -140,53 +140,32 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
     n_players = len(player_id_to_idx)
     n_teams = len(team_id_to_idx)
 
-    def get_coefficients(stats):
-        for (player, team, opponent, pts) in stats:
-            yield ([1, 1, -1], [
-                player_id_to_idx[player], n_players + team_id_to_idx[team],
-                n_players + n_teams + team_id_to_idx[opponent]
-            ], pts)
-
-    def get_ratings(stat: Callable[[GameStatLine], int]):
-        data = []
-        i = []
-        j = []
-        constants = []
+    def build_player_observations(stat: Callable[[GameStatLine], int]):
+        rows: list[PlayerRatingObservation] = []
         for game in games:
-            for d, jx, c in get_coefficients([
-                (entry.player.id, game.home_team.id, game.away_team.id,
-                 stat(entry)) for entry in game.home_stats or []
-            ]):
-                data.extend(d)
-                i.extend([len(constants)] * len(jx))
-                j.extend(jx)
-                constants.append(c)
-            for d, jx, c in get_coefficients([
-                (entry.player.id, game.away_team.id, game.home_team.id,
-                 stat(entry)) for entry in game.away_stats or []
-            ]):
-                data.extend(d)
-                i.extend([len(constants)] * len(jx))
-                j.extend(jx)
-                constants.append(c)
+            rows.extend([
+                PlayerRatingObservation(player=entry.player.id,
+                                        team=game.home_team.id,
+                                        opponent=game.away_team.id,
+                                        value=float(stat(entry)))
+                for entry in game.home_stats or []
+            ])
+            rows.extend([
+                PlayerRatingObservation(player=entry.player.id,
+                                        team=game.away_team.id,
+                                        opponent=game.home_team.id,
+                                        value=float(stat(entry)))
+                for entry in game.away_stats or []
+            ])
+        return rows
 
-        coefficients = coo_matrix(
-            (data, (i, j)), shape=(len(constants), n_players + 2 * n_teams))
-
-        ratings, _, _, _, _, _, _, _, _, _ = linalg.lsqr(coefficients,
-                                                         constants,
-                                                         damp=1.0)
-
-        min_rating = min(ratings)
-        # normalize by subtracting min rating from player ratings
-        ratings[0:n_players] -= min_rating
-        # and adding min rating to defensive ratings
-        ratings[n_players + n_teams:] += min_rating
-
-        return ratings
-
-    goal_ratings = get_ratings(lambda e: e.g)
-    assist_ratings = get_ratings(lambda e: e.a)
+    goal_ratings = solve_player_ratings(build_player_observations(lambda e: e.g),
+                                        player_id_to_idx,
+                                        team_id_to_idx,
+                                        damp=1.0)
+    assist_ratings = solve_player_ratings(
+        build_player_observations(lambda e: e.a), player_id_to_idx,
+        team_id_to_idx, damp=1.0)
 
     player_ratings: list[PlayerRating] = []
     for i in range(0, n_players):
@@ -258,6 +237,53 @@ def load_from_files(filenames):
     for file in filenames:
         with open(file) as f:
             yield json.load(f)
+
+
+@dataclass
+class PlayerRatingObservation:
+    player: str
+    team: str
+    opponent: str
+    value: float
+
+
+def solve_player_ratings(observations: Iterable[PlayerRatingObservation],
+                         player_id_to_idx: Mapping[str, int],
+                         team_id_to_idx: Mapping[str, int],
+                         damp: float = 1.0,
+                         normalize: bool = True):
+    n_players = len(player_id_to_idx)
+    n_teams = len(team_id_to_idx)
+
+    data = []
+    i = []
+    j = []
+    constants = []
+    for row_idx, obs in enumerate(observations):
+        data.extend([1.0, 1.0, -1.0])
+        i.extend([row_idx, row_idx, row_idx])
+        j.extend([
+            player_id_to_idx[obs.player],
+            n_players + team_id_to_idx[obs.team],
+            n_players + n_teams + team_id_to_idx[obs.opponent],
+        ])
+        constants.append(obs.value)
+
+    coefficients = coo_matrix((data, (i, j)),
+                              shape=(len(constants), n_players + 2 * n_teams))
+
+    ratings, _, _, _, _, _, _, _, _, _ = linalg.lsqr(coefficients,
+                                                     constants,
+                                                     damp=damp)
+
+    if normalize:
+        min_rating = min(ratings)
+        # normalize by subtracting min rating from player ratings
+        ratings[0:n_players] -= min_rating
+        # and adding min rating to defensive ratings
+        ratings[n_players + n_teams:] += min_rating
+
+    return ratings
 
 
 @dataclass
