@@ -110,7 +110,9 @@ jobs:
           mkdir -p .cache/backtest-data
           for year in $BACKTEST_YEARS; do
             mkdir -p .cache/backtest-data/$year/games
-            aws s3 cp s3://$BACKTEST_BUCKET/data/$year/games.json .cache/backtest-data/$year/games.json --only-show-errors
+            if aws s3 ls s3://$BACKTEST_BUCKET/data/$year/games.json >/dev/null 2>&1; then
+              aws s3 cp s3://$BACKTEST_BUCKET/data/$year/games.json .cache/backtest-data/$year/games.json --only-show-errors
+            fi
             aws s3 sync s3://$BACKTEST_BUCKET/data/$year/games .cache/backtest-data/$year/games --only-show-errors --size-only
           done
 
