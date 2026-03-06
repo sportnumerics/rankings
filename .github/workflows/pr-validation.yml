@@ -152,10 +152,8 @@ jobs:
           script: |
             const fs = require('fs');
             const marker = '<!-- backtest-baseline-summary -->';
-            const body = `${marker}
-## Backend Backtest Baseline
-
-${fs.readFileSync('backend/out/backtest-summary.md', 'utf8')}`;
+            const summary = fs.readFileSync('backend/out/backtest-summary.md', 'utf8');
+            const body = `${marker}\n## Backend Backtest Baseline\n\n${summary}`;
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
 
