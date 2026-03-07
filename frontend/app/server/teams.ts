@@ -113,6 +113,16 @@ export async function getTeam({ year, team, mode = 'json' }: { year: string, tea
         data.debug = debug;
         return data;
     } catch {
-        return await source.get(`${year}/schedules/${team}.json`);
+        const fallback = await source.get(`${year}/schedules/${team}.json`) as Data<TeamSchedule> & { debug?: QueryDebug };
+        fallback.debug = {
+            label: 'team_page_schedule',
+            queryMs: 0,
+            s3HeadRequests: 0,
+            s3GetRequests: 0,
+            s3RangeRequests: 0,
+            s3PartialBytes: 0,
+            note: 'Parquet path failed; fell back to JSON source.'
+        };
+        return fallback;
     }
 }

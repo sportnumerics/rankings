@@ -9,6 +9,7 @@ export interface QueryDebug {
     s3GetRequests: number;
     s3RangeRequests: number;
     s3PartialBytes: number;
+    note?: string;
 }
 
 let conn: any | null = null;

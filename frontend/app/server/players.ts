@@ -34,7 +34,17 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
             data.debug = debug;
             return data;
         } catch {
-            return getRankedPlayers({ year, team, div, mode: 'json' });
+            const fallback = await getRankedPlayers({ year, team, div, mode: 'json' }) as Data<RankedPlayerMap> & { debug?: QueryDebug };
+            fallback.debug = {
+                label: 'player_page_rankings',
+                queryMs: 0,
+                s3HeadRequests: 0,
+                s3GetRequests: 0,
+                s3RangeRequests: 0,
+                s3PartialBytes: 0,
+                note: 'Parquet path failed; fell back to JSON source.'
+            };
+            return fallback;
         }
     }
 
@@ -80,7 +90,17 @@ export async function getPlayerStats({ year, player, mode = 'json' }: { year: st
             data.debug = debug;
             return data;
         } catch {
-            return await source.get(`${year}/players/${player}.json`);
+            const fallback = await source.get(`${year}/players/${player}.json`) as Data<PlayerStats> & { debug?: QueryDebug };
+            fallback.debug = {
+                label: 'player_page_profile',
+                queryMs: 0,
+                s3HeadRequests: 0,
+                s3GetRequests: 0,
+                s3RangeRequests: 0,
+                s3PartialBytes: 0,
+                note: 'Parquet path failed; fell back to JSON source.'
+            };
+            return fallback;
         }
     }
 
