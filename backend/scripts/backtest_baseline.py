@@ -362,13 +362,8 @@ def run_player_backtest(obs: List[PlayerObs], start_train_days: int = 21, step_d
     }
 
 
-def main():
-    p = argparse.ArgumentParser(description='Backtest current team/player models')
-    p.add_argument('--data-dir', required=True, help='Local synced data root (e.g. /tmp/sportnumerics-prod-data)')
-    p.add_argument('--year', required=True, help='Season year (e.g. 2025)')
-    args = p.parse_args()
-
-    data_dir = Path(args.data_dir) / args.year
+def generate_report(data_root: Path, year: str) -> dict:
+    data_dir = data_root / year
     games_json = data_dir / 'games.json'
     games_dir = data_dir / 'games'
 
@@ -380,8 +375,8 @@ def main():
     player_obs = load_player_obs(games)
     player_metrics = run_player_backtest(player_obs)
 
-    report = {
-        'year': args.year,
+    return {
+        'year': year,
         'team_backtest': team_metrics,
         'player_backtest': player_metrics,
         'notes': [
@@ -391,6 +386,37 @@ def main():
         ],
     }
 
+
+def render_team_summary_markdown(reports: List[dict]) -> str:
+    lines = [
+        '## Backtest Baseline (team model)',
+        '',
+        '| Year | Samples | MAE Margin | Winner Acc | Home Baseline |',
+        '|---|---:|---:|---:|---:|',
+    ]
+    for report in sorted(reports, key=lambda r: r['year']):
+        t = report.get('team_backtest', {})
+        samples = t.get('samples')
+        mae = t.get('mae_margin')
+        acc = t.get('winner_accuracy')
+        base = t.get('home_baseline_accuracy')
+
+        sample_str = str(samples) if samples is not None else '—'
+        mae_str = f"{mae:.3f}" if mae is not None else '—'
+        acc_str = f"{acc:.3%}" if acc is not None else '—'
+        base_str = f"{base:.3%}" if base is not None else '—'
+        lines.append(f"| {report['year']} | {sample_str} | {mae_str} | {acc_str} | {base_str} |")
+
+    return "\n".join(lines) + "\n"
+
+
+def main():
+    p = argparse.ArgumentParser(description='Backtest current team/player models')
+    p.add_argument('--data-dir', required=True, help='Local synced data root (e.g. /tmp/sportnumerics-prod-data)')
+    p.add_argument('--year', required=True, help='Season year (e.g. 2025)')
+    args = p.parse_args()
+
+    report = generate_report(Path(args.data_dir), args.year)
     print(json.dumps(report, indent=2))
 
 
