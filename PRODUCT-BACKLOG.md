@@ -1,58 +1,55 @@
-# Sportnumerics Backlog
+# Sportnumerics Backlog (execution source of truth)
 
-A lightweight, assistant-run task management system.
+## North Star
+Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Status meanings
-- **Idea**: worth considering, not yet scoped
-- **Ready**: scoped into a small first increment that can be done in <= 1-3 hours
-- **In Progress**: being implemented on a branch
-- **PR**: PR open, awaiting review/CI
-- **Done**: merged
-- **Blocked**: needs Will input or external dependency
+## Active Focus (updated 2026-03-07)
 
-## Rules
-- Prefer *small* increments that ship value or reduce risk.
-- Each backlog item must have: **Outcome**, **First increment**, **Acceptance checks**.
-- When possible: add/adjust tests with the change.
-
----
-
-## Now (top priority)
+### PR
+1) **#54 — Backtest CI + sticky PR comment + CLI backtest command**
+- Status: PR
+- Owner: assistant
+- Outcome: one canonical backtest path (local + CI) and visible PR quality signal
+- First increment: finish review fixes and get green checks
+- Acceptance checks:
+  - CI backtest job passes
+  - PR comment updates with summary table
+  - command `python main.py --year 2024-2025 backtest --data-dir ... --out-dir ...` works
+- Next action: verify CI passes after lazy-import fix (c067b33), then request merge
+- Link: https://github.com/sportnumerics/rankings/pull/54
+- Last update: Fixed ModuleNotFoundError in backend by lazy-loading backtest_baseline (2026-03-07 09:00)
 
 ### Ready
-1) **Add a minimal /api/health endpoint with version info**
-   - Outcome: quick way to confirm deploy + data connectivity from the outside.
-   - First increment: implement `/api/health` returning `{ ok: true, gitSha, buildTime }` (and optionally a cheap S3 list/head to confirm bucket access).
-   - Acceptance checks:
-     - Endpoint returns 200 in dev
-     - Included in README for debugging
+2) **Feature discovery sprint: highest-value near-term product improvement**
+- Status: Ready
+- Owner: assistant
+- Outcome: one evidence-backed feature promoted to build
+- First increment: produce top-5 candidate list with value/effort/risk and choose #1
+- Acceptance checks:
+  - Top-5 list captured in backlog notes
+  - One candidate converted into implementation-ready task
+- Next action: research 5 candidates from competitor + current site gaps
 
-2) **Document "how deploy works" (1-page ops doc)**
-   - Outcome: reduce friction when something breaks (IAM/Terraform/CloudFront).
-   - First increment: add `infrastructure/DEPLOYMENT.md` describing roles, workflows, and common failure modes.
-   - Acceptance checks:
-     - Covers: which workflows deploy what, which IAM role, where Terraform state lives
-     - Includes "how to debug" checklist
+3) **WIP/PR velocity automation**
+- Status: Ready
+- Owner: assistant
+- Outcome: fewer stalls, faster PR throughput
+- First increment: daily stale-PR check with concrete unblock actions
+- Acceptance checks:
+  - Daily update includes active PR state + next unblock step
+  - blockers explicitly tagged with owner
+- Next action: add "stale >24h" handling notes to this file and use daily
 
 ### In Progress
 - (none)
 
-### PR
-- **Add backend end-to-end smoke test in CI** (PR #20) - validates scrape→predict→sync pipeline on PRs, syncs to dev
-- **Add Next.js build caching** (PR #13) - caches npm + .next/cache for faster deploys
-
----
-
-## Next (candidate work)
-
-### Idea
-- (seed ideas live in PRODUCT-IDEAS.md; promote the best ones here)
-
 ### Blocked
 - (none)
 
----
-
 ## Done
-- ✅ Fix Terraform deploy failure (PR #9, merged 2026-01-28)
-- ✅ Make health_check.sh token-proof (already implemented in scripts/health_check.sh)
+- ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
+
+## Backlog Notes (assistant-facing)
+- Prefer tasks that improve user-visible value or reduce prediction-quality risk.
+- Keep PRs small and reviewable.
+- Every status change must update `Next action`.
