@@ -6,18 +6,29 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 ## Active Focus (updated 2026-03-07)
 
 ### PR
-1) **#54 — Backtest CI + sticky PR comment + CLI backtest command**
+1) **#58 — DuckDB parquet mode toggle + team/player query optimizations**
 - Status: PR
 - Owner: assistant
-- Outcome: one canonical backtest path (local + CI) and visible PR quality signal
-- First increment: finish review fixes and get green checks
+- Outcome: dev-testable parquet path behind `?dataMode=parquet` with request-level range instrumentation
+- First increment: ship top 3 optimizations for team/player pages and expose debug footer
 - Acceptance checks:
-  - CI backtest job passes
-  - PR comment updates with summary table
-  - command `python main.py --year 2024-2025 backtest --data-dir ... --out-dir ...` works
-- Next action: verify CI passes after lazy-import fix (c067b33), then request merge
-- Link: https://github.com/sportnumerics/rankings/pull/54
-- Last update: Fixed ModuleNotFoundError in backend by lazy-loading backtest_baseline (2026-03-07 09:00)
+  - Team page supports `?dataMode=parquet` via flat games parquet path
+  - Player page supports `?dataMode=parquet` via optimized ratings path
+  - Footer displays query ms + HEAD/GET/range/bytes stats
+- Next action: wait for Frontend Unit Tests on #58, then request review
+- Link: https://github.com/sportnumerics/rankings/pull/58
+- Last update: PR opened with toggle + instrumentation (2026-03-07 16:06)
+
+2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
+- Status: PR
+- Owner: assistant
+- Outcome: reproducible baseline for cold/warm local+S3 query performance
+- First increment: keep as reference benchmark suite
+- Acceptance checks:
+  - Includes local page-shaped timings
+  - Includes JSON vs parquet S3 timings
+- Next action: decide merge order with #58 (can keep #57 for benchmarking docs)
+- Link: https://github.com/sportnumerics/rankings/pull/57
 
 ### Ready
 2) **Feature discovery sprint: highest-value near-term product improvement**

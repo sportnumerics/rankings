@@ -1,6 +1,7 @@
 'use server';
 import { getDiv } from "@/app/server/divs";
 import { getRankedPlayers } from "@/app/server/players";
+import { dataModeFromSearch } from "@/app/server/parquet";
 import { getRankedTeams, getTeam, getTeamRatings, getTeams } from "@/app/server/teams";
 import { ScheduleGameResult, TeamRating } from "@/app/server/types";
 import { Card, ExternalLink, H1, Table, TableHeader, H2, by } from "@/app/shared";
@@ -9,6 +10,7 @@ import Opponent from "@/app/components/Opponent";
 import Rank from "@/app/components/Rank";
 import GameDate from "@/app/components/GameLink";
 import LastUpdated from "@/app/components/LastModified";
+import DataModeFooter from "@/app/components/DataModeFooter";
 import Link from "@/app/components/Link";
 import { ReactElement } from "react";
 import { NotFoundError } from "@/app/server/source";
@@ -19,12 +21,14 @@ interface Params {
     team: string;
 }
 
-export default async function Page({ params }: { params: Params }) {
+export default async function Page({ params, searchParams }: { params: Params, searchParams?: Record<string, string | string[] | undefined> }) {
+    const mode = dataModeFromSearch(searchParams);
     let schedule;
     let lastModified;
+    let scheduleDebug;
 
     try {
-        ({ body: schedule, lastModified } = await getTeam(params));
+        ({ body: schedule, lastModified, debug: scheduleDebug } = await getTeam({ ...params, mode }));
     } catch (err) {
         if (err instanceof NotFoundError) {
             return <>
@@ -40,10 +44,11 @@ export default async function Page({ params }: { params: Params }) {
 
     const allTeamsPromise = getTeamRatings({ year: params.year });
     const rankedTeamsPromise = getRankedTeams({ year: params.year, div: schedule.team.div });
-    const playersPromise = getRankedPlayers({ year: params.year, team: schedule.team.id });
+    const playersPromise = getRankedPlayers({ year: params.year, team: schedule.team.id, mode });
     const divPromise = getDiv(schedule.team.div);
     const divTeamsPromise = getTeams({ year: params.year, div: schedule.team.div });
-    const [{ body: teams }, { body: allTeams }, { body: players }, div, { body: divTeams }] = await Promise.all([rankedTeamsPromise, allTeamsPromise, playersPromise, divPromise, divTeamsPromise]);
+    const [{ body: teams }, { body: allTeams }, playersData, div, { body: divTeams }] = await Promise.all([rankedTeamsPromise, allTeamsPromise, playersPromise, divPromise, divTeamsPromise]);
+    const { body: players } = playersData;
 
     const rankedPlayers = Object.values(players);
     rankedPlayers.sort(by(t => t.rank));
@@ -99,6 +104,7 @@ export default async function Page({ params }: { params: Params }) {
             </Table>
         </Card>
         <PlayersCard title="Top Scoring Players" players={rankedPlayers.slice(0, 20)} params={params} cardClassName="w-full max-w-xl" />
+        <DataModeFooter mode={mode} debugs={[scheduleDebug, playersData.debug].filter((d): d is NonNullable<typeof d> => Boolean(d))} />
         <LastUpdated lastModified={lastModified} />
     </>
 }
