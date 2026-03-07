@@ -1,12 +1,14 @@
 import json
 from pathlib import Path
 
-from scripts import backtest_baseline
 from ..shared import shared
 from . import predict
 
 
 def run_backtest(args):
+    # Lazy import: only load backtest_baseline when needed (not in Docker image)
+    from scripts import backtest_baseline
+    
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
