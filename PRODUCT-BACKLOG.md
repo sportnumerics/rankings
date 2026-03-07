@@ -6,18 +6,18 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 ## Active Focus (updated 2026-03-07)
 
 ### PR
-1) **#54 — Backtest CI + sticky PR comment + CLI backtest command**
+1) **#57 — DuckDB parquet benchmark harness + low-hanging perf paths**
 - Status: PR
 - Owner: assistant
-- Outcome: one canonical backtest path (local + CI) and visible PR quality signal
-- First increment: finish review fixes and get green checks
+- Outcome: quantified local + S3 parquet query latency and identified fastest query shapes
+- First increment: benchmark page-shaped queries and publish actionable optimizations
 - Acceptance checks:
-  - CI backtest job passes
-  - PR comment updates with summary table
-  - command `python main.py --year 2024-2025 backtest --data-dir ... --out-dir ...` works
-- Next action: verify CI passes after lazy-import fix (c067b33), then request merge
-- Link: https://github.com/sportnumerics/rankings/pull/54
-- Last update: Fixed ModuleNotFoundError in backend by lazy-loading backtest_baseline (2026-03-07 09:00)
+  - Bench script runs against current prod parquet layout
+  - Warm/cold timings captured for rankings/upcoming/team/player shapes
+  - At least 3 concrete optimization recommendations documented
+- Next action: incorporate S3-cold benchmark notes into PR description and request review
+- Link: https://github.com/sportnumerics/rankings/pull/57
+- Last update: Added S3 cold-start timings; biggest delta is schedule unnest vs flat games path (2026-03-07 12:49)
 
 ### Ready
 2) **Feature discovery sprint: highest-value near-term product improvement**
@@ -48,6 +48,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 
 ## Done
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
+- ✅ #54 Backtest CI + sticky PR comment + CLI backtest command (merged 2026-03-07)
 
 ## Backlog Notes (assistant-facing)
 - Prefer tasks that improve user-visible value or reduce prediction-quality risk.

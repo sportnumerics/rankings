@@ -1,3 +1,8 @@
 .DS_Store
 
 **/.terraform/
+
+# local benchmark artifacts
+bench/data/
+bench/.venv/
+bench/out/
