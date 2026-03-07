@@ -16,14 +16,19 @@ interface Params {
 
 const DISPLAY_TIMEZONE = "America/Chicago";
 
-function parseGameDate(dateKey: string): Date | null {
-    const direct = new Date(dateKey);
-    if (!Number.isNaN(direct.getTime())) return direct;
+function dayKeyFromSource(dateKey: string): string | null {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+        return dateKey;
+    }
 
-    const dateOnly = new Date(`${dateKey}T00:00:00`);
-    if (!Number.isNaN(dateOnly.getTime())) return dateOnly;
+    const parsed = new Date(dateKey);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return dayKeyInTz(parsed);
+}
 
-    return null;
+function displayDateFromDayKey(dayKey: string): Date {
+    // Noon UTC avoids accidental day shifts when rendered in US timezones.
+    return new Date(`${dayKey}T12:00:00Z`);
 }
 
 function dayKeyInTz(date: Date): string {
@@ -135,11 +140,11 @@ export default async function Page({ params }: { params: Params }) {
 
     const rows = Object.entries(gamesByDate)
         .flatMap(([dateKey, games]) => {
-            const parsedDate = parseGameDate(dateKey);
-            if (!parsedDate) return [];
-
-            const dayKey = dayKeyInTz(parsedDate);
+            const dayKey = dayKeyFromSource(dateKey);
+            if (!dayKey) return [];
             if (dayKey < todayKey || dayKey > cutoffKey) return [];
+
+            const displayDate = displayDateFromDayKey(dayKey);
 
             return games
                 .filter(game => game.homeDiv === params.div)
@@ -150,7 +155,7 @@ export default async function Page({ params }: { params: Params }) {
                     const awayRank = rankedTeams[game.awayTeamId]?.rank;
                     const homeRank = rankedTeams[game.homeTeamId]?.rank;
                     const quality = (awayRank ?? 999) + (homeRank ?? 999);
-                    return { gameDate: parsedDate, dayKey, game, projection, quality };
+                    return { gameDate: displayDate, dayKey, game, projection, quality };
                 });
         })
         .sort((a, b) => {
