@@ -116,35 +116,9 @@ jobs:
             aws s3 sync s3://$BACKTEST_BUCKET/data/$year/games .cache/backtest-data/$year/games --only-show-errors --size-only
           done
 
-      - name: Run backtests
-        env:
-          BACKTEST_YEARS: "2024 2025"
+      - name: Run backtests via CLI
         run: |
-          mkdir -p out/backtest
-          for year in $BACKTEST_YEARS; do
-            uv run python -m scripts.backtest_baseline --data-dir .cache/backtest-data --year $year > out/backtest/$year.json
-          done
-
-      - name: Summarize backtest results
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          rows = []
-          for p in sorted(Path('out/backtest').glob('*.json')):
-              d = json.loads(p.read_text())
-              y = d['year']
-              t = d['team_backtest']
-              rows.append((y, t['samples'], t['mae_margin'], t['winner_accuracy'], t['home_baseline_accuracy']))
-
-          summary = ['## Backtest Baseline (team model)', '', '| Year | Samples | MAE Margin | Winner Acc | Home Baseline |', '|---|---:|---:|---:|---:|']
-          for y, s, mae, acc, base in rows:
-              summary.append(f"| {y} | {s} | {mae:.3f} | {acc:.3%} | {base:.3%} |")
-
-          Path('out/backtest-summary.md').write_text('\n'.join(summary) + '\n')
-          print('\n'.join(summary))
-          PY
+          uv run python main.py --year 2024-2025 backtest --data-dir .cache/backtest-data --out-dir out/backtest
 
       - name: Post backtest summary comment
         uses: actions/github-script@v7
@@ -152,7 +126,7 @@ jobs:
           script: |
             const fs = require('fs');
             const marker = '<!-- backtest-baseline-summary -->';
-            const summary = fs.readFileSync('backend/out/backtest-summary.md', 'utf8');
+            const summary = fs.readFileSync('backend/out/backtest/summary.md', 'utf8');
             const body = `${marker}\n## Backend Backtest Baseline\n\n${summary}`;
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
@@ -177,7 +151,7 @@ jobs:
           name: backtest-results
           path: |
             backend/out/backtest/*.json
-            backend/out/backtest-summary.md
+            backend/out/backtest/summary.md
 
   # Run frontend unit tests (if any exist)
   frontend-unit-tests:
