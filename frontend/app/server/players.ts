@@ -27,11 +27,15 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
           ORDER BY pr.points DESC
         `;
 
-        const { rows, debug } = await parquetQuery<any>(sql, 'player_page_rankings');
-        const ranked = rankPlayers(rows as PlayerRating[]);
-        const data = create(ranked) as Data<RankedPlayerMap> & { debug?: QueryDebug };
-        data.debug = debug;
-        return data;
+        try {
+            const { rows, debug } = await parquetQuery<any>(sql, 'player_page_rankings');
+            const ranked = rankPlayers(rows as PlayerRating[]);
+            const data = create(ranked) as Data<RankedPlayerMap> & { debug?: QueryDebug };
+            data.debug = debug;
+            return data;
+        } catch {
+            return getRankedPlayers({ year, team, div, mode: 'json' });
+        }
     }
 
     const teamsPromise: Promise<Data<TeamMap>> = div ? getTeams({ year, div }) : Promise.resolve(create({}));
@@ -67,13 +71,17 @@ export async function getPlayerStats({ year, player, mode = 'json' }: { year: st
           LIMIT 1
         `;
 
-        const { rows, debug } = await parquetQuery<any>(sql, 'player_page_profile');
-        if (!rows.length) {
-            throw new NotFoundError('player not found');
+        try {
+            const { rows, debug } = await parquetQuery<any>(sql, 'player_page_profile');
+            if (!rows.length) {
+                throw new NotFoundError('player not found');
+            }
+            const data = create(rows[0] as PlayerStats) as Data<PlayerStats> & { debug?: QueryDebug };
+            data.debug = debug;
+            return data;
+        } catch {
+            return await source.get(`${year}/players/${player}.json`);
         }
-        const data = create(rows[0] as PlayerStats) as Data<PlayerStats> & { debug?: QueryDebug };
-        data.debug = debug;
-        return data;
     }
 
     return await source.get(`${year}/players/${player}.json`);
