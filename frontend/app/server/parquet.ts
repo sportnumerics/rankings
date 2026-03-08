@@ -1,4 +1,5 @@
 import 'server-only';
+import { createRequire } from 'module';
 
 export type DataMode = 'json' | 'parquet';
 
@@ -13,9 +14,10 @@ export interface QueryDebug {
 }
 
 let conn: any | null = null;
+const nodeRequire = createRequire(import.meta.url);
 
 function getDuckDbModule() {
-    return (0, eval)('require')('duckdb');
+    return nodeRequire('duckdb');
 }
 
 function getConnection() {
