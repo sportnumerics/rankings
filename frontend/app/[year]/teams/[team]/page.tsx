@@ -81,7 +81,7 @@ export default async function Page({ params, searchParams }: { params: Params, s
         <div>
             <H1><Rank rank={team?.rank} />{schedule.team.name} ({params.year})</H1>
             <H2>{div.name}</H2>
-            <ExternalLink href={schedule.team.schedule.url} />
+            {schedule.team.schedule?.url ? <ExternalLink href={schedule.team.schedule.url} /> : null}
         </div>
         <Card title="Schedule" className="w-full max-w-xl">
             <Table>
