@@ -50,7 +50,6 @@ export async function getTeam({ year, team, mode = 'json' }: { year: string, tea
       SELECT
         g.id,
         g.date,
-        g.sport,
         g.home_team.id AS home_id,
         g.home_team.name AS home_name,
         g.away_team.id AS away_id,
@@ -73,13 +72,14 @@ export async function getTeam({ year, team, mode = 'json' }: { year: string, tea
         }
 
         const first = rows[0];
+        const sport = String(first.team_id || 'ml').split('-')[0] || 'ml';
         const body: TeamSchedule = {
             team: {
                 id: first.team_id,
                 name: first.team_name,
                 div: first.team_div,
                 source: first.team_source,
-                sport: 'ml',
+                sport,
                 schedule: { url: '' },
             },
             games: rows.map(r => {
@@ -87,7 +87,7 @@ export async function getTeam({ year, team, mode = 'json' }: { year: string, tea
                 return {
                     id: r.id,
                     date: r.date,
-                    sport: r.sport || 'ml',
+                    sport,
                     source: first.team_source,
                     home,
                     opponent: {
@@ -95,7 +95,7 @@ export async function getTeam({ year, team, mode = 'json' }: { year: string, tea
                         name: home ? r.away_name : r.home_name,
                         div: first.team_div,
                         schedule: { url: '' },
-                        sport: r.sport || 'ml',
+                        sport,
                         source: first.team_source,
                     },
                     details: { url: '' },
