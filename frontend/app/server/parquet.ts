@@ -94,7 +94,7 @@ export async function parquetQuery<T = any>(sql: string, label: string): Promise
     const queryMs = Date.now() - t0;
     let logs: Array<{ message: string }> = [];
     try {
-        logs = await all<{ message: string }>(db, "select message from duckdb_logs where type='HTTP' order by timestamp desc limit 200");
+        logs = await all<{ message: string }>(db, "select message from duckdb_logs order by timestamp desc limit 500");
     } catch {
         logs = [];
     }
