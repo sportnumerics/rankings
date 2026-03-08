@@ -15,9 +15,9 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Team page supports `?dataMode=parquet` via flat games parquet path
   - Player page supports `?dataMode=parquet` via optimized ratings path
   - Footer displays query ms + HEAD/GET/range/bytes stats
-- Next action: wait for Frontend Unit Tests on #58, then request review
+- Next action: wait for Deploy Frontend to Dev on #58, then validate `?dataMode=parquet` no longer falls back and request review
 - Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: PR opened with toggle + instrumentation (2026-03-07 16:06)
+- Last update: pushed Lambda-safe duckdb loader fix (2026-03-07 18:12)
 
 2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
