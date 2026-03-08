@@ -15,9 +15,9 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Team page supports `?dataMode=parquet` via flat games parquet path
   - Player page supports `?dataMode=parquet` via optimized ratings path
   - Footer displays query ms + HEAD/GET/range/bytes stats
-- Next action: wait for Deploy Frontend to Dev on #58, then validate `?dataMode=parquet` no longer falls back and request review
+- Next action: request review for mode/toggle rollout; decide whether to merge now (timings live) or hold for strict non-zero request-byte counters
 - Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: pushed Lambda-safe duckdb loader fix (2026-03-07 18:12)
+- Last update: deploy + E2E green; parquet path runs in dev/local, but footer request-byte counters still zero due runtime log capture gap (2026-03-07 20:39)
 
 2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
