@@ -112,7 +112,8 @@ export async function getTeam({ year, team, mode = 'json' }: { year: string, tea
         const data = create(body) as Data<TeamSchedule> & { debug?: QueryDebug };
         data.debug = debug;
         return data;
-    } catch {
+    } catch (error: any) {
+        console.error('parquet team_page_schedule failed', error);
         const fallback = await source.get(`${year}/schedules/${team}.json`) as Data<TeamSchedule> & { debug?: QueryDebug };
         fallback.debug = {
             label: 'team_page_schedule',
@@ -121,7 +122,7 @@ export async function getTeam({ year, team, mode = 'json' }: { year: string, tea
             s3GetRequests: 0,
             s3RangeRequests: 0,
             s3PartialBytes: 0,
-            note: 'Parquet path failed; fell back to JSON source.'
+            note: `Parquet failed (${error?.message || 'unknown error'}); fell back to JSON source.`
         };
         return fallback;
     }

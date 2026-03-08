@@ -33,7 +33,8 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
             const data = create(ranked) as Data<RankedPlayerMap> & { debug?: QueryDebug };
             data.debug = debug;
             return data;
-        } catch {
+        } catch (error: any) {
+            console.error('parquet player_page_rankings failed', error);
             const fallback = await getRankedPlayers({ year, team, div, mode: 'json' }) as Data<RankedPlayerMap> & { debug?: QueryDebug };
             fallback.debug = {
                 label: 'player_page_rankings',
@@ -42,7 +43,7 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
                 s3GetRequests: 0,
                 s3RangeRequests: 0,
                 s3PartialBytes: 0,
-                note: 'Parquet path failed; fell back to JSON source.'
+                note: `Parquet failed (${error?.message || 'unknown error'}); fell back to JSON source.`
             };
             return fallback;
         }
@@ -89,7 +90,8 @@ export async function getPlayerStats({ year, player, mode = 'json' }: { year: st
             const data = create(rows[0] as PlayerStats) as Data<PlayerStats> & { debug?: QueryDebug };
             data.debug = debug;
             return data;
-        } catch {
+        } catch (error: any) {
+            console.error('parquet player_page_profile failed', error);
             const fallback = await source.get(`${year}/players/${player}.json`) as Data<PlayerStats> & { debug?: QueryDebug };
             fallback.debug = {
                 label: 'player_page_profile',
@@ -98,7 +100,7 @@ export async function getPlayerStats({ year, player, mode = 'json' }: { year: st
                 s3GetRequests: 0,
                 s3RangeRequests: 0,
                 s3PartialBytes: 0,
-                note: 'Parquet path failed; fell back to JSON source.'
+                note: `Parquet failed (${error?.message || 'unknown error'}); fell back to JSON source.`
             };
             return fallback;
         }

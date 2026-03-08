@@ -40,7 +40,12 @@ function all<T = any>(db: any, sql: string): Promise<T[]> {
 }
 
 async function ensureConfigured(db: any) {
-    await run(db, 'LOAD httpfs');
+    try {
+        await run(db, 'LOAD httpfs');
+    } catch {
+        await run(db, 'INSTALL httpfs');
+        await run(db, 'LOAD httpfs');
+    }
     await run(db, "SET enable_http_logging=true");
     await run(db, "SET s3_region='us-west-2'");
 
@@ -83,7 +88,12 @@ export async function parquetQuery<T = any>(sql: string, label: string): Promise
     const t0 = Date.now();
     const rows = await all<T>(db, sql);
     const queryMs = Date.now() - t0;
-    const logs = await all<{ message: string }>(db, "select message from duckdb_logs where type='HTTP' order by timestamp desc limit 200");
+    let logs: Array<{ message: string }> = [];
+    try {
+        logs = await all<{ message: string }>(db, "select message from duckdb_logs where type='HTTP' order by timestamp desc limit 200");
+    } catch {
+        logs = [];
+    }
     return { rows, debug: parseHttpDebug(logs, label, queryMs) };
 }
 
