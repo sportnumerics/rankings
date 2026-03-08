@@ -71,13 +71,18 @@ function parseHttpDebug(rows: Array<{ message: string }>, label: string, queryMs
     let s3RangeRequests = 0;
     let s3PartialBytes = 0;
 
+    const headRe = /type'?\s*:\s*'?HEAD'?/i;
+    const getRe = /type'?\s*:\s*'?GET'?/i;
+    const rangeRe = /(Range='bytes=|Content-Range=bytes )/i;
+
     for (const row of rows) {
         const m = row.message || '';
-        if (m.includes("'type': HEAD")) s3HeadRequests += 1;
-        if (m.includes("'type': GET")) s3GetRequests += 1;
-        if (m.includes("Range='bytes=")) s3RangeRequests += 1;
-        if (m.includes('PartialContent_206')) {
-            const match = m.match(/Content-Length=(\d+)/);
+        if (headRe.test(m)) s3HeadRequests += 1;
+        if (getRe.test(m)) s3GetRequests += 1;
+        if (rangeRe.test(m)) s3RangeRequests += 1;
+
+        if (/PartialContent_206/i.test(m) || /Content-Range=bytes /i.test(m)) {
+            const match = m.match(/Content-Length=(\d+)/i);
             if (match) s3PartialBytes += Number(match[1]);
         }
     }
