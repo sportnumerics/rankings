@@ -40,6 +40,10 @@ function all<T = any>(db: any, sql: string): Promise<T[]> {
 }
 
 async function ensureConfigured(db: any) {
+    // Lambda filesystem is mostly read-only; force duckdb home/extension dirs to /tmp.
+    await run(db, "SET home_directory='/tmp'");
+    await run(db, "SET extension_directory='/tmp/duckdb_extensions'");
+
     try {
         await run(db, 'LOAD httpfs');
     } catch {
