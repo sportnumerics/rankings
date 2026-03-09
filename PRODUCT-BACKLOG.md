@@ -15,9 +15,9 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Page loads at /2026/d1/leaders/goals
   - Shows top 50 players sorted by goals descending
   - Reuses existing PlayerRating data and PlayersCard UI
-- Next action: request review for merge
+- Next action: awaiting Will's review
 - Link: https://github.com/sportnumerics/rankings/pull/59
-- Last update: CI green, ready for review (2026-03-09 05:59)
+- Last update: review requested, all checks passing (2026-03-09 09:15)
 
 2) **#58 — DuckDB parquet mode toggle + team/player query optimizations**
 - Status: PR
