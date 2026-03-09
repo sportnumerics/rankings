@@ -6,7 +6,20 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 ## Active Focus (updated 2026-03-07)
 
 ### PR
-1) **#58 — DuckDB parquet mode toggle + team/player query optimizations**
+1) **#59 — Goals leaders page**
+- Status: PR
+- Owner: assistant
+- Outcome: /leaders/goals page showing top 50 scorers per division
+- First increment: ship MVP goals leaders page
+- Acceptance checks:
+  - Page loads at /2026/d1/leaders/goals
+  - Shows top 50 players sorted by goals descending
+  - Reuses existing PlayerRating data and PlayersCard UI
+- Next action: request review for merge
+- Link: https://github.com/sportnumerics/rankings/pull/59
+- Last update: CI green, ready for review (2026-03-09 05:59)
+
+2) **#58 — DuckDB parquet mode toggle + team/player query optimizations**
 - Status: PR
 - Owner: assistant
 - Outcome: dev-testable parquet path behind `?dataMode=parquet` with request-level range instrumentation
