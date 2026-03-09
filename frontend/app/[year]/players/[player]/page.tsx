@@ -22,7 +22,10 @@ export default async function Page({ params, searchParams }: { params: Params, s
     let playerDebug;
 
     try {
-        ({ body: player, lastModified, debug: playerDebug } = await getPlayerStats({ ...params, mode }));
+        // First get player with JSON to learn division, then re-fetch with parquet if needed
+        const jsonPlayer = mode === 'parquet' ? await getPlayerStats({ ...params, mode: 'json' }) : null;
+        const div = jsonPlayer?.body.team.div;
+        ({ body: player, lastModified, debug: playerDebug } = await getPlayerStats({ ...params, div, mode }));
     } catch (err) {
         if (err instanceof NotFoundError) {
             return <>

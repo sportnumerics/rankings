@@ -14,30 +14,49 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
             return getRankedPlayers({ year, team, div, mode: 'json' });
         }
 
+        // Use optimized materialized view
+        const file = team ? 'team-rosters.parquet' : 'players-list.parquet';
         const where = [
-            team ? `pr.team.id = '${team}'` : null,
-            div ? `t.div = '${div}'` : null,
+            team ? `team_id = '${team}'` : null,
+            div ? `div = '${div}'` : null,
         ].filter(Boolean).join(' AND ');
 
         const sql = `
-          SELECT pr.id, pr.name, pr.team, pr.points, pr.goals, pr.assists
-          FROM read_parquet('s3://${bucket}/${prefix}/${year}/v2/player_ratings/data.parquet') pr
-          LEFT JOIN read_parquet('s3://${bucket}/${prefix}/${year}/v2/teams/*.parquet') t ON pr.team.id = t.id
+          SELECT 
+            player_id as id, player_name as name,
+            team_id, team_name, team_schedule_url, team_sport, team_source,
+            points, goals, assists, position, number, class_year
+          FROM read_parquet('s3://${bucket}/${prefix}/${year}/${file}')
           ${where ? `WHERE ${where}` : ''}
-          ORDER BY pr.points DESC
+          ORDER BY points DESC
+          ${!team && div ? 'LIMIT 200' : ''}
         `;
 
         try {
-            const { rows, debug } = await parquetQuery<any>(sql, 'player_page_rankings');
-            const ranked = rankPlayers(rows as PlayerRating[]);
+            const { rows, debug } = await parquetQuery<any>(sql, team ? 'team_page_roster' : 'players_list');
+            const players: PlayerRating[] = rows.map(r => ({
+                id: r.id,
+                name: r.name,
+                team: {
+                    id: r.team_id,
+                    name: r.team_name,
+                    schedule: { url: r.team_schedule_url || '' },
+                    sport: r.team_sport,
+                    source: r.team_source,
+                },
+                points: r.points,
+                goals: r.goals,
+                assists: r.assists,
+            }));
+            const ranked = rankPlayers(players);
             const data = create(ranked) as Data<RankedPlayerMap> & { debug?: QueryDebug };
             data.debug = debug;
             return data;
         } catch (error: any) {
-            console.error('parquet player_page_rankings failed', error);
+            console.error(`parquet ${team ? 'team_page_roster' : 'players_list'} failed`, error);
             const fallback = await getRankedPlayers({ year, team, div, mode: 'json' }) as Data<RankedPlayerMap> & { debug?: QueryDebug };
             fallback.debug = {
-                label: 'player_page_rankings',
+                label: team ? 'team_page_roster' : 'players_list',
                 queryMs: 0,
                 s3HeadRequests: 0,
                 s3GetRequests: 0,
@@ -67,34 +86,99 @@ export async function getPlayerRatings({ year }: { year: string }): Promise<Data
     return ratings.map(r => Object.fromEntries(r.map(rating => [rating.id, rating])));
 }
 
-export async function getPlayerStats({ year, player, mode = 'json' }: { year: string, player: string, mode?: DataMode }): Promise<Data<PlayerStats> & { debug?: QueryDebug }> {
+export async function getPlayerStats({ year, player, div, mode = 'json' }: { year: string, player: string, div?: string, mode?: DataMode }): Promise<Data<PlayerStats> & { debug?: QueryDebug }> {
     if (mode === 'parquet') {
         const bucket = process.env.DATA_BUCKET;
         const prefix = process.env.DATA_BUCKET_PREFIX || 'data';
-        if (!bucket) {
+        if (!bucket || !div) {
             return await source.get(`${year}/players/${player}.json`);
         }
 
-        const sql = `
-          SELECT *
-          FROM read_parquet('s3://${bucket}/${prefix}/${year}/v2/players/data.parquet')
-          WHERE id = '${player}'
+        // Query both player metadata and game log from materialized views
+        const metaSql = `
+          SELECT 
+            player_id as id, player_name as name,
+            team_id, team_name, team_schedule_url, team_sport, team_source,
+            position, number, class_year, eligibility, height, weight,
+            high_school, hometown, external_link
+          FROM read_parquet('s3://${bucket}/${prefix}/${year}/player-metadata.parquet')
+          WHERE div = '${div}' AND player_id = '${player}'
           LIMIT 1
         `;
 
+        const statsSql = `
+          SELECT 
+            date, game_id,
+            opponent_id, opponent_name, opponent_div,
+            opponent_schedule_url, opponent_sport, opponent_source,
+            g, a, gb
+          FROM read_parquet('s3://${bucket}/${prefix}/${year}/player-gamelogs.parquet')
+          WHERE div = '${div}' AND player_id = '${player}'
+          ORDER BY date DESC
+        `;
+
         try {
-            const { rows, debug } = await parquetQuery<any>(sql, 'player_page_profile');
-            if (!rows.length) {
+            const [metaResult, statsResult] = await Promise.all([
+                parquetQuery<any>(metaSql, 'player_page_metadata'),
+                parquetQuery<any>(statsSql, 'player_page_gamelog')
+            ]);
+
+            if (!metaResult.rows.length) {
                 throw new NotFoundError('player not found');
             }
-            const data = create(rows[0] as PlayerStats) as Data<PlayerStats> & { debug?: QueryDebug };
-            data.debug = debug;
+
+            const meta = metaResult.rows[0];
+            const stats: PlayerStats = {
+                id: meta.id,
+                name: meta.name,
+                team: {
+                    id: meta.team_id,
+                    name: meta.team_name,
+                    schedule: { url: meta.team_schedule_url || '' },
+                    sport: meta.team_sport,
+                    source: meta.team_source,
+                },
+                external_link: meta.external_link,
+                stats: statsResult.rows.map(s => ({
+                    game_id: s.game_id,
+                    date: s.date,
+                    opponent: {
+                        id: s.opponent_id,
+                        name: s.opponent_name,
+                        div: s.opponent_div,
+                        schedule: { url: s.opponent_schedule_url || '' },
+                        sport: s.opponent_sport,
+                        source: s.opponent_source,
+                    },
+                    g: s.g,
+                    a: s.a,
+                    gb: s.gb,
+                })),
+                position: meta.position,
+                number: meta.number,
+                class_year: meta.class_year,
+                eligibility: meta.eligibility,
+                height: meta.height,
+                weight: meta.weight,
+                high_school: meta.high_school,
+                hometown: meta.hometown,
+            };
+
+            const data = create(stats) as Data<PlayerStats> & { debug?: QueryDebug };
+            data.debug = {
+                label: 'player_page_combined',
+                queryMs: metaResult.debug.queryMs + statsResult.debug.queryMs,
+                s3HeadRequests: metaResult.debug.s3HeadRequests + statsResult.debug.s3HeadRequests,
+                s3GetRequests: metaResult.debug.s3GetRequests + statsResult.debug.s3GetRequests,
+                s3RangeRequests: metaResult.debug.s3RangeRequests + statsResult.debug.s3RangeRequests,
+                s3PartialBytes: metaResult.debug.s3PartialBytes + statsResult.debug.s3PartialBytes,
+            };
             return data;
         } catch (error: any) {
-            console.error('parquet player_page_profile failed', error);
+            console.error('parquet player_page failed', error);
             const fallback = await source.get(`${year}/players/${player}.json`) as Data<PlayerStats> & { debug?: QueryDebug };
             fallback.debug = {
-                label: 'player_page_profile',
+                label: 'player_page_combined',
                 queryMs: 0,
                 s3HeadRequests: 0,
                 s3GetRequests: 0,
