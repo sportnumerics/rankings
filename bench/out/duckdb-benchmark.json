@@ -1,0 +1,135 @@
+{
+  "dataset": "bench/data/2026/v2",
+  "results": [
+    {
+      "name": "rankings_ml1_targeted",
+      "notes": "Rankings page shape: top 25 teams for NCAA ML1 (targeted NCAA teams parquet)",
+      "warm_ms": {
+        "p50": 2.573078265413642,
+        "p95": 2.7720718644559383,
+        "avg": 2.6110718259587884
+      },
+      "cold_ms": {
+        "p50": 3.190530464053154,
+        "p95": 3.3424668945372105,
+        "avg": 3.2505668932572007
+      }
+    },
+    {
+      "name": "rankings_ml1_glob",
+      "notes": "Same query but globbing all teams parquet files (tests partition/path pruning impact)",
+      "warm_ms": {
+        "p50": 2.7510884683579206,
+        "p95": 3.104154020547867,
+        "avg": 2.818106533959508
+      },
+      "cold_ms": {
+        "p50": 3.4721095580607653,
+        "p95": 3.6639878526329994,
+        "avg": 3.5711010568775237
+      }
+    },
+    {
+      "name": "upcoming_games_ml1_targeted",
+      "notes": "Upcoming games page shape: next 14 days, NCAA ML1",
+      "warm_ms": {
+        "p50": 3.114912658929825,
+        "p95": 3.415965009480715,
+        "avg": 3.1386181013658643
+      },
+      "cold_ms": {
+        "p50": 3.799803787842393,
+        "p95": 3.8497080095112324,
+        "avg": 3.8090654416009784
+      }
+    },
+    {
+      "name": "team_schedule_flatten",
+      "notes": "Team page shape: one team schedule unnest",
+      "warm_ms": {
+        "p50": 48.15221158787608,
+        "p95": 55.36116426810622,
+        "avg": 46.533486526459455
+      },
+      "cold_ms": {
+        "p50": 48.20278310216963,
+        "p95": 62.41872068494558,
+        "avg": 53.026304696686566
+      }
+    },
+    {
+      "name": "team_schedule_from_games",
+      "notes": "Alternative team-page shape from flat games parquet (same team)",
+      "warm_ms": {
+        "p50": 2.4873914662748575,
+        "p95": 4.013580735772848,
+        "avg": 2.6640969794243574
+      },
+      "cold_ms": {
+        "p50": 3.171840449795127,
+        "p95": 3.394931089133024,
+        "avg": 3.2044255058281124
+      }
+    },
+    {
+      "name": "player_leaderboard_team",
+      "notes": "Player leaderboard shape: join ratings + players",
+      "warm_ms": {
+        "p50": 10.97034476697445,
+        "p95": 15.33122779801488,
+        "avg": 11.54187850188464
+      },
+      "cold_ms": {
+        "p50": 12.838203925639391,
+        "p95": 13.19177821278572,
+        "avg": 13.440887734759599
+      }
+    },
+    {
+      "name": "player_leaderboard_ratings_only",
+      "notes": "Alternative leaderboard from player_ratings only (name already present)",
+      "warm_ms": {
+        "p50": 8.689008420333266,
+        "p95": 14.156745746731758,
+        "avg": 9.353502630256116
+      },
+      "cold_ms": {
+        "p50": 9.505545953288674,
+        "p95": 11.842925101518631,
+        "avg": 10.7378862448968
+      }
+    }
+  ],
+  "row_group_summary": [
+    {
+      "file": "bench/data/2026/v2/games/ncaa.parquet",
+      "row_groups": 1,
+      "compressed_bytes": 1766114
+    },
+    {
+      "file": "bench/data/2026/v2/games/mcla.parquet",
+      "row_groups": 1,
+      "compressed_bytes": 733896
+    },
+    {
+      "file": "bench/data/2026/v2/schedules/ncaa.parquet",
+      "row_groups": 1,
+      "compressed_bytes": 153349
+    },
+    {
+      "file": "bench/data/2026/v2/schedules/mcla.parquet",
+      "row_groups": 1,
+      "compressed_bytes": 439141
+    },
+    {
+      "file": "bench/data/2026/v2/players/data.parquet",
+      "row_groups": 1,
+      "compressed_bytes": 2019747
+    },
+    {
+      "file": "bench/data/2026/v2/player_ratings/data.parquet",
+      "row_groups": 1,
+      "compressed_bytes": 1277335
+    }
+  ]
+}

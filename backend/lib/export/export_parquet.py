@@ -7,8 +7,9 @@ Generates 12 materialized view files, each optimized for a specific page/compone
 import logging
 import os
 import pathlib
-from typing import Iterable, List
-from dataclasses import asdict
+from typing import List
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 from ..shared.types import (
     Game, Player, PlayerRating, TeamDetail, TeamRating
@@ -16,6 +17,27 @@ from ..shared.types import (
 from ..shared import shared
 
 LOGGER = logging.getLogger(__name__)
+
+
+def write_parquet(rows: List[dict], filepath: pathlib.Path, sort_order: List[tuple[str, str]]):
+    """Write list of dicts to parquet with specified sort order."""
+    if not rows:
+        LOGGER.warning(f'No rows to write to {filepath}')
+        return
+    
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    table = pa.Table.from_pylist(rows)
+    
+    # Convert sort_order to SortingColumn format
+    sorting_columns = None
+    if sort_order:
+        sorting_columns = [
+            pq.SortingColumn(col_name, descending=(direction == 'descending'))
+            for col_name, direction in sort_order
+        ]
+    
+    pq.write_table(table, filepath, compression='gzip', sorting_columns=sorting_columns)
+    LOGGER.debug(f'Wrote {len(rows)} rows to {filepath}')
 
 
 def export_parquet_views(args):
@@ -30,11 +52,25 @@ def export_parquet_views(args):
         LOGGER.info(f'Exporting parquet views for {year}')
         
         # Load source data
+        LOGGER.info('Loading team ratings...')
         team_ratings = load_team_ratings(args.input_dir, year)
+        LOGGER.info(f'Loaded {len(team_ratings)} team ratings')
+        
+        LOGGER.info('Loading player ratings...')
         player_ratings = load_player_ratings(args.input_dir, year)
+        LOGGER.info(f'Loaded {len(player_ratings)} player ratings')
+        
+        LOGGER.info('Loading schedules...')
         schedules = load_schedules(args.input_dir, year)
+        LOGGER.info(f'Loaded {len(schedules)} schedules')
+        
+        LOGGER.info('Loading games...')
         games = load_games(args.input_dir, year)
+        LOGGER.info(f'Loaded {len(games)} games')
+        
+        LOGGER.info('Loading players...')
         players = load_players(args.input_dir, year)
+        LOGGER.info(f'Loaded {len(players)} players')
         
         # Create output directory
         year_dir = pathlib.Path(os.path.join(out_dir, year))
@@ -82,23 +118,25 @@ def load_schedules(input_dir: str, year: str) -> List[TeamDetail]:
     return list(shared.load_parquet_dataset(TeamDetail, path))
 
 
-def load_games(input_dir: str, year: str) -> List[Game]:
-    """Load games with stats."""
+def load_games(input_dir: str, year: str) -> List[dict]:
+    """Load games as raw dicts (avoid expensive dataclass deserialization)."""
     path = shared.parquet_path(input_dir, year, 'games')
     if not os.path.exists(path):
         LOGGER.warning(f'No games data found at {path}')
         return []
-    return list(shared.load_parquet_dataset(Game, path))
+    # Load as dicts instead of Game objects to avoid slow nested deserialization
+    return pq.ParquetDataset(path).read().to_pylist()
 
 
-def load_players(input_dir: str, year: str) -> dict[str, Player]:
-    """Load full player data indexed by player id."""
+def load_players(input_dir: str, year: str) -> dict[str, dict]:
+    """Load full player data as dicts indexed by player id."""
     path = shared.parquet_path(input_dir, year, 'players', 'data.parquet')
     if not os.path.exists(path):
         LOGGER.warning(f'No players data found at {path}')
         return {}
-    players = list(shared.load_parquet_dataset(Player, path))
-    return {p.id: p for p in players}
+    # Load as dicts to avoid slow nested deserialization
+    players = pq.read_table(path).to_pylist()
+    return {p['id']: p for p in players}
 
 
 # --- Teams Pages ---
@@ -145,7 +183,7 @@ def export_teams_list(team_ratings: dict[str, TeamRating],
             })
     
     rows.sort(key=lambda r: (r['div'], r['rank']))
-    shared.dump_parquet(rows, year_dir / 'teams-list.parquet',
+    write_parquet(rows, year_dir / 'teams-list.parquet',
                        sort_order=[('div', 'ascending'), ('rank', 'ascending')])
     LOGGER.info(f'Exported {len(rows)} rows to teams-list.parquet')
 
@@ -189,7 +227,7 @@ def export_team_metadata(team_ratings: dict[str, TeamRating],
             })
     
     rows.sort(key=lambda r: (r['div'], r['id']))
-    shared.dump_parquet(rows, year_dir / 'team-metadata.parquet',
+    write_parquet(rows, year_dir / 'team-metadata.parquet',
                        sort_order=[('div', 'ascending'), ('id', 'ascending')])
     LOGGER.info(f'Exported {len(rows)} rows to team-metadata.parquet')
 
@@ -223,7 +261,7 @@ def export_team_schedules(schedules: List[TeamDetail], year_dir: pathlib.Path):
             })
     
     rows.sort(key=lambda r: (r['div'], r['team_id'], r['date']))
-    shared.dump_parquet(rows, year_dir / 'team-schedules.parquet',
+    write_parquet(rows, year_dir / 'team-schedules.parquet',
                        sort_order=[('div', 'ascending'), ('team_id', 'ascending'), ('date', 'ascending')])
     LOGGER.info(f'Exported {len(rows)} rows to team-schedules.parquet')
 
@@ -260,7 +298,7 @@ def export_team_rosters(players: dict[str, Player],
         })
     
     rows.sort(key=lambda r: (r['div'], r['team_id'], r['number']))
-    shared.dump_parquet(rows, year_dir / 'team-rosters.parquet',
+    write_parquet(rows, year_dir / 'team-rosters.parquet',
                        sort_order=[('div', 'ascending'), ('team_id', 'ascending'), ('number', 'ascending')])
     LOGGER.info(f'Exported {len(rows)} rows to team-rosters.parquet')
 
@@ -299,7 +337,7 @@ def export_players_list(players: dict[str, Player],
         })
     
     rows.sort(key=lambda r: (r['div'], -r['points']))  # DESC points via negative
-    shared.dump_parquet(rows, year_dir / 'players-list.parquet',
+    write_parquet(rows, year_dir / 'players-list.parquet',
                        sort_order=[('div', 'ascending'), ('points', 'descending')])
     LOGGER.info(f'Exported {len(rows)} rows to players-list.parquet')
 
@@ -340,7 +378,7 @@ def export_player_metadata(players: dict[str, Player],
         })
     
     rows.sort(key=lambda r: (r['div'], r['player_id']))
-    shared.dump_parquet(rows, year_dir / 'player-metadata.parquet',
+    write_parquet(rows, year_dir / 'player-metadata.parquet',
                        sort_order=[('div', 'ascending'), ('player_id', 'ascending')])
     LOGGER.info(f'Exported {len(rows)} rows to player-metadata.parquet')
 
@@ -382,7 +420,7 @@ def export_player_gamelogs(players: dict[str, Player], year_dir: pathlib.Path):
         group_list.sort(key=lambda r: r['date'], reverse=True)
         sorted_rows.extend(group_list)
     
-    shared.dump_parquet(sorted_rows, year_dir / 'player-gamelogs.parquet',
+    write_parquet(sorted_rows, year_dir / 'player-gamelogs.parquet',
                        sort_order=[('div', 'ascending'), ('player_id', 'ascending'), ('date', 'descending')])
     LOGGER.info(f'Exported {len(sorted_rows)} rows to player-gamelogs.parquet')
 
@@ -419,7 +457,7 @@ def export_goals_leaders(players: dict[str, Player],
         })
     
     rows.sort(key=lambda r: (r['div'], -r['goals']))
-    shared.dump_parquet(rows, year_dir / 'goals-leaders.parquet',
+    write_parquet(rows, year_dir / 'goals-leaders.parquet',
                        sort_order=[('div', 'ascending'), ('goals', 'descending')])
     LOGGER.info(f'Exported {len(rows)} rows to goals-leaders.parquet')
 
@@ -456,14 +494,14 @@ def export_assists_leaders(players: dict[str, Player],
         })
     
     rows.sort(key=lambda r: (r['div'], -r['assists']))
-    shared.dump_parquet(rows, year_dir / 'assists-leaders.parquet',
+    write_parquet(rows, year_dir / 'assists-leaders.parquet',
                        sort_order=[('div', 'ascending'), ('assists', 'descending')])
     LOGGER.info(f'Exported {len(rows)} rows to assists-leaders.parquet')
 
 
 # --- Games Pages ---
 
-def export_games_list(games: List[Game], year_dir: pathlib.Path):
+def export_games_list(games: List[dict], year_dir: pathlib.Path):
     """
     File: games-list.parquet
     Sort: (div ASC, date DESC)
@@ -475,49 +513,53 @@ def export_games_list(games: List[Game], year_dir: pathlib.Path):
     rows = []
     
     for game in games:
+        home_team = game['home_team']
+        away_team = game['away_team']
+        result = game.get('result')
+        
         # Add row for home team's division
         rows.append({
-            'div': game.home_team.div,
-            'date': game.date,
-            'game_id': game.id,
-            'external_link': game.external_link,
-            'home_team_id': game.home_team.id,
-            'home_team_name': game.home_team.name,
-            'home_team_div': game.home_team.div,
-            'home_team_schedule_url': game.home_team.schedule_url,
-            'home_team_sport': game.home_team.sport,
-            'home_team_source': game.home_team.source,
-            'away_team_id': game.away_team.id,
-            'away_team_name': game.away_team.name,
-            'away_team_div': game.away_team.div,
-            'away_team_schedule_url': game.away_team.schedule_url,
-            'away_team_sport': game.away_team.sport,
-            'away_team_source': game.away_team.source,
-            'home_score': game.home_score,
-            'away_score': game.away_score,
+            'div': home_team['div'],
+            'date': game['date'],
+            'game_id': game['id'],
+            'external_link': game.get('external_link'),
+            'home_team_id': home_team['id'],
+            'home_team_name': home_team['name'],
+            'home_team_div': home_team['div'],
+            'home_team_schedule_url': home_team.get('schedule_url'),
+            'home_team_sport': home_team.get('sport'),
+            'home_team_source': home_team.get('source'),
+            'away_team_id': away_team['id'],
+            'away_team_name': away_team['name'],
+            'away_team_div': away_team['div'],
+            'away_team_schedule_url': away_team.get('schedule_url'),
+            'away_team_sport': away_team.get('sport'),
+            'away_team_source': away_team.get('source'),
+            'home_score': result['points_for'] if result and 'points_for' in result else None,
+            'away_score': result['points_against'] if result and 'points_against' in result else None,
         })
         
         # Add row for away team's division (if different)
-        if game.away_team.div != game.home_team.div:
+        if away_team['div'] != home_team['div']:
             rows.append({
-                'div': game.away_team.div,
-                'date': game.date,
-                'game_id': game.id,
-                'external_link': game.external_link,
-                'home_team_id': game.home_team.id,
-                'home_team_name': game.home_team.name,
-                'home_team_div': game.home_team.div,
-                'home_team_schedule_url': game.home_team.schedule_url,
-                'home_team_sport': game.home_team.sport,
-                'home_team_source': game.home_team.source,
-                'away_team_id': game.away_team.id,
-                'away_team_name': game.away_team.name,
-                'away_team_div': game.away_team.div,
-                'away_team_schedule_url': game.away_team.schedule_url,
-                'away_team_sport': game.away_team.sport,
-                'away_team_source': game.away_team.source,
-                'home_score': game.home_score,
-                'away_score': game.away_score,
+                'div': away_team['div'],
+                'date': game['date'],
+                'game_id': game['id'],
+                'external_link': game.get('external_link'),
+                'home_team_id': home_team['id'],
+                'home_team_name': home_team['name'],
+                'home_team_div': home_team['div'],
+                'home_team_schedule_url': home_team.get('schedule_url'),
+                'home_team_sport': home_team.get('sport'),
+                'home_team_source': home_team.get('source'),
+                'away_team_id': away_team['id'],
+                'away_team_name': away_team['name'],
+                'away_team_div': away_team['div'],
+                'away_team_schedule_url': away_team.get('schedule_url'),
+                'away_team_sport': away_team.get('sport'),
+                'away_team_source': away_team.get('source'),
+                'home_score': result['points_for'] if result and 'points_for' in result else None,
+                'away_score': result['points_against'] if result and 'points_against' in result else None,
             })
     
     rows.sort(key=lambda r: (r['div'], r['date']), reverse=False)
@@ -529,12 +571,12 @@ def export_games_list(games: List[Game], year_dir: pathlib.Path):
         group_list.sort(key=lambda r: r['date'], reverse=True)
         sorted_rows.extend(group_list)
     
-    shared.dump_parquet(sorted_rows, year_dir / 'games-list.parquet',
+    write_parquet(sorted_rows, year_dir / 'games-list.parquet',
                        sort_order=[('div', 'ascending'), ('date', 'descending')])
     LOGGER.info(f'Exported {len(sorted_rows)} rows to games-list.parquet (includes duplicates for cross-division games)')
 
 
-def export_game_metadata(games: List[Game], year_dir: pathlib.Path):
+def export_game_metadata(games: List[dict], year_dir: pathlib.Path):
     """
     File: game-metadata.parquet
     Sort: (div ASC, game_id ASC)
@@ -545,58 +587,62 @@ def export_game_metadata(games: List[Game], year_dir: pathlib.Path):
     rows = []
     
     for game in games:
+        home_team = game['home_team']
+        away_team = game['away_team']
+        result = game.get('result')
+        
         # Add row for home team's division
         rows.append({
-            'div': game.home_team.div,
-            'game_id': game.id,
-            'date': game.date,
-            'external_link': game.external_link,
-            'home_team_id': game.home_team.id,
-            'home_team_name': game.home_team.name,
-            'home_team_div': game.home_team.div,
-            'home_team_schedule_url': game.home_team.schedule_url,
-            'home_team_sport': game.home_team.sport,
-            'home_team_source': game.home_team.source,
-            'away_team_id': game.away_team.id,
-            'away_team_name': game.away_team.name,
-            'away_team_div': game.away_team.div,
-            'away_team_schedule_url': game.away_team.schedule_url,
-            'away_team_sport': game.away_team.sport,
-            'away_team_source': game.away_team.source,
-            'home_score': game.home_score,
-            'away_score': game.away_score,
+            'div': home_team['div'],
+            'game_id': game['id'],
+            'date': game['date'],
+            'external_link': game.get('external_link'),
+            'home_team_id': home_team['id'],
+            'home_team_name': home_team['name'],
+            'home_team_div': home_team['div'],
+            'home_team_schedule_url': home_team.get('schedule_url'),
+            'home_team_sport': home_team.get('sport'),
+            'home_team_source': home_team.get('source'),
+            'away_team_id': away_team['id'],
+            'away_team_name': away_team['name'],
+            'away_team_div': away_team['div'],
+            'away_team_schedule_url': away_team.get('schedule_url'),
+            'away_team_sport': away_team.get('sport'),
+            'away_team_source': away_team.get('source'),
+            'home_score': result['points_for'] if result and 'points_for' in result else None,
+            'away_score': result['points_against'] if result and 'points_against' in result else None,
         })
         
         # Add row for away team's division (if different)
-        if game.away_team.div != game.home_team.div:
+        if away_team['div'] != home_team['div']:
             rows.append({
-                'div': game.away_team.div,
-                'game_id': game.id,
-                'date': game.date,
-                'external_link': game.external_link,
-                'home_team_id': game.home_team.id,
-                'home_team_name': game.home_team.name,
-                'home_team_div': game.home_team.div,
-                'home_team_schedule_url': game.home_team.schedule_url,
-                'home_team_sport': game.home_team.sport,
-                'home_team_source': game.home_team.source,
-                'away_team_id': game.away_team.id,
-                'away_team_name': game.away_team.name,
-                'away_team_div': game.away_team.div,
-                'away_team_schedule_url': game.away_team.schedule_url,
-                'away_team_sport': game.away_team.sport,
-                'away_team_source': game.away_team.source,
-                'home_score': game.home_score,
-                'away_score': game.away_score,
+                'div': away_team['div'],
+                'game_id': game['id'],
+                'date': game['date'],
+                'external_link': game.get('external_link'),
+                'home_team_id': home_team['id'],
+                'home_team_name': home_team['name'],
+                'home_team_div': home_team['div'],
+                'home_team_schedule_url': home_team.get('schedule_url'),
+                'home_team_sport': home_team.get('sport'),
+                'home_team_source': home_team.get('source'),
+                'away_team_id': away_team['id'],
+                'away_team_name': away_team['name'],
+                'away_team_div': away_team['div'],
+                'away_team_schedule_url': away_team.get('schedule_url'),
+                'away_team_sport': away_team.get('sport'),
+                'away_team_source': away_team.get('source'),
+                'home_score': result['points_for'] if result and 'points_for' in result else None,
+                'away_score': result['points_against'] if result and 'points_against' in result else None,
             })
     
     rows.sort(key=lambda r: (r['div'], r['game_id']))
-    shared.dump_parquet(rows, year_dir / 'game-metadata.parquet',
+    write_parquet(rows, year_dir / 'game-metadata.parquet',
                        sort_order=[('div', 'ascending'), ('game_id', 'ascending')])
     LOGGER.info(f'Exported {len(rows)} rows to game-metadata.parquet')
 
 
-def export_game_boxscores(games: List[Game], year_dir: pathlib.Path):
+def export_game_boxscores(games: List[dict], year_dir: pathlib.Path):
     """
     File: game-boxscores.parquet
     Sort: (game_id ASC, team_id ASC, points DESC)
@@ -605,43 +651,48 @@ def export_game_boxscores(games: List[Game], year_dir: pathlib.Path):
     rows = []
     
     for game in games:
+        home_team = game['home_team']
+        away_team = game['away_team']
+        
         # Home team stats
-        for stat in game.home_stats or []:
-            points = stat.g + stat.a
+        for stat in game.get('home_stats') or []:
+            points = stat['g'] + stat['a']
+            player = stat['player']
             rows.append({
-                'game_id': game.id,
-                'team_id': game.home_team.id,
+                'game_id': game['id'],
+                'team_id': home_team['id'],
                 'points_desc': -points,  # Negative for DESC sort in ASC parquet
-                'player_id': stat.player.id,
-                'player_name': stat.player.name,
-                'number': stat.number,
-                'position': stat.position,
-                'g': stat.g,
-                'a': stat.a,
-                'gb': stat.gb,
-                'face_offs_won': stat.face_offs.won if stat.face_offs else None,
-                'face_offs_lost': stat.face_offs.lost if stat.face_offs else None,
+                'player_id': player['id'],
+                'player_name': player['name'],
+                'number': stat.get('number'),
+                'position': stat.get('position'),
+                'g': stat['g'],
+                'a': stat['a'],
+                'gb': stat.get('gb'),
+                'face_offs_won': stat['face_offs']['won'] if stat.get('face_offs') else None,
+                'face_offs_lost': stat['face_offs']['lost'] if stat.get('face_offs') else None,
             })
         
         # Away team stats
-        for stat in game.away_stats or []:
-            points = stat.g + stat.a
+        for stat in game.get('away_stats') or []:
+            points = stat['g'] + stat['a']
+            player = stat['player']
             rows.append({
-                'game_id': game.id,
-                'team_id': game.away_team.id,
+                'game_id': game['id'],
+                'team_id': away_team['id'],
                 'points_desc': -points,
-                'player_id': stat.player.id,
-                'player_name': stat.player.name,
-                'number': stat.number,
-                'position': stat.position,
-                'g': stat.g,
-                'a': stat.a,
-                'gb': stat.gb,
-                'face_offs_won': stat.face_offs.won if stat.face_offs else None,
-                'face_offs_lost': stat.face_offs.lost if stat.face_offs else None,
+                'player_id': player['id'],
+                'player_name': player['name'],
+                'number': stat.get('number'),
+                'position': stat.get('position'),
+                'g': stat['g'],
+                'a': stat['a'],
+                'gb': stat.get('gb'),
+                'face_offs_won': stat['face_offs']['won'] if stat.get('face_offs') else None,
+                'face_offs_lost': stat['face_offs']['lost'] if stat.get('face_offs') else None,
             })
     
     rows.sort(key=lambda r: (r['game_id'], r['team_id'], r['points_desc']))
-    shared.dump_parquet(rows, year_dir / 'game-boxscores.parquet',
+    write_parquet(rows, year_dir / 'game-boxscores.parquet',
                        sort_order=[('game_id', 'ascending'), ('team_id', 'ascending'), ('points_desc', 'ascending')])
     LOGGER.info(f'Exported {len(rows)} rows to game-boxscores.parquet')
