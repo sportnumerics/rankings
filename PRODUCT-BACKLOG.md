@@ -19,18 +19,18 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/59
 - Last update: review requested, all checks passing (2026-03-09 09:15)
 
-2) **#58 — DuckDB parquet mode toggle + team/player query optimizations**
+2) **#58 — DuckDB parquet materialized views (12-file schema)**
 - Status: PR
 - Owner: assistant
-- Outcome: dev-testable parquet path behind `?dataMode=parquet` with request-level range instrumentation
-- First increment: ship top 3 optimizations for team/player pages and expose debug footer
+- Outcome: 12 optimized parquet files (one per page component) with frontend DuckDB queries
+- Current increment: backend export complete (7.5MB, 12 files), now wiring frontend queries
 - Acceptance checks:
-  - Team page supports `?dataMode=parquet` via flat games parquet path
-  - Player page supports `?dataMode=parquet` via optimized ratings path
-  - Footer displays query ms + HEAD/GET/range/bytes stats
-- Next action: request review for mode/toggle rollout; decide whether to merge now (timings live) or hold for strict non-zero request-byte counters
+  - Backend: `python main.py export-parquet` generates all 12 files ✅
+  - Frontend: all pages query correct file with optimal filters
+  - Footer displays query ms + file read stats
+- Next action: implement frontend DuckDB loaders for each materialized view
 - Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: deploy + E2E green; parquet path runs in dev/local, but footer request-byte counters still zero due runtime log capture gap (2026-03-07 20:39)
+- Last update: export write-side complete and tested (2026-03-09 09:30)
 
 2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
