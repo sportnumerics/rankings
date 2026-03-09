@@ -242,6 +242,107 @@ CREATE TABLE player_stats (
 
 ---
 
+## Page-to-Query Mapping
+
+### Teams Page (`/[year]/[division]`)
+**Components:**
+- Teams list ranked by overall rating
+
+**Queries:**
+1. `SELECT * FROM teams.parquet WHERE div = ? ORDER BY rank ASC`
+   - Reads: ~5-10 KB (one row group for division)
+   - Returns: ~50-200 teams depending on division
+
+---
+
+### Team Page (`/[year]/[division]/teams/[teamId]`)
+**Components:**
+- Team metadata (name, ratings, rank)
+- Schedule (upcoming and past games)
+- Roster (players list)
+
+**Queries:**
+1. `SELECT * FROM teams.parquet WHERE id = ?`
+   - Reads: ~1-2 KB (single team via range request)
+   - Returns: 1 team
+2. `SELECT * FROM schedules.parquet WHERE team_id = ? ORDER BY date ASC`
+   - Reads: ~1-2 KB (contiguous block for team)
+   - Returns: ~15 games
+3. `SELECT * FROM players.parquet WHERE team_id = ? ORDER BY number ASC`
+   - Reads: ~2-5 KB (all players for team)
+   - Returns: ~20-40 players
+
+**Total: ~4-9 KB**
+
+---
+
+### Players Page (`/[year]/[division]/players`)
+**Components:**
+- Top 200 players ranked by points
+
+**Queries:**
+1. `SELECT * FROM players.parquet WHERE team_div = ? ORDER BY points DESC LIMIT 200`
+   - Reads: ~20-50 KB (division-filtered row groups)
+   - Returns: 200 players
+
+---
+
+### Player Page (`/[year]/[division]/players/[playerId]`)
+**Components:**
+- Player metadata (name, team, position, stats)
+- Game log (stats per game)
+
+**Queries:**
+1. `SELECT * FROM players.parquet WHERE id = ?`
+   - Reads: ~1-2 KB (single player via range request)
+   - Returns: 1 player
+2. `SELECT * FROM player_stats.parquet WHERE player_id = ? ORDER BY date DESC`
+   - Reads: ~1-2 KB (contiguous block for player)
+   - Returns: ~10-15 games
+
+**Total: ~2-4 KB**
+
+---
+
+### Goals Leaders Page (`/[year]/[division]/leaders/goals`)
+**Components:**
+- Top 50 players ranked by goals
+
+**Queries:**
+1. `SELECT * FROM players.parquet WHERE team_div = ? ORDER BY goals DESC LIMIT 50`
+   - Reads: ~10-30 KB (division-filtered row groups)
+   - Returns: 50 players
+
+---
+
+### Games Page (`/[year]/[division]/games`)
+**Components:**
+- Recent 100 games for division
+
+**Queries:**
+1. `SELECT * FROM games.parquet WHERE home_team_div = ? OR away_team_div = ? ORDER BY date DESC LIMIT 100`
+   - Reads: ~20-50 KB (recent games from top row groups)
+   - Returns: 100 games
+
+---
+
+### Game Page (`/[year]/[division]/games/[gameId]`)
+**Components:**
+- Game metadata (date, teams, score)
+- Box score (player stats for both teams)
+
+**Queries:**
+1. `SELECT * FROM games.parquet WHERE id = ?`
+   - Reads: ~1-2 KB (single game via range request)
+   - Returns: 1 game
+2. `SELECT * FROM game_stats.parquet WHERE game_id = ? ORDER BY team_id ASC, (g + a) DESC`
+   - Reads: ~2-3 KB (all player stats for game)
+   - Returns: ~40 stat lines (both teams)
+
+**Total: ~3-5 KB**
+
+---
+
 ## Migration Path
 
 1. Update backend export to write parquet with these schemas + sort orders
