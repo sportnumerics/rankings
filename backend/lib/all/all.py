@@ -3,6 +3,7 @@ from ..shared.types import PredictArgs, ScrapeArgs, SyncArgs
 from ..scrape import scrape
 from ..predict import predict
 from ..games import games
+from ..export import export_parquet
 from ..sync import sync
 from ..shared import shared
 import logging
@@ -31,6 +32,10 @@ def run(args):
         # Generate consolidated games file
         games.generate_games_file(
             type('GamesArgs', (), {'year': year, 'input_dir': args.out_dir})())
+
+        # Export optimized parquet views for frontend
+        export_parquet.export_parquet_views(
+            type('ExportArgs', (), {'year': year, 'input_dir': args.out_dir, 'out_dir': args.out_dir})())
 
         if args.bucket_url:
             sync.sync(

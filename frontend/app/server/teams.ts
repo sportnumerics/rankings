@@ -6,14 +6,77 @@ import rank from './rank';
 import Data, { create } from './Data';
 import { DataMode, parquetQuery, QueryDebug } from './parquet';
 
-export async function getRankedTeams({ year, div }: { year: string, div: string }): Promise<Data<RankedTeamMap>> {
-    const teamsPromise = getTeams({ year, div });
-    const ratingsPromise = getTeamRatings({ year });
-    const [teams, ratings] = await Promise.all([teamsPromise, ratingsPromise]);
-    const teamRatings = ratings.map(r => Object.values(teams.body)
-        .filter(team => team.div === div)
-        .map(team => ({ ...team, ...r[team.id] })));
-    return teamRatings.map(r => rank(r, t => t.overall));
+export async function getRankedTeams({ year, div, mode = 'json' }: { year: string, div: string, mode?: DataMode }): Promise<Data<RankedTeamMap> & { debug?: QueryDebug }> {
+    if (mode !== 'parquet') {
+        const teamsPromise = getTeams({ year, div });
+        const ratingsPromise = getTeamRatings({ year });
+        const [teams, ratings] = await Promise.all([teamsPromise, ratingsPromise]);
+        const teamRatings = ratings.map(r => Object.values(teams.body)
+            .filter(team => team.div === div)
+            .map(team => ({ ...team, ...r[team.id] })));
+        return teamRatings.map(r => rank(r, t => t.overall));
+    }
+
+    const bucket = process.env.DATA_BUCKET;
+    const prefix = process.env.DATA_BUCKET_PREFIX || 'data';
+    if (!bucket) {
+        const teamsPromise = getTeams({ year, div });
+        const ratingsPromise = getTeamRatings({ year });
+        const [teams, ratings] = await Promise.all([teamsPromise, ratingsPromise]);
+        const teamRatings = ratings.map(r => Object.values(teams.body)
+            .filter(team => team.div === div)
+            .map(team => ({ ...team, ...r[team.id] })));
+        return teamRatings.map(r => rank(r, t => t.overall));
+    }
+
+    const sql = `
+        SELECT 
+            id, name, div, sport, source, schedule_url,
+            offense, defense, overall, rank
+        FROM read_parquet('s3://${bucket}/${prefix}/${year}/teams-list.parquet')
+        WHERE div = '${div}'
+        ORDER BY rank ASC
+    `;
+
+    try {
+        const { rows, debug } = await parquetQuery<any>(sql, 'teams_list');
+        const teamMap: RankedTeamMap = Object.fromEntries(
+            rows.map(r => [r.id, {
+                id: r.id,
+                name: r.name,
+                div: r.div,
+                sport: r.sport,
+                source: r.source,
+                schedule: { url: r.schedule_url || '' },
+                offense: r.offense,
+                defense: r.defense,
+                overall: r.overall,
+                rank: r.rank,
+            }])
+        );
+        const data = create(teamMap) as Data<RankedTeamMap> & { debug?: QueryDebug };
+        data.debug = debug;
+        return data;
+    } catch (error: any) {
+        console.error('parquet teams_list failed', error);
+        const teamsPromise = getTeams({ year, div });
+        const ratingsPromise = getTeamRatings({ year });
+        const [teams, ratings] = await Promise.all([teamsPromise, ratingsPromise]);
+        const teamRatings = ratings.map(r => Object.values(teams.body)
+            .filter(team => team.div === div)
+            .map(team => ({ ...team, ...r[team.id] })));
+        const fallback = teamRatings.map(r => rank(r, t => t.overall)) as Data<RankedTeamMap> & { debug?: QueryDebug };
+        fallback.debug = {
+            label: 'teams_list',
+            queryMs: 0,
+            s3HeadRequests: 0,
+            s3GetRequests: 0,
+            s3RangeRequests: 0,
+            s3PartialBytes: 0,
+            note: `Parquet failed (${error?.message || 'unknown error'}); fell back to JSON source.`
+        };
+        return fallback;
+    }
 }
 
 export async function getTeams({ year, div }: { year: string, div: string }): Promise<Data<TeamMap>> {
