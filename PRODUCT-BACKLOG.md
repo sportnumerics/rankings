@@ -3,33 +3,38 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-07)
+## Active Focus (updated 2026-03-10)
 
 ### PR
-1) **#54 — Backtest CI + sticky PR comment + CLI backtest command**
-- Status: PR
+1) **#59 — Goals leaders page**
+- Status: PR (green, awaiting review)
 - Owner: assistant
-- Outcome: one canonical backtest path (local + CI) and visible PR quality signal
-- First increment: finish review fixes and get green checks
+- Outcome: `/[year]/[div]/leaders/goals` page showing top 50 goal scorers
+- First increment: single category (goals), reuse existing data/components
 - Acceptance checks:
-  - CI backtest job passes
-  - PR comment updates with summary table
-  - command `python main.py --year 2024-2025 backtest --data-dir ... --out-dir ...` works
-- Next action: verify CI passes after lazy-import fix (c067b33), then request merge
-- Link: https://github.com/sportnumerics/rankings/pull/54
-- Last update: Fixed ModuleNotFoundError in backend by lazy-loading backtest_baseline (2026-03-07 09:00)
+  - ✅ Page loads at `/[year]/[div]/leaders/goals` for all years/divs
+  - ✅ Top 50 players sorted by goals (descending)
+  - ✅ Displays: player name, team, goals, assists, points
+  - ✅ All CI checks passed
+- Next action: needs Will's review + approval to merge
+- Link: https://github.com/sportnumerics/rankings/pull/59
+- Last update: CI green (2026-03-10 09:00)
+
+2) **#TBD — Assists leaders page**
+- Status: PR (opening now)
+- Owner: assistant
+- Outcome: `/[year]/[div]/leaders/assists` page showing top 50 assist leaders
+- First increment: reuse goals leaders infrastructure, change sort field
+- Acceptance checks:
+  - Page loads at `/[year]/[div]/leaders/assists`
+  - Top 50 players sorted by assists (descending)
+  - Reuses PlayersCard component
+  - CI passes
+- Next action: push branch + open PR
+- Branch: feature-assists-leaders-impl
+- Last update: implemented (2026-03-10 09:00)
 
 ### Ready
-2) **Feature discovery sprint: highest-value near-term product improvement**
-- Status: Ready
-- Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
-- Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
-
 3) **WIP/PR velocity automation**
 - Status: Ready
 - Owner: assistant
@@ -48,8 +53,11 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 
 ## Done
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
+- ✅ #54 Backtest CI + sticky PR comment + CLI backtest command (merged 2026-03-07)
+- ✅ Feature discovery sprint — top-5 candidates evaluated, promoted stats leaderboards (2026-03-08)
 
 ## Backlog Notes (assistant-facing)
 - Prefer tasks that improve user-visible value or reduce prediction-quality risk.
 - Keep PRs small and reviewable.
 - Every status change must update `Next action`.
+- **Saves leaders**: Not yet possible — `PlayerRating` type doesn't include saves field. Would require backend scraper extension + schema update.
