@@ -5,6 +5,8 @@ import { longDatetime } from "@/app/formatting";
 import { Card, ExternalLink, H1, H2, Table, TableHeader } from "@/app/shared";
 import Link from "@/app/components/Link";
 import LastUpdated from "@/app/components/LastModified";
+import { dataModeFromSearch } from "@/app/server/parquet";
+import DataModeFooter from "@/app/components/DataModeFooter";
 
 interface Params {
     year: string;
@@ -12,8 +14,9 @@ interface Params {
     game: string;
 }
 
-export default async function Page({ params }: { params: Params }) {
-    const { body: game, lastModified } = await getGame(params);
+export default async function Page({ params, searchParams }: { params: Params, searchParams?: Record<string, string | string[] | undefined> }) {
+    const mode = dataModeFromSearch(searchParams);
+    const { body: game, lastModified, debug } = await getGame({ ...params, mode });
 
     function StatLines({ stats }: { stats: GameStatLine[] }) {
         const sortedStats = stats.slice();
@@ -51,6 +54,7 @@ export default async function Page({ params }: { params: Params }) {
         <Card title={game.home_team.name}>
             <StatLines stats={game.home_stats} />
         </Card>
+        <DataModeFooter mode={mode} debugs={debug ? [debug] : []} />
         <LastUpdated lastModified={lastModified} />
     </>
 }

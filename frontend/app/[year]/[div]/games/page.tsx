@@ -8,6 +8,8 @@ import { notFound } from "next/navigation";
 import { getRankedTeams, getTeamRatings } from "@/app/server/teams";
 import { TeamRating } from "@/app/server/types";
 import Rank from "@/app/components/Rank";
+import { dataModeFromSearch } from "@/app/server/parquet";
+import DataModeFooter from "@/app/components/DataModeFooter";
 
 interface Params {
     year: string;
@@ -102,7 +104,9 @@ function predictScore(away?: TeamRating, home?: TeamRating) {
     return `${awayScore}-${homeScore}`;
 }
 
-export default async function Page({ params }: { params: Params }) {
+export default async function Page({ params, searchParams }: { params: Params, searchParams?: Record<string, string | string[] | undefined> }) {
+    const mode = dataModeFromSearch(searchParams);
+    
     try {
         await getDiv(params.div);
     } catch (err) {
@@ -113,9 +117,10 @@ export default async function Page({ params }: { params: Params }) {
     }
 
     let gamesByDate;
+    let gamesDebug;
 
     try {
-        ({ body: gamesByDate } = await getGames({ year: params.year }));
+        ({ body: gamesByDate, debug: gamesDebug } = await getGames({ year: params.year, div: params.div, mode }));
     } catch (err) {
         if (err instanceof NotFoundError) {
             return <>
@@ -128,10 +133,11 @@ export default async function Page({ params }: { params: Params }) {
         throw err;
     }
 
-    const [{ body: ratings }, { body: rankedTeams }] = await Promise.all([
+    const [{ body: ratings }, rankedTeamsData] = await Promise.all([
         getTeamRatings({ year: params.year }),
-        getRankedTeams({ year: params.year, div: params.div }),
+        getRankedTeams({ year: params.year, div: params.div, mode }),
     ]);
+    const { body: rankedTeams, debug: teamsDebug } = rankedTeamsData;
 
     const now = new Date();
     const todayKey = dayKeyInTz(now);
@@ -233,5 +239,6 @@ export default async function Page({ params }: { params: Params }) {
                 </div>
             </Card>;
         })}
+        <DataModeFooter mode={mode} debugs={[gamesDebug, teamsDebug].filter((d): d is NonNullable<typeof d> => Boolean(d))} />
     </>;
 }
