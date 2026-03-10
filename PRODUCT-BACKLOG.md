@@ -20,15 +20,18 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Last update: Fixed ModuleNotFoundError in backend by lazy-loading backtest_baseline (2026-03-07 09:00)
 
 ### Ready
-2) **Feature discovery sprint: highest-value near-term product improvement**
+2) **Multi-category leaders pages (assists + saves)**
 - Status: Ready
 - Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
+- Outcome: `/leaders/assists` and `/leaders/saves` pages showing top 50 performers
+- First increment: implement assists leaders page reusing goals leaders infrastructure
 - Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
+  - `/2026/d1/leaders/assists` loads with top 50 by assists descending
+  - `/2026/d1/leaders/saves` loads with top 50 by saves descending
+  - Reuses PlayersCard component from goals leaders
+  - All E2E tests pass
+- Next action: implement assists page on new branch (feature-assists-leaders)
+- Research: see `feature-discovery-top5.md` for full analysis
 
 3) **WIP/PR velocity automation**
 - Status: Ready
