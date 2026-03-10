@@ -24,7 +24,7 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
         const sql = `
           SELECT 
             player_id as id, player_name as name,
-            team_id, team_name, team_schedule_url, team_sport, team_source,
+            div, team_id, team_name, team_schedule_url, team_sport, team_source,
             points, goals, assists, position, number, class_year
           FROM read_parquet('s3://${bucket}/${prefix}/${year}/${file}')
           ${where ? `WHERE ${where}` : ''}
@@ -40,7 +40,7 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
                 team: {
                     id: r.team_id,
                     name: r.team_name,
-                    div: div!,
+                    div: r.div,
                     schedule: { url: r.team_schedule_url || '' },
                     sport: r.team_sport,
                     source: r.team_source,
