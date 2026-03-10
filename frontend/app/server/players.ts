@@ -99,6 +99,7 @@ export async function getPlayerStats({ year, player, div, mode = 'json' }: { yea
         const metaSql = `
           SELECT 
             player_id as id, player_name as name,
+            div as team_div,
             team_id, team_name, team_schedule_url, team_sport, team_source,
             position, number, class_year, eligibility, height, weight,
             high_school, hometown, external_link
@@ -135,6 +136,7 @@ export async function getPlayerStats({ year, player, div, mode = 'json' }: { yea
                 team: {
                     id: meta.team_id,
                     name: meta.team_name,
+                    div: meta.team_div,
                     schedule: { url: meta.team_schedule_url || '' },
                     sport: meta.team_sport,
                     source: meta.team_source,

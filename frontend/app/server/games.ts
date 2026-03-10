@@ -99,8 +99,10 @@ export async function getGame({ year, game, div, mode = 'json' }: { year: string
                 sport: meta.away_team_sport,
                 source: meta.away_team_source,
             },
-            home_score: meta.home_score,
-            away_score: meta.away_score,
+            result: {
+                home_score: meta.home_score,
+                away_score: meta.away_score,
+            },
             home_stats: homeStats.map(s => ({
                 player: { id: s.player_id, name: s.player_name, external_link: '' },
                 number: s.number,
@@ -108,10 +110,10 @@ export async function getGame({ year, game, div, mode = 'json' }: { year: string
                 g: s.g,
                 a: s.a,
                 gb: s.gb,
-                face_offs: (s.face_offs_won !== null || s.face_offs_lost !== null) ? {
+                face_offs: {
                     won: s.face_offs_won || 0,
                     lost: s.face_offs_lost || 0,
-                } : undefined,
+                },
             })),
             away_stats: awayStats.map(s => ({
                 player: { id: s.player_id, name: s.player_name, external_link: '' },
@@ -120,10 +122,10 @@ export async function getGame({ year, game, div, mode = 'json' }: { year: string
                 g: s.g,
                 a: s.a,
                 gb: s.gb,
-                face_offs: (s.face_offs_won !== null || s.face_offs_lost !== null) ? {
+                face_offs: {
                     won: s.face_offs_won || 0,
                     lost: s.face_offs_lost || 0,
-                } : undefined,
+                },
             })),
         };
 
@@ -189,7 +191,7 @@ export async function getGames({ year, div, mode = 'json' }: { year: string, div
 
         // Group by date
         const gamesByDate: GamesByDate = {};
-        for (const row of uniqueGames.values()) {
+        for (const row of Array.from(uniqueGames.values())) {
             const date = row.date.split('T')[0]; // Extract date portion
             if (!gamesByDate[date]) {
                 gamesByDate[date] = [];
