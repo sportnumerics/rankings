@@ -101,6 +101,7 @@ export async function getPlayerStats({ year, player, div, mode = 'json' }: { yea
             player_id as id, player_name as name,
             div as team_div,
             team_id, team_name, team_schedule_url, team_sport, team_source,
+            points, goals, assists,
             position, number, class_year, eligibility, height, weight,
             high_school, hometown, external_link
           FROM read_parquet('s3://${bucket}/${prefix}/${year}/player-metadata.parquet')
