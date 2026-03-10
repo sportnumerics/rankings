@@ -23,14 +23,15 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Status: PR
 - Owner: assistant
 - Outcome: 12 optimized parquet files (one per page component) with frontend DuckDB queries
-- Current increment: backend export complete (7.5MB, 12 files), now wiring frontend queries
+- Current increment: Phase 1 + Phase 2 COMPLETE
 - Acceptance checks:
   - Backend: `python main.py export-parquet` generates all 12 files ✅
-  - Frontend: all pages query correct file with optimal filters
-  - Footer displays query ms + file read stats
-- Next action: implement frontend DuckDB loaders for each materialized view
+  - Backend: integrated into `all` workflow ✅
+  - Frontend: all pages query correct file with optimal filters ✅
+  - Footer displays query ms + file read stats ✅
+- Next action: awaiting Will's review to merge and proceed to Phase 3 (flip default)
 - Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: export write-side complete and tested (2026-03-09 09:30)
+- Last update: Phase 1+2 complete - all pages support ?dataMode=parquet (2026-03-09 19:30)
 
 2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
