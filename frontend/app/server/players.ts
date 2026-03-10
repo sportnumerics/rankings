@@ -40,6 +40,7 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
                 team: {
                     id: r.team_id,
                     name: r.team_name,
+                    div: div!,
                     schedule: { url: r.team_schedule_url || '' },
                     sport: r.team_sport,
                     source: r.team_source,
