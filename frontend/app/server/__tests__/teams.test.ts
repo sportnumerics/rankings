@@ -43,6 +43,11 @@ import source from '../source';
 import { create } from '../Data';
 
 describe('getRankedTeams', () => {
+  const dataOf = <T>(body: T) => ({
+    body,
+    map: <U>(fn: (value: T) => U) => dataOf(fn(body)),
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.DATA_BUCKET;
@@ -163,24 +168,13 @@ describe('getRankedTeams', () => {
 
     it('falls back to JSON on parquet error and includes error note', async () => {
       vi.mocked(parquetQuery).mockRejectedValue(new Error('Connection failed'));
-      
-      // Mock getTeams result - source.get returns Data<Team[]>
+
       const teamsList = [{ id: 'ml-team1', name: 'Team 1', div: 'd1', sport: 'ml', source: 'ncaa', schedule: { url: '' } }];
-      const teamsData = {
-        body: teamsList,
-        map: (fn: any) => ({ body: fn(teamsList) }),
-      };
-      
-      // Mock getTeamRatings result
       const ratingsList = [{ team: 'ml-team1', offense: 100, defense: 90, overall: 95 }];
-      const ratingsData = {
-        body: ratingsList,
-        map: (fn: any) => ({ body: fn(ratingsList) }),
-      };
-      
+
       vi.mocked(source.get)
-        .mockResolvedValueOnce(teamsData as any)
-        .mockResolvedValueOnce(ratingsData as any);
+        .mockResolvedValueOnce(dataOf(teamsList) as any)
+        .mockResolvedValueOnce(dataOf(ratingsList) as any);
 
       const result = await getRankedTeams({ year: '2026', div: 'd1', mode: 'parquet' });
 
@@ -193,24 +187,13 @@ describe('getRankedTeams', () => {
 
     it('falls back to JSON when DATA_BUCKET is not set', async () => {
       delete process.env.DATA_BUCKET;
-      
-      // Mock getTeams result - source.get returns Data<Team[]>
+
       const teamsList = [{ id: 'ml-team1', name: 'Team 1', div: 'd1', sport: 'ml', source: 'ncaa', schedule: { url: '' } }];
-      const teamsData = {
-        body: teamsList,
-        map: (fn: any) => ({ body: fn(teamsList) }),
-      };
-      
-      // Mock getTeamRatings result
       const ratingsList = [{ team: 'ml-team1', offense: 100, defense: 90, overall: 95 }];
-      const ratingsData = {
-        body: ratingsList,
-        map: (fn: any) => ({ body: fn(ratingsList) }),
-      };
-      
+
       vi.mocked(source.get)
-        .mockResolvedValueOnce(teamsData as any)
-        .mockResolvedValueOnce(ratingsData as any);
+        .mockResolvedValueOnce(dataOf(teamsList) as any)
+        .mockResolvedValueOnce(dataOf(ratingsList) as any);
 
       await getRankedTeams({ year: '2026', div: 'd1', mode: 'parquet' });
 
@@ -221,23 +204,12 @@ describe('getRankedTeams', () => {
 
   describe('json mode', () => {
     it('uses JSON source when mode is not parquet', async () => {
-      // Mock getTeams result - source.get returns Data<Team[]>
       const teamsList = [{ id: 'ml-team1', name: 'Team 1', div: 'd1', sport: 'ml', source: 'ncaa', schedule: { url: '' } }];
-      const teamsData = {
-        body: teamsList,
-        map: (fn: any) => ({ body: fn(teamsList) }),
-      };
-      
-      // Mock getTeamRatings result
       const ratingsList = [{ team: 'ml-team1', offense: 100, defense: 90, overall: 95 }];
-      const ratingsData = {
-        body: ratingsList,
-        map: (fn: any) => ({ body: fn(ratingsList) }),
-      };
-      
+
       vi.mocked(source.get)
-        .mockResolvedValueOnce(teamsData as any)
-        .mockResolvedValueOnce(ratingsData as any);
+        .mockResolvedValueOnce(dataOf(teamsList) as any)
+        .mockResolvedValueOnce(dataOf(ratingsList) as any);
 
       await getRankedTeams({ year: '2026', div: 'd1', mode: 'json' });
 
