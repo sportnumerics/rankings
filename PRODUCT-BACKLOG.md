@@ -33,7 +33,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/58
 - Last update: Phase 1+2 complete - all pages support ?dataMode=parquet (2026-03-09 19:30)
 
-2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
+3) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
 - Owner: assistant
 - Outcome: reproducible baseline for cold/warm local+S3 query performance
@@ -44,21 +44,22 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Next action: decide merge order with #58 (can keep #57 for benchmarking docs)
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
-### Ready
-2) **Unit tests for parquet query code paths**
-- Status: Ready
+4) **#62 — Unit test coverage for parquet query code paths**
+- Status: PR
 - Owner: assistant
-- Outcome: test coverage for parquet.ts query functions and server data loaders
-- First increment: add tests for getRankedTeams/getRankedPlayers/getGames parquet mode
+- Outcome: Vitest coverage for parquet.ts and teams loader parquet/fallback logic
+- Current increment: fixed Data.map chaining in teams fallback/json tests after CI failure
 - Acceptance checks:
-  - Tests verify SQL query construction (div filtering, sorting, column selection)
-  - Tests verify fallback behavior when parquet fails
-  - Tests verify debug metadata structure
-  - All tests pass in CI
-- Next action: create test file with fixture data and basic query validation
-- Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - need systematic coverage
+  - Tests verify SQL query construction (div filtering, sorting, column selection) ✅
+  - Tests verify fallback behavior when parquet fails ✅
+  - Tests verify debug metadata structure ✅
+  - Frontend Unit Tests check in PR Validation passes (rerun pending)
+- Next action: rerun/observe CI for PR #62 and request merge once green
+- Link: https://github.com/sportnumerics/rankings/pull/62
+- Last update: pushed fix commit 1b87dae (2026-03-11 09:04)
 
-3) **Feature discovery sprint: highest-value near-term product improvement**
+### Ready
+2) **Feature discovery sprint: highest-value near-term product improvement**
 - Status: Ready
 - Owner: assistant
 - Outcome: one evidence-backed feature promoted to build
