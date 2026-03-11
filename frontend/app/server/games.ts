@@ -100,31 +100,31 @@ export async function getGame({ year, game, div, mode = 'json' }: { year: string
                 source: meta.away_team_source,
             },
             result: {
-                home_score: meta.home_score,
-                away_score: meta.away_score,
+                home_score: Number(meta.home_score),
+                away_score: Number(meta.away_score),
             },
             home_stats: homeStats.map(s => ({
                 player: { id: s.player_id, name: s.player_name, external_link: '' },
                 number: s.number,
                 position: s.position,
-                g: s.g,
-                a: s.a,
-                gb: s.gb,
+                g: Number(s.g),
+                a: Number(s.a),
+                gb: Number(s.gb),
                 face_offs: {
-                    won: s.face_offs_won || 0,
-                    lost: s.face_offs_lost || 0,
+                    won: Number(s.face_offs_won || 0),
+                    lost: Number(s.face_offs_lost || 0),
                 },
             })),
             away_stats: awayStats.map(s => ({
                 player: { id: s.player_id, name: s.player_name, external_link: '' },
                 number: s.number,
                 position: s.position,
-                g: s.g,
-                a: s.a,
-                gb: s.gb,
+                g: Number(s.g),
+                a: Number(s.a),
+                gb: Number(s.gb),
                 face_offs: {
-                    won: s.face_offs_won || 0,
-                    lost: s.face_offs_lost || 0,
+                    won: Number(s.face_offs_won || 0),
+                    lost: Number(s.face_offs_lost || 0),
                 },
             })),
         };
@@ -205,8 +205,8 @@ export async function getGames({ year, div, mode = 'json' }: { year: string, div
                 homeDiv: row.home_team_div,
                 sport: row.home_team_sport,
                 result: row.home_score !== null ? {
-                    home_score: row.home_score,
-                    away_score: row.away_score,
+                    home_score: Number(row.home_score),
+                    away_score: Number(row.away_score),
                 } : undefined,
             });
         }

@@ -48,10 +48,10 @@ export async function getRankedTeams({ year, div, mode = 'json' }: { year: strin
                 sport: r.sport,
                 source: r.source,
                 schedule: { url: r.schedule_url || '' },
-                offense: r.offense,
-                defense: r.defense,
-                overall: r.overall,
-                rank: r.rank,
+                offense: Number(r.offense),
+                defense: Number(r.defense),
+                overall: Number(r.overall),
+                rank: Number(r.rank),
             }])
         );
         const data = create(teamMap) as Data<RankedTeamMap> & { debug?: QueryDebug };

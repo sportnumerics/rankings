@@ -45,9 +45,9 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
                     sport: r.team_sport,
                     source: r.team_source,
                 },
-                points: r.points,
-                goals: r.goals,
-                assists: r.assists,
+                points: Number(r.points),
+                goals: Number(r.goals),
+                assists: Number(r.assists),
             }));
             const ranked = rankPlayers(players);
             const data = create(ranked) as Data<RankedPlayerMap> & { debug?: QueryDebug };
@@ -154,9 +154,9 @@ export async function getPlayerStats({ year, player, div, mode = 'json' }: { yea
                         sport: s.opponent_sport,
                         source: s.opponent_source,
                     },
-                    g: s.g,
-                    a: s.a,
-                    gb: s.gb,
+                    g: Number(s.g),
+                    a: Number(s.a),
+                    gb: Number(s.gb),
                 })),
                 position: meta.position,
                 number: meta.number,
