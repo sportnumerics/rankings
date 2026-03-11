@@ -11,9 +11,10 @@ import DataModeFooter from '@/app/components/DataModeFooter';
 
 export default async function Page({ params, searchParams }: { params: HasDivision, searchParams?: Record<string, string | string[] | undefined> }) {
     const mode = dataModeFromSearch(searchParams);
-    const teamsData = await getRankedTeams({ ...params, mode });
-    const divPromise = getDiv(params.div);
-    const [{ body: teams, lastModified, debug }, div] = await Promise.all([teamsData, divPromise]);
+    const [{ body: teams, lastModified, debug }, div] = await Promise.all([
+        getRankedTeams({ ...params, mode }),
+        getDiv(params.div)
+    ]);
     const sortedTeams = Object.values(teams);
     sortedTeams.sort(by(t => t.rank));
     return <>
