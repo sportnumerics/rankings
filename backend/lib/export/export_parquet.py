@@ -57,6 +57,10 @@ def export_parquet_views(args):
         player_ratings = load_player_ratings(args.input_dir, year)
         LOGGER.info(f'Loaded {len(player_ratings)} player ratings')
         
+        LOGGER.info('Loading teams...')
+        teams = load_teams(args.input_dir, year)
+        LOGGER.info(f'Loaded {len(teams)} teams')
+        
         LOGGER.info('Loading schedules...')
         schedules = load_schedules(args.input_dir, year)
         LOGGER.info(f'Loaded {len(schedules)} schedules')
@@ -74,11 +78,11 @@ def export_parquet_views(args):
         year_dir.mkdir(parents=True, exist_ok=True)
         
         # Export each materialized view
-        # Build team lookup for enriching references
-        team_lookup = {s.team.id: s.team for s in schedules}
+        # Build team lookup for enriching references (use all teams, not just schedules)
+        team_lookup = {t.id: t for t in teams}
         
-        export_teams_list(team_ratings, schedules, year_dir)
-        export_team_metadata(team_ratings, schedules, year_dir)
+        export_teams_list(team_ratings, teams, year_dir)
+        export_team_metadata(team_ratings, teams, year_dir)
         export_team_schedules(schedules, team_lookup, year_dir)
         export_team_rosters(players, player_ratings, team_lookup, year_dir)
         
@@ -128,6 +132,13 @@ def load_games(input_dir: str, year: str) -> List[dict]:
     return pq.ParquetDataset(path).read().to_pylist()
 
 
+def load_teams(input_dir: str, year: str) -> List:
+    """Load all teams."""
+    from ..shared.types import Team
+    path = shared.parquet_path(input_dir, year, 'teams')
+    return list(shared.load_parquet_dataset(Team, path))
+
+
 def load_players(input_dir: str, year: str) -> dict[str, dict]:
     """Load full player data as dicts indexed by player id."""
     path = shared.parquet_path(input_dir, year, 'players', 'data.parquet')
@@ -142,7 +153,7 @@ def load_players(input_dir: str, year: str) -> dict[str, dict]:
 # --- Teams Pages ---
 
 def export_teams_list(team_ratings: dict[str, TeamRating], 
-                      schedules: List[TeamDetail],
+                      teams: List,
                       year_dir: pathlib.Path):
     """
     File: teams-list.parquet
@@ -151,32 +162,33 @@ def export_teams_list(team_ratings: dict[str, TeamRating],
     """
     rows = []
     
-    # Build map of team_id -> TeamDetail for metadata
-    team_details = {s.team.id: s.team for s in schedules}
+    # Build map of team_id -> Team for metadata
+    team_lookup = {t.id: t for t in teams}
     
     # Calculate ranks within each division
     teams_by_div = {}
     for team_id, rating in team_ratings.items():
-        detail = team_details.get(team_id)
-        if not detail:
+        team = team_lookup.get(team_id)
+        if not team:
+            LOGGER.warning(f'Team {team_id} has rating but no metadata - skipping')
             continue
-        div = detail.div
+        div = team.div
         if div not in teams_by_div:
             teams_by_div[div] = []
-        teams_by_div[div].append((team_id, rating, detail))
+        teams_by_div[div].append((team_id, rating, team))
     
-    for div, teams in teams_by_div.items():
+    for div, div_teams in teams_by_div.items():
         # Sort by overall rating desc to assign ranks
-        teams.sort(key=lambda t: t[1].overall, reverse=True)
-        for rank, (team_id, rating, detail) in enumerate(teams, start=1):
+        div_teams.sort(key=lambda t: t[1].overall, reverse=True)
+        for rank, (team_id, rating, team) in enumerate(div_teams, start=1):
             rows.append({
                 'div': div,
                 'rank': rank,
                 'id': team_id,
-                'name': detail.name,
-                'sport': detail.sport,
-                'source': detail.source,
-                'schedule_url': detail.schedule.url if detail.schedule else None,
+                'name': team.name,
+                'sport': team.sport,
+                'source': team.source,
+                'schedule_url': team.schedule.url if team.schedule else None,
                 'offense': rating.offense,
                 'defense': rating.defense,
                 'overall': rating.overall,
@@ -189,7 +201,7 @@ def export_teams_list(team_ratings: dict[str, TeamRating],
 
 
 def export_team_metadata(team_ratings: dict[str, TeamRating],
-                         schedules: List[TeamDetail],
+                         teams: List,
                          year_dir: pathlib.Path):
     """
     File: team-metadata.parquet
@@ -197,29 +209,30 @@ def export_team_metadata(team_ratings: dict[str, TeamRating],
     Query: SELECT * FROM team_metadata WHERE div = ? AND id = ?
     """
     rows = []
-    team_details = {s.team.id: s.team for s in schedules}
+    team_lookup = {t.id: t for t in teams}
     
     # Calculate ranks
     teams_by_div = {}
     for team_id, rating in team_ratings.items():
-        detail = team_details.get(team_id)
-        if not detail:
+        team = team_lookup.get(team_id)
+        if not team:
+            LOGGER.warning(f'Team {team_id} has rating but no metadata - skipping')
             continue
-        div = detail.div
+        div = team.div
         if div not in teams_by_div:
             teams_by_div[div] = []
-        teams_by_div[div].append((team_id, rating, detail))
+        teams_by_div[div].append((team_id, rating, team))
     
-    for div, teams in teams_by_div.items():
-        teams.sort(key=lambda t: t[1].overall, reverse=True)
-        for rank, (team_id, rating, detail) in enumerate(teams, start=1):
+    for div, div_teams in teams_by_div.items():
+        div_teams.sort(key=lambda t: t[1].overall, reverse=True)
+        for rank, (team_id, rating, team) in enumerate(div_teams, start=1):
             rows.append({
                 'div': div,
                 'id': team_id,
-                'name': detail.name,
-                'sport': detail.sport,
-                'source': detail.source,
-                'schedule_url': detail.schedule.url if detail.schedule else None,
+                'name': team.name,
+                'sport': team.sport,
+                'source': team.source,
+                'schedule_url': team.schedule.url if team.schedule else None,
                 'offense': rating.offense,
                 'defense': rating.defense,
                 'overall': rating.overall,
