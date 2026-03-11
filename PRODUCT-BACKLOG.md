@@ -45,7 +45,20 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
 ### Ready
-2) **Feature discovery sprint: highest-value near-term product improvement**
+2) **Unit tests for parquet query code paths**
+- Status: Ready
+- Owner: assistant
+- Outcome: test coverage for parquet.ts query functions and server data loaders
+- First increment: add tests for getRankedTeams/getRankedPlayers/getGames parquet mode
+- Acceptance checks:
+  - Tests verify SQL query construction (div filtering, sorting, column selection)
+  - Tests verify fallback behavior when parquet fails
+  - Tests verify debug metadata structure
+  - All tests pass in CI
+- Next action: create test file with fixture data and basic query validation
+- Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - need systematic coverage
+
+3) **Feature discovery sprint: highest-value near-term product improvement**
 - Status: Ready
 - Owner: assistant
 - Outcome: one evidence-backed feature promoted to build
@@ -55,7 +68,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - One candidate converted into implementation-ready task
 - Next action: research 5 candidates from competitor + current site gaps
 
-3) **WIP/PR velocity automation**
+4) **WIP/PR velocity automation**
 - Status: Ready
 - Owner: assistant
 - Outcome: fewer stalls, faster PR throughput
