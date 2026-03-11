@@ -6,7 +6,21 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 ## Active Focus (updated 2026-03-07)
 
 ### PR
-1) **#54 — Backtest CI + sticky PR comment + CLI backtest command**
+1) **#62 — Unit test coverage for parquet query code paths**
+- Status: PR
+- Owner: assistant
+- Outcome: Vitest framework + tests for parquet.ts and teams.ts query logic
+- Current increment: Basic test coverage for SQL construction and debug metadata
+- Acceptance checks:
+  - Vitest configured with node environment ✅
+  - Tests verify SQL query construction (div filtering, sorting, column selection) ✅
+  - Tests verify debug metadata structure ✅
+  - All tests pass in CI (pending)
+- Next action: awaiting Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/62
+- Last update: created with Vitest setup + initial tests (2026-03-11 06:23)
+
+2) **#54 — Backtest CI + sticky PR comment + CLI backtest command**
 - Status: PR
 - Owner: assistant
 - Outcome: one canonical backtest path (local + CI) and visible PR quality signal
