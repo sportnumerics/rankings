@@ -171,16 +171,18 @@ def export_teams_list(team_ratings: dict[str, TeamRating],
         
         # Look up rating; use defaults if team hasn't played
         rating = team_ratings.get(team.id)
+        has_rating = rating is not None
         offense = rating.offense if rating else 0.0
         defense = rating.defense if rating else 0.0
         overall = rating.overall if rating else 0.0
         
-        teams_by_div[div].append((team.id, offense, defense, overall, team))
+        teams_by_div[div].append((team.id, offense, defense, overall, has_rating, team))
     
     for div, div_teams in teams_by_div.items():
-        # Sort by overall rating desc to assign ranks
-        div_teams.sort(key=lambda t: t[3], reverse=True)  # t[3] is overall
-        for rank, (team_id, offense, defense, overall, team) in enumerate(div_teams, start=1):
+        # Sort by: rated teams first (desc), then overall desc
+        # This puts unrated teams (overall=0.0) below negative-rated teams
+        div_teams.sort(key=lambda t: (t[4], t[3]), reverse=True)  # t[4]=has_rating, t[3]=overall
+        for rank, (team_id, offense, defense, overall, has_rating, team) in enumerate(div_teams, start=1):
             rows.append({
                 'div': div,
                 'rank': rank,
@@ -219,15 +221,17 @@ def export_team_metadata(team_ratings: dict[str, TeamRating],
         
         # Look up rating; use defaults if team hasn't played
         rating = team_ratings.get(team.id)
+        has_rating = rating is not None
         offense = rating.offense if rating else 0.0
         defense = rating.defense if rating else 0.0
         overall = rating.overall if rating else 0.0
         
-        teams_by_div[div].append((team.id, offense, defense, overall, team))
+        teams_by_div[div].append((team.id, offense, defense, overall, has_rating, team))
     
     for div, div_teams in teams_by_div.items():
-        div_teams.sort(key=lambda t: t[3], reverse=True)  # t[3] is overall
-        for rank, (team_id, offense, defense, overall, team) in enumerate(div_teams, start=1):
+        # Sort by: rated teams first (desc), then overall desc
+        div_teams.sort(key=lambda t: (t[4], t[3]), reverse=True)  # t[4]=has_rating, t[3]=overall
+        for rank, (team_id, offense, defense, overall, has_rating, team) in enumerate(div_teams, start=1):
             rows.append({
                 'div': div,
                 'id': team_id,
