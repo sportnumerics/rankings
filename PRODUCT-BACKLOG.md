@@ -59,17 +59,23 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Last update: pushed fix commit 1b87dae (2026-03-11 09:04)
 
 ### Ready
-2) **Feature discovery sprint: highest-value near-term product improvement**
+2) **Multi-Category Player Leaders Hub (Saves/Faceoffs/Ground Balls)**
 - Status: Ready
 - Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
-- Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
+- Outcome: Expand player leaders beyond goals/assists to saves, faceoff %, ground balls, caused turnovers
+- Context: Natural extension of PRs #59 (goals) and #61 (assists); fills gap vs Laxnumbers
+- Blocker: Requires backend PlayerRating extension (saves, faceoffs, gb, ct fields) + aggregation logic
+- First increment: Add saves/ga fields to PlayerRating + export-parquet saves-leaders file + frontend page
+- Acceptance checks (Phase 1 - Saves):
+  - Backend: PlayerRating includes `saves` and `ga` (goals against) fields
+  - Backend: player_ratings computation aggregates saves from Player.stats
+  - Backend: export_saves_leaders() generates saves-leaders.parquet
+  - Frontend: /leaders/saves page shows top 50 goalies sorted by saves descending
+  - Minimum games threshold applied (5+ games)
+- Next action: Phase 1 backend work (extend PlayerRating + aggregation)
+- Link to discovery: FEATURE-DISCOVERY-2026-03-12.md (top-5 analysis)
 
-4) **WIP/PR velocity automation**
+3) **WIP/PR velocity automation**
 - Status: Ready
 - Owner: assistant
 - Outcome: fewer stalls, faster PR throughput
@@ -87,6 +93,9 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 
 ## Done
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
+- ✅ Feature discovery sprint (2026-03-12): Top-5 candidates analyzed, #1 (Multi-Category Leaders Hub) promoted to Ready
+  - See: FEATURE-DISCOVERY-2026-03-12.md for full analysis
+  - Recommendation: Saves leaders → Faceoff leaders → Ground balls → Caused turnovers
 
 ## Backlog Notes (assistant-facing)
 - Prefer tasks that improve user-visible value or reduce prediction-quality risk.
