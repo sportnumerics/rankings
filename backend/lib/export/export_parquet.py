@@ -649,10 +649,11 @@ def export_games_list(games: List[dict], team_lookup: dict, year_dir: pathlib.Pa
 def export_game_metadata(games: List[dict], team_lookup: dict, year_dir: pathlib.Path):
     """
     File: game-metadata.parquet
-    Sort: (div ASC, game_id ASC)
-    Query: SELECT * FROM game_metadata WHERE div = ? AND game_id = ? LIMIT 1
+    Sort: (game_id ASC, div ASC)
+    Query: SELECT * FROM game_metadata WHERE game_id = ? LIMIT 1
     
     Note: Each game appears TWICE for consistency with games-list.
+    Sort by game_id first to enable efficient single-game lookups.
     """
     rows = []
     
@@ -713,9 +714,9 @@ def export_game_metadata(games: List[dict], team_lookup: dict, year_dir: pathlib
                 'away_score': result['points_against'] if result and 'points_against' in result else None,
             })
     
-    rows.sort(key=lambda r: (r['div'], r['game_id']))
+    rows.sort(key=lambda r: (r['game_id'], r['div']))
     write_parquet(rows, year_dir / 'game-metadata.parquet',
-                       sort_order=[('div', 'ascending'), ('game_id', 'ascending')])
+                       sort_order=[('game_id', 'ascending'), ('div', 'ascending')])
     LOGGER.info(f'Exported {len(rows)} rows to game-metadata.parquet')
 
 
