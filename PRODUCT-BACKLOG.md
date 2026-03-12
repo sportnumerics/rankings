@@ -23,16 +23,17 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Status: PR
 - Owner: assistant
 - Outcome: 12 optimized parquet files (one per page component) with frontend DuckDB queries
-- Current increment: Phase 1 + Phase 2 COMPLETE + bug fix for teams with 0 games
+- Current increment: Phase 1 + Phase 2 COMPLETE + bug fixes for 0-game teams
 - Acceptance checks:
   - Backend: `python main.py export-parquet` generates all 12 files ✅
   - Backend: integrated into `all` workflow ✅
   - Frontend: all pages query correct file with optimal filters ✅
   - Footer displays query ms + file read stats ✅
-  - Teams with 0 games appear in parquet mode (same as JSON mode) ✅
+  - Teams with 0 games appear in parquet mode ✅
+  - Unrated teams rank below negative-rated teams (nulls last behavior) ✅
 - Next action: awaiting Will's review to merge and proceed to Phase 3 (flip default)
 - Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: Fixed bug where teams with no games were missing from parquet export (2026-03-12 06:35)
+- Last update: Fixed ranking sort so unrated teams appear below all rated teams (2026-03-12 07:22)
 
 2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
