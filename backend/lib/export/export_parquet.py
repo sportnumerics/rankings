@@ -162,25 +162,25 @@ def export_teams_list(team_ratings: dict[str, TeamRating],
     """
     rows = []
     
-    # Build map of team_id -> Team for metadata
-    team_lookup = {t.id: t for t in teams}
-    
     # Calculate ranks within each division
     teams_by_div = {}
-    for team_id, rating in team_ratings.items():
-        team = team_lookup.get(team_id)
-        if not team:
-            LOGGER.warning(f'Team {team_id} has rating but no metadata - skipping')
-            continue
+    for team in teams:
         div = team.div
         if div not in teams_by_div:
             teams_by_div[div] = []
-        teams_by_div[div].append((team_id, rating, team))
+        
+        # Look up rating; use defaults if team hasn't played
+        rating = team_ratings.get(team.id)
+        offense = rating.offense if rating else 0.0
+        defense = rating.defense if rating else 0.0
+        overall = rating.overall if rating else 0.0
+        
+        teams_by_div[div].append((team.id, offense, defense, overall, team))
     
     for div, div_teams in teams_by_div.items():
         # Sort by overall rating desc to assign ranks
-        div_teams.sort(key=lambda t: t[1].overall, reverse=True)
-        for rank, (team_id, rating, team) in enumerate(div_teams, start=1):
+        div_teams.sort(key=lambda t: t[3], reverse=True)  # t[3] is overall
+        for rank, (team_id, offense, defense, overall, team) in enumerate(div_teams, start=1):
             rows.append({
                 'div': div,
                 'rank': rank,
@@ -189,9 +189,9 @@ def export_teams_list(team_ratings: dict[str, TeamRating],
                 'sport': team.sport,
                 'source': team.source,
                 'schedule_url': team.schedule.url if team.schedule else None,
-                'offense': rating.offense,
-                'defense': rating.defense,
-                'overall': rating.overall,
+                'offense': offense,
+                'defense': defense,
+                'overall': overall,
             })
     
     rows.sort(key=lambda r: (r['div'], r['rank']))
@@ -209,23 +209,25 @@ def export_team_metadata(team_ratings: dict[str, TeamRating],
     Query: SELECT * FROM team_metadata WHERE div = ? AND id = ?
     """
     rows = []
-    team_lookup = {t.id: t for t in teams}
     
-    # Calculate ranks
+    # Calculate ranks within each division
     teams_by_div = {}
-    for team_id, rating in team_ratings.items():
-        team = team_lookup.get(team_id)
-        if not team:
-            LOGGER.warning(f'Team {team_id} has rating but no metadata - skipping')
-            continue
+    for team in teams:
         div = team.div
         if div not in teams_by_div:
             teams_by_div[div] = []
-        teams_by_div[div].append((team_id, rating, team))
+        
+        # Look up rating; use defaults if team hasn't played
+        rating = team_ratings.get(team.id)
+        offense = rating.offense if rating else 0.0
+        defense = rating.defense if rating else 0.0
+        overall = rating.overall if rating else 0.0
+        
+        teams_by_div[div].append((team.id, offense, defense, overall, team))
     
     for div, div_teams in teams_by_div.items():
-        div_teams.sort(key=lambda t: t[1].overall, reverse=True)
-        for rank, (team_id, rating, team) in enumerate(div_teams, start=1):
+        div_teams.sort(key=lambda t: t[3], reverse=True)  # t[3] is overall
+        for rank, (team_id, offense, defense, overall, team) in enumerate(div_teams, start=1):
             rows.append({
                 'div': div,
                 'id': team_id,
@@ -233,9 +235,9 @@ def export_team_metadata(team_ratings: dict[str, TeamRating],
                 'sport': team.sport,
                 'source': team.source,
                 'schedule_url': team.schedule.url if team.schedule else None,
-                'offense': rating.offense,
-                'defense': rating.defense,
-                'overall': rating.overall,
+                'offense': offense,
+                'defense': defense,
+                'overall': overall,
                 'rank': rank,
             })
     
