@@ -311,6 +311,10 @@ def export_team_rosters(players: dict[str, dict],
         rows.append({
             'div': team.div,
             'team_id': team.id,
+            'team_name': team.name,
+            'team_schedule_url': team.schedule.url if team.schedule else None,
+            'team_sport': team.sport,
+            'team_source': team.source,
             'number': player.get('number') or 0,  # Default to 0 for sorting
             'player_id': player['id'],
             'player_name': player['name'],
