@@ -1,11 +1,13 @@
 'use server';
 import { getPlayerStats } from "@/app/server/players";
+import { dataModeFromSearch } from "@/app/server/parquet";
 import { Card, ExternalLink, H1, H2, Table, TableHeader } from "@/app/shared";
 import Link from "@/app/components/Link";
 import Opponent from "@/app/components/Opponent";
 import { getRankedTeams } from "@/app/server/teams";
 import GameDate from "@/app/components/GameLink";
 import LastUpdated from "@/app/components/LastModified";
+import DataModeFooter from "@/app/components/DataModeFooter";
 import { NotFoundError } from "@/app/server/source";
 
 interface Params {
@@ -13,12 +15,17 @@ interface Params {
     player: string;
 }
 
-export default async function Page({ params }: { params: Params }) {
+export default async function Page({ params, searchParams }: { params: Params, searchParams?: Record<string, string | string[] | undefined> }) {
+    const mode = dataModeFromSearch(searchParams);
     let player;
     let lastModified;
+    let playerDebug;
 
     try {
-        ({ body: player, lastModified } = await getPlayerStats(params));
+        // First get player with JSON to learn division, then re-fetch with parquet if needed
+        const jsonPlayer = mode === 'parquet' ? await getPlayerStats({ ...params, mode: 'json' }) : null;
+        const div = jsonPlayer?.body.team.div;
+        ({ body: player, lastModified, debug: playerDebug } = await getPlayerStats({ ...params, div, mode }));
     } catch (err) {
         if (err instanceof NotFoundError) {
             return <>
@@ -79,6 +86,7 @@ export default async function Page({ params }: { params: Params }) {
                 </tbody>
             </Table>
         </Card>
+        <DataModeFooter mode={mode} debugs={[playerDebug].filter((d): d is NonNullable<typeof d> => Boolean(d))} />
         <LastUpdated lastModified={lastModified} />
     </>
 }

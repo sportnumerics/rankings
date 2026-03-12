@@ -8,6 +8,7 @@ import lib.predict.cli
 import lib.sync.cli
 import lib.games.cli
 import lib.all.cli
+import lib.export.cli
 
 
 def main():
@@ -25,6 +26,7 @@ def main():
     lib.predict.cli.add_parsers(subparsers)
     lib.games.cli.add_parsers(subparsers)
     lib.sync.cli.add_parsers(subparsers)
+    lib.export.cli.add_parsers(subparsers)
     lib.all.cli.add_parsers(subparsers)
     args = parser.parse_args()
     args.func(args)
