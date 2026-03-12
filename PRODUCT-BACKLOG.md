@@ -20,18 +20,23 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Last update: review requested, all checks passing (2026-03-09 09:15)
 
 2) **#58 — DuckDB parquet materialized views (12-file schema)**
-- Status: PR
+- Status: PR (all checks passing ✅ - ready to merge)
 - Owner: assistant
 - Outcome: 12 optimized parquet files (one per page component) with frontend DuckDB queries
-- Current increment: Phase 1 + Phase 2 COMPLETE
+- Current increment: Phase 1 + Phase 2 COMPLETE + all schema/query/perf fixes
 - Acceptance checks:
   - Backend: `python main.py export-parquet` generates all 12 files ✅
   - Backend: integrated into `all` workflow ✅
   - Frontend: all pages query correct file with optimal filters ✅
   - Footer displays query ms + file read stats ✅
-- Next action: awaiting Will's review to merge and proceed to Phase 3 (flip default)
+  - Teams with 0 games appear in parquet mode ✅
+  - Unrated teams rank below negative-rated teams (nulls last) ✅
+  - Team rosters include team metadata columns ✅
+  - Game details page uses parquet mode ✅
+  - game-metadata sorted by game_id for efficient lookups ✅
+- Next action: Ready for Will's review/merge; all issues resolved
 - Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: Phase 1+2 complete - all pages support ?dataMode=parquet (2026-03-09 19:30)
+- Last update: All schema/perf fixes complete, CI passing (2026-03-12 09:05)
 
 3) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
