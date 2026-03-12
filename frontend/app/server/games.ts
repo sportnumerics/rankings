@@ -32,7 +32,7 @@ export interface ScheduledGame {
 export type GamesByDate = Record<string, ScheduledGame[]>;
 
 export async function getGame({ year, game, div, mode = 'json' }: { year: string, game: string, div?: string, mode?: DataMode }): Promise<Data<Game> & { debug?: QueryDebug }> {
-    if (mode !== 'parquet' || !div) {
+    if (mode !== 'parquet') {
         return await source.get(`${year}/games/${game}.json`);
     }
 
@@ -43,6 +43,8 @@ export async function getGame({ year, game, div, mode = 'json' }: { year: string
     }
 
     // Query game metadata and box scores
+    // Note: game-metadata.parquet has duplicate rows for cross-division games,
+    // so we LIMIT 1 to get just one copy
     const metaSql = `
         SELECT 
             game_id, date, external_link,
@@ -52,7 +54,7 @@ export async function getGame({ year, game, div, mode = 'json' }: { year: string
             away_team_schedule_url, away_team_sport, away_team_source,
             home_score, away_score
         FROM read_parquet('s3://${bucket}/${prefix}/${year}/game-metadata.parquet')
-        WHERE div = '${div}' AND game_id = '${game}'
+        WHERE game_id = '${game}'
         LIMIT 1
     `;
 
