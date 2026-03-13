@@ -10,13 +10,15 @@ import Link from "./Link";
 import PageHeading from "./PageHeading";
 import { PlayersTable } from "./PlayersCard";
 import { TeamsTable } from "./TeamList";
+import { dataModeFromSearch } from "../server/parquet";
 
-export default async function YearTeams({ params: { year } }: { params: HasYear }) {
+export default async function YearTeams({ params: { year }, searchParams }: { params: HasYear; searchParams?: Record<string, string | string[] | undefined> }) {
+    const mode = dataModeFromSearch(searchParams);
     const divs = await getDivs();
     const [{ body: playerMap, lastModified }, ...divisions] = await Promise.all([
         getPlayerRatings({ year }),
         ...divs
-            .map(div => getRankedTeams({ year, div: div.id })
+            .map(div => getRankedTeams({ year, div: div.id, mode })
                 .then(map => ({ ...div, teams: Object.values(map.body) })))]);
     // need div in players
     const players = Object.values(playerMap);

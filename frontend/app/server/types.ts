@@ -76,7 +76,7 @@ export interface ScheduleGame {
     home: boolean;
     date: string;
     details: GameDetailsLink;
-    result: ScheduleGameResult;
+    result?: ScheduleGameResult;
 }
 
 export interface GameDetailsLink {
