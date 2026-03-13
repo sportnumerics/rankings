@@ -3,7 +3,7 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-07)
+## Active Focus (updated 2026-03-13)
 
 ### PR
 1) **#59 — Goals leaders page**
@@ -50,19 +50,21 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Next action: decide merge order with #58 (can keep #57 for benchmarking docs)
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
-### Ready
-2) **Unit tests for parquet query code paths**
-- Status: Ready
+### PR
+3) **#66 — Unit tests for parquet query code paths**
+- Status: PR
 - Owner: assistant
 - Outcome: test coverage for parquet.ts query functions and server data loaders
-- First increment: add tests for getRankedTeams/getRankedPlayers/getGames parquet mode
+- Current increment: 17 tests covering SQL construction, fallback, and debug metadata
 - Acceptance checks:
-  - Tests verify SQL query construction (div filtering, sorting, column selection)
-  - Tests verify fallback behavior when parquet fails
-  - Tests verify debug metadata structure
-  - All tests pass in CI
-- Next action: create test file with fixture data and basic query validation
-- Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - need systematic coverage
+  - Tests verify SQL query construction (div filtering, sorting, column selection) ✅
+  - Tests verify fallback behavior when parquet fails ✅
+  - Tests verify debug metadata structure ✅
+  - All tests pass in CI ✅
+- Next action: awaiting Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/66
+- Last update: PR created with vitest setup and 17 passing tests (2026-03-13 09:03)
+- Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - systematic coverage now in place
 
 3) **Feature discovery sprint: highest-value near-term product improvement**
 - Status: Ready
