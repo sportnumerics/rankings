@@ -16,24 +16,34 @@ export async function getRankedPlayers({ year, team, div, mode = 'json' }: { yea
 
         // Use optimized materialized view
         const file = team ? 'team-rosters.parquet' : 'players-list.parquet';
-        const where = [
-            team ? `team_id = '${team}'` : null,
-            div ? `div = '${div}'` : null,
-        ].filter(Boolean).join(' AND ');
+        const parquetPath = `s3://${bucket}/${prefix}/${year}/${file}`;
+        let whereClause = '';
+        const params: any[] = [parquetPath];
+
+        if (team && div) {
+            whereClause = 'WHERE team_id = ? AND div = ?';
+            params.push(team, div);
+        } else if (team) {
+            whereClause = 'WHERE team_id = ?';
+            params.push(team);
+        } else if (div) {
+            whereClause = 'WHERE div = ?';
+            params.push(div);
+        }
 
         const sql = `
           SELECT 
             player_id as id, player_name as name,
             div, team_id, team_name, team_schedule_url, team_sport, team_source,
             points, goals, assists, position, number, class_year
-          FROM read_parquet('s3://${bucket}/${prefix}/${year}/${file}')
-          ${where ? `WHERE ${where}` : ''}
+          FROM read_parquet(?)
+          ${whereClause}
           ORDER BY points DESC
           ${!team && div ? 'LIMIT 200' : ''}
         `;
 
         try {
-            const { rows, debug } = await parquetQuery<any>(sql, team ? 'team_page_roster' : 'players_list');
+            const { rows, debug } = await parquetQuery<any>(sql, team ? 'team_page_roster' : 'players_list', params);
             const players: PlayerRating[] = rows.map(r => ({
                 id: r.id,
                 name: r.name,
@@ -104,8 +114,8 @@ export async function getPlayerStats({ year, player, div, mode = 'json' }: { yea
             points, goals, assists,
             position, number, class_year, eligibility, height, weight,
             high_school, hometown, external_link
-          FROM read_parquet('s3://${bucket}/${prefix}/${year}/player-metadata.parquet')
-          WHERE div = '${div}' AND player_id = '${player}'
+          FROM read_parquet(?)
+          WHERE div = ? AND player_id = ?
           LIMIT 1
         `;
 
@@ -115,15 +125,23 @@ export async function getPlayerStats({ year, player, div, mode = 'json' }: { yea
             opponent_id, opponent_name, opponent_div,
             opponent_schedule_url, opponent_sport, opponent_source,
             g, a, gb
-          FROM read_parquet('s3://${bucket}/${prefix}/${year}/player-gamelogs.parquet')
-          WHERE div = '${div}' AND player_id = '${player}'
+          FROM read_parquet(?)
+          WHERE div = ? AND player_id = ?
           ORDER BY date DESC
         `;
 
         try {
             const [metaResult, statsResult] = await Promise.all([
-                parquetQuery<any>(metaSql, 'player_page_metadata'),
-                parquetQuery<any>(statsSql, 'player_page_gamelog')
+                parquetQuery<any>(
+                    metaSql,
+                    'player_page_metadata',
+                    [`s3://${bucket}/${prefix}/${year}/player-metadata.parquet`, div, player]
+                ),
+                parquetQuery<any>(
+                    statsSql,
+                    'player_page_gamelog',
+                    [`s3://${bucket}/${prefix}/${year}/player-gamelogs.parquet`, div, player]
+                )
             ]);
 
             if (!metaResult.rows.length) {
