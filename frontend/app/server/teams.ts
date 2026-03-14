@@ -33,13 +33,17 @@ export async function getRankedTeams({ year, div, mode = 'json' }: { year: strin
         SELECT 
             id, name, div, sport, source, schedule_url,
             offense, defense, overall, rank
-        FROM read_parquet('s3://${bucket}/${prefix}/${year}/teams-list.parquet')
-        WHERE div = '${div}'
+        FROM read_parquet(?)
+        WHERE div = ?
         ORDER BY rank ASC
     `;
 
     try {
-        const { rows, debug } = await parquetQuery<any>(sql, 'teams_list');
+        const { rows, debug } = await parquetQuery<any>(
+            sql,
+            'teams_list',
+            [`s3://${bucket}/${prefix}/${year}/teams-list.parquet`, div]
+        );
         const teamMap: RankedTeamMap = Object.fromEntries(
             rows.map(r => [r.id, {
                 id: r.id,
@@ -107,8 +111,8 @@ export async function getTeam({ year, team, mode = 'json' }: { year: string, tea
     const sql = `
       WITH target_team AS (
         SELECT id, name, div, source
-        FROM read_parquet('s3://${bucket}/${prefix}/${year}/v2/teams/*.parquet')
-        WHERE id = '${team}'
+        FROM read_parquet(?)
+        WHERE id = ?
       )
       SELECT
         g.id,
@@ -123,13 +127,21 @@ export async function getTeam({ year, team, mode = 'json' }: { year: string, tea
         t.name AS team_name,
         t.div AS team_div,
         t.source AS team_source
-      FROM read_parquet('s3://${bucket}/${prefix}/${year}/v2/games/*.parquet') g
+      FROM read_parquet(?) g
       JOIN target_team t ON (g.home_team.id = t.id OR g.away_team.id = t.id)
       ORDER BY g.date
     `;
 
     try {
-        const { rows, debug } = await parquetQuery<any>(sql, 'team_page_schedule');
+        const { rows, debug } = await parquetQuery<any>(
+            sql,
+            'team_page_schedule',
+            [
+                `s3://${bucket}/${prefix}/${year}/v2/teams/*.parquet`,
+                team,
+                `s3://${bucket}/${prefix}/${year}/v2/games/*.parquet`,
+            ]
+        );
         if (!rows.length) {
             throw new NotFoundError('team not found');
         }
