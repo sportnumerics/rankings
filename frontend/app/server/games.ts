@@ -175,7 +175,7 @@ export async function getGames({ year, div, mode = 'json' }: { year: string, div
             away_team_id, away_team_name, away_team_div, away_team_sport,
             home_score, away_score
         FROM read_parquet('s3://${bucket}/${prefix}/${year}/games-list.parquet')
-        WHERE div = '${div}'
+        WHERE home_team_div = '${div}'
         ORDER BY date DESC
         LIMIT 100
     `;
