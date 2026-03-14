@@ -153,7 +153,7 @@ export default async function Page({ params, searchParams }: { params: Params, s
             const displayDate = displayDateFromDayKey(dayKey);
 
             return games
-                .filter(game => game.homeDiv === params.div)
+                .filter(game => game.homeDiv === params.div || game.awayDiv === params.div)
                 .map(game => {
                     const awayRating = ratings[game.awayTeamId];
                     const homeRating = ratings[game.homeTeamId];
