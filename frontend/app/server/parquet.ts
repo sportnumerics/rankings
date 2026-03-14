@@ -33,9 +33,9 @@ function run(db: any, sql: string): Promise<void> {
     });
 }
 
-function all<T = any>(db: any, sql: string): Promise<T[]> {
+function all<T = any>(db: any, sql: string, params: any[] = []): Promise<T[]> {
     return new Promise((resolve, reject) => {
-        db.all(sql, (err: Error | null, rows: T[]) => err ? reject(err) : resolve(rows));
+        db.all(sql, params, (err: Error | null, rows: T[]) => err ? reject(err) : resolve(rows));
     });
 }
 
@@ -99,12 +99,12 @@ function parseHttpDebug(rows: Array<{ message: string }>, label: string, queryMs
     return { label, queryMs, s3HeadRequests, s3GetRequests, s3RangeRequests, s3PartialBytes };
 }
 
-export async function parquetQuery<T = any>(sql: string, label: string): Promise<{ rows: T[]; debug: QueryDebug }> {
+export async function parquetQuery<T = any>(sql: string, label: string, params: any[] = []): Promise<{ rows: T[]; debug: QueryDebug }> {
     const db = getConnection();
     await ensureConfigured(db);
 
     const t0 = Date.now();
-    const rows = await all<T>(db, sql);
+    const rows = await all<T>(db, sql, params);
     const queryMs = Date.now() - t0;
     let logs: Array<{ message: string }> = [];
     try {
