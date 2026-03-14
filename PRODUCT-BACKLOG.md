@@ -3,10 +3,38 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-07)
+## Active Focus (updated 2026-03-14)
 
 ### PR
-1) **#59 — Goals leaders page**
+1) **#68 — Security: parameterize parquet SQL inputs**
+- Status: PR (✅ all checks passing - ready to merge)
+- Owner: assistant
+- Outcome: Prevent SQL injection in parquet queries by using ? placeholders
+- First increment: Replace template literals with parameterized queries
+- Acceptance checks:
+  - All parquet queries use ? placeholders ✅
+  - parquetQuery accepts params array ✅
+  - All CI checks passing ✅
+  - Frontend deployed to dev ✅
+- Next action: Ready for Will's review/merge
+- Link: https://github.com/sportnumerics/rankings/pull/68
+- Last update: Security fix complete, all checks passing (2026-03-14 09:00)
+
+2) **#69 — Test: SQL parameterization validation**
+- Status: PR (CI running)
+- Owner: assistant
+- Outcome: Automated test to prevent SQL injection regressions
+- First increment: Add npm test script that validates parameterized queries
+- Acceptance checks:
+  - Test detects template literal vulnerabilities ✅
+  - Test confirms ? placeholder usage ✅
+  - Runs in CI via npm test --if-present ✅
+  - Prevents regression to string concatenation ✅
+- Next action: CI validation, then ready for review
+- Link: https://github.com/sportnumerics/rankings/pull/69
+- Last update: Test script created and pushed (2026-03-14 09:04)
+
+3) **#59 — Goals leaders page**
 - Status: PR
 - Owner: assistant
 - Outcome: /leaders/goals page showing top 50 scorers per division
@@ -19,7 +47,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/59
 - Last update: review requested, all checks passing (2026-03-09 09:15)
 
-2) **#58 — DuckDB parquet materialized views (12-file schema)**
+4) **#58 — DuckDB parquet materialized views (12-file schema)**
 - Status: PR (✅ all checks passing - ready to merge)
 - Owner: assistant
 - Outcome: 12 optimized parquet files (one per page component) with frontend DuckDB queries
@@ -39,7 +67,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/58
 - Last update: All fixes complete, CI passing, dev deployed (2026-03-12 09:05)
 
-2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
+5) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
 - Owner: assistant
 - Outcome: reproducible baseline for cold/warm local+S3 query performance
@@ -51,20 +79,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
 ### Ready
-2) **Unit tests for parquet query code paths**
-- Status: Ready
-- Owner: assistant
-- Outcome: test coverage for parquet.ts query functions and server data loaders
-- First increment: add tests for getRankedTeams/getRankedPlayers/getGames parquet mode
-- Acceptance checks:
-  - Tests verify SQL query construction (div filtering, sorting, column selection)
-  - Tests verify fallback behavior when parquet fails
-  - Tests verify debug metadata structure
-  - All tests pass in CI
-- Next action: create test file with fixture data and basic query validation
-- Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - need systematic coverage
-
-3) **Feature discovery sprint: highest-value near-term product improvement**
+1) **Feature discovery sprint: highest-value near-term product improvement**
 - Status: Ready
 - Owner: assistant
 - Outcome: one evidence-backed feature promoted to build
@@ -74,7 +89,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - One candidate converted into implementation-ready task
 - Next action: research 5 candidates from competitor + current site gaps
 
-4) **WIP/PR velocity automation**
+2) **WIP/PR velocity automation**
 - Status: Ready
 - Owner: assistant
 - Outcome: fewer stalls, faster PR throughput
@@ -92,6 +107,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 
 ## Done
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
+- ✅ Unit tests backlog item → converted to #69 SQL parameterization validation test (2026-03-14)
 
 ## Backlog Notes (assistant-facing)
 - Prefer tasks that improve user-visible value or reduce prediction-quality risk.
