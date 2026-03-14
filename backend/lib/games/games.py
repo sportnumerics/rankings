@@ -45,6 +45,7 @@ def generate_games_file(args):
                     'awayTeam': opponent['name'],
                     'awayTeamId': opponent['id'],
                     'homeDiv': team.get('div'),
+                    'awayDiv': opponent.get('div'),
                     'sport': team.get('sport'),
                     'source': team.get('source'),
                 }
