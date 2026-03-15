@@ -3,10 +3,38 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-07)
+## Active Focus (updated 2026-03-15)
 
 ### PR
-1) **#59 — Goals leaders page**
+1) **#69 — SQL parameterization validation test**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: npm test script that validates parquet queries use ? placeholders (prevents SQL injection)
+- First increment: ship regression guard for SQL parameterization
+- Acceptance checks:
+  - Test detects vulnerable patterns (template literals in WHERE clauses) ✅
+  - Test confirms safe patterns (parquetQuery with params array) ✅
+  - Runs in CI via 'npm test --if-present' ✅
+  - Currently passing with 1 warning (parquet.ts has no SQL queries) ✅
+- Next action: awaiting Will's review/merge (low risk, high value security guard)
+- Link: https://github.com/sportnumerics/rankings/pull/69
+- Last update: test passing, depends on #68 (2026-03-15 09:00)
+
+2) **#68 — Parameterize parquet SQL inputs**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: replace string interpolation with bound parameters in all parquet queries
+- First increment: security hardening for frontend DuckDB queries
+- Acceptance checks:
+  - All parquet.ts helper functions accept params array ✅
+  - All query callsites use ? placeholders (teams.ts, players.ts, games.ts) ✅
+  - Frontend lint passes ✅
+  - Functionally identical behavior (mechanical refactor) ✅
+- Next action: awaiting Will's review/merge (security best practice, low risk)
+- Link: https://github.com/sportnumerics/rankings/pull/68
+- Last update: all checks passing, awaiting review (2026-03-15 09:00)
+
+3) **#59 — Goals leaders page**
 - Status: PR
 - Owner: assistant
 - Outcome: /leaders/goals page showing top 50 scorers per division
@@ -19,27 +47,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/59
 - Last update: review requested, all checks passing (2026-03-09 09:15)
 
-2) **#58 — DuckDB parquet materialized views (12-file schema)**
-- Status: PR (✅ all checks passing - ready to merge)
-- Owner: assistant
-- Outcome: 12 optimized parquet files (one per page component) with frontend DuckDB queries
-- Current increment: Phase 1 + Phase 2 COMPLETE + all schema/query/perf fixes
-- Acceptance checks:
-  - Backend: `python main.py export-parquet` generates all 12 files ✅
-  - Backend: integrated into `all` workflow ✅
-  - Frontend: all pages query correct file with optimal filters ✅
-  - Footer displays query ms + file read stats ✅
-  - Teams with 0 games appear in parquet mode ✅
-  - Unrated teams rank below negative-rated teams (nulls last) ✅
-  - Team rosters include team metadata columns ✅
-  - Game details page uses parquet mode ✅
-  - game-metadata sorted by game_id for efficient lookups ✅
-  - Fresh parquet files deployed to dev with correct schema ✅
-- Next action: Ready for Will's review/merge
-- Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: All fixes complete, CI passing, dev deployed (2026-03-12 09:05)
-
-2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
+4) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
 - Owner: assistant
 - Outcome: reproducible baseline for cold/warm local+S3 query performance
@@ -47,7 +55,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Acceptance checks:
   - Includes local page-shaped timings
   - Includes JSON vs parquet S3 timings
-- Next action: decide merge order with #58 (can keep #57 for benchmarking docs)
+- Next action: decide if needed post-#58 merge (can archive or keep for docs)
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
 ### Ready
@@ -91,6 +99,8 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - (none)
 
 ## Done
+- ✅ #67 Fix upcoming games showing empty in parquet mode (merged 2026-03-15)
+- ✅ #58 DuckDB parquet materialized views with 12-file schema (merged 2026-03-15)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
 ## Backlog Notes (assistant-facing)
