@@ -59,6 +59,21 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
 ### Ready
+1) **Per-game stat averages (PPG/GPG/APG)**
+- Status: Ready
+- Owner: assistant
+- Outcome: Add per-game averages to player stats (standard across competitor sites)
+- First increment: Backend aggregation + frontend display of PPG, GPG, APG
+- Acceptance checks:
+  - Backend: player stats JSON includes `games_played` field
+  - Frontend: Players table shows PPG, GPG, APG columns
+  - Frontend: Can sort by per-game stats
+  - Division-by-zero handled gracefully
+  - Per-game calculations verified correct
+- Value/Effort: ⭐⭐⭐⭐ value, ⭐⭐ effort, low risk
+- Next action: Implement backend games_played aggregation
+- Context: Feature discovery sprint complete (see FEATURE-DISCOVERY-2026-03.md)
+
 2) **Unit tests for parquet query code paths**
 - Status: Ready
 - Owner: assistant
@@ -71,16 +86,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - All tests pass in CI
 - Next action: create test file with fixture data and basic query validation
 - Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - need systematic coverage
-
-3) **Feature discovery sprint: highest-value near-term product improvement**
-- Status: Ready
-- Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
-- Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
+- Note: Work attempted in add-parquet-unit-tests branch but not merged
 
 4) **WIP/PR velocity automation**
 - Status: Ready
