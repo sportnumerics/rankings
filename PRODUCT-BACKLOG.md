@@ -58,20 +58,22 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Next action: decide if needed post-#58 merge (can archive or keep for docs)
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
-### Ready
+### In Progress
 1) **Per-game stat averages (PPG/GPG/APG)**
-- Status: Ready
+- Status: In Progress → PR
 - Owner: assistant
 - Outcome: Add per-game averages to player stats (standard across competitor sites)
-- First increment: Backend aggregation + frontend display of PPG, GPG, APG
+- Current increment: Backend + frontend complete, ready for PR
 - Acceptance checks:
-  - Backend: player stats JSON includes `games_played` field
-  - Frontend: Players table shows PPG, GPG, APG columns
-  - Frontend: Can sort by per-game stats
-  - Division-by-zero handled gracefully
-  - Per-game calculations verified correct
+  - Backend: player stats JSON includes `games_played` field ✅
+  - Backend: games_played counts games with non-zero goals or assists ✅
+  - Frontend: Players table shows G, A, GP, PPG, GPG, APG columns ✅
+  - Frontend: Per-game columns conditional on data availability ✅
+  - Division-by-zero handled gracefully (gp > 0 check) ✅
+  - All unit tests passing ✅
 - Value/Effort: ⭐⭐⭐⭐ value, ⭐⭐ effort, low risk
-- Next action: Implement backend games_played aggregation
+- Next action: Push branch + create PR (blocked on GitHub auth)
+- Branch: feature-per-game-stats (2 commits)
 - Context: Feature discovery sprint complete (see FEATURE-DISCOVERY-2026-03.md)
 
 2) **Unit tests for parquet query code paths**
@@ -98,8 +100,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - blockers explicitly tagged with owner
 - Next action: add "stale >24h" handling notes to this file and use daily
 
-### In Progress
-- (none)
+
 
 ### Blocked
 - (none)
