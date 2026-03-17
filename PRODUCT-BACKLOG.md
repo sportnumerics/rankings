@@ -3,10 +3,39 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-15)
+## Active Focus (updated 2026-03-17)
 
 ### PR
-1) **#69 — SQL parameterization validation test**
+1) **#71 — Assists leaders page**
+- Status: PR (CI running)
+- Owner: assistant
+- Outcome: /leaders/assists page showing top 50 assist leaders per division
+- First increment: ship MVP assists leaders page
+- Acceptance checks:
+  - Page loads at /2026/d1/leaders/assists
+  - Shows top 50 players sorted by assists descending
+  - Reuses existing PlayerRating data and PlayersCard UI
+- Next action: awaiting CI + Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/71
+- Last update: PR created (2026-03-17 09:15)
+
+2) **#70 — Per-game stat averages (PPG/GPG/APG)**
+- Status: PR (CI running)
+- Owner: assistant
+- Outcome: Add per-game averages to player stats (standard across competitor sites)
+- First increment: Backend + frontend complete
+- Acceptance checks:
+  - Backend: player stats include `games_played` field ✅
+  - Backend: games_played counts games with non-zero goals or assists ✅
+  - Frontend: Players table shows G, A, GP, PPG, GPG, APG columns ✅
+  - Frontend: Per-game columns conditional on data availability ✅
+  - Division-by-zero handled gracefully ✅
+  - All unit tests passing ✅
+- Next action: awaiting CI + Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/70
+- Last update: PR created (2026-03-17 09:15)
+
+3) **#69 — SQL parameterization validation test**
 - Status: PR (✅ all checks passing)
 - Owner: assistant
 - Outcome: npm test script that validates parquet queries use ? placeholders (prevents SQL injection)
@@ -20,7 +49,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/69
 - Last update: test passing, depends on #68 (2026-03-15 09:00)
 
-2) **#68 — Parameterize parquet SQL inputs**
+4) **#68 — Parameterize parquet SQL inputs**
 - Status: PR (✅ all checks passing)
 - Owner: assistant
 - Outcome: replace string interpolation with bound parameters in all parquet queries
@@ -34,7 +63,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/68
 - Last update: all checks passing, awaiting review (2026-03-15 09:00)
 
-3) **#59 — Goals leaders page**
+5) **#59 — Goals leaders page**
 - Status: PR
 - Owner: assistant
 - Outcome: /leaders/goals page showing top 50 scorers per division
@@ -47,7 +76,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/59
 - Last update: review requested, all checks passing (2026-03-09 09:15)
 
-4) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
+6) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
 - Status: PR
 - Owner: assistant
 - Outcome: reproducible baseline for cold/warm local+S3 query performance
@@ -105,6 +134,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - (none)
 
 ## Done
+- ✅ GitHub auth fixed: replaced Python script with Node.js (2026-03-17)
 - ✅ #67 Fix upcoming games showing empty in parquet mode (merged 2026-03-15)
 - ✅ #58 DuckDB parquet materialized views with 12-file schema (merged 2026-03-15)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
