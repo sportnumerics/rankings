@@ -60,10 +60,10 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 
 ### In Progress
 1) **Per-game stat averages (PPG/GPG/APG)**
-- Status: In Progress → PR
+- Status: In Progress → Blocked (GitHub auth)
 - Owner: assistant
 - Outcome: Add per-game averages to player stats (standard across competitor sites)
-- Current increment: Backend + frontend complete, ready for PR
+- Current increment: Backend + frontend complete (4 commits), cannot push
 - Acceptance checks:
   - Backend: player stats JSON includes `games_played` field ✅
   - Backend: games_played counts games with non-zero goals or assists ✅
@@ -72,8 +72,9 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Division-by-zero handled gracefully (gp > 0 check) ✅
   - All unit tests passing ✅
 - Value/Effort: ⭐⭐⭐⭐ value, ⭐⭐ effort, low risk
-- Next action: Push branch + create PR (blocked on GitHub auth)
-- Branch: feature-per-game-stats (2 commits)
+- **Blocker:** Python 3.8 + cryptography library incompatibility breaks github-app-token.py
+- Next action: Will must apply fix from GITHUB-AUTH-FIX.md (3 options), then push + PR
+- Branch: feature-per-game-stats (4 commits, local only)
 - Context: Feature discovery sprint complete (see FEATURE-DISCOVERY-2026-03.md)
 
 2) **Unit tests for parquet query code paths**
@@ -103,7 +104,14 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 
 
 ### Blocked
-- (none)
+1) **GitHub authentication (Python 3.8 incompatibility)**
+- Status: Blocking all PR operations
+- Owner: Will
+- Outcome: Restore ability to push branches and create PRs
+- Blocker: `github-app-token.py` fails with `TypeError: 'type' object is not subscriptable`
+- Impact: Cannot ship per-game stats feature (4 commits ready), cannot create PRs for future work
+- Next action: Apply one of three fixes in GITHUB-AUTH-FIX.md (upgrade Python 3.9 recommended)
+- Added: 2026-03-17 09:00
 
 ## Done
 - ✅ #67 Fix upcoming games showing empty in parquet mode (merged 2026-03-15)
