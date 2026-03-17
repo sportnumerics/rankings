@@ -45,6 +45,7 @@ export interface PlayerRating {
     points: number;
     goals: number;
     assists: number;
+    games_played?: number;
 }
 
 export type RankedPlayer = PlayerRating & HasRanking;
