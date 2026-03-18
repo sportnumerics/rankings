@@ -7,20 +7,20 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 
 ### PR
 1) **#71 — Assists leaders page**
-- Status: PR (CI running)
+- Status: PR (✅ all checks passing)
 - Owner: assistant
 - Outcome: /leaders/assists page showing top 50 assist leaders per division
 - First increment: ship MVP assists leaders page
 - Acceptance checks:
-  - Page loads at /2026/d1/leaders/assists
-  - Shows top 50 players sorted by assists descending
-  - Reuses existing PlayerRating data and PlayersCard UI
-- Next action: awaiting CI + Will's review
+  - Page loads at /2026/d1/leaders/assists ✅
+  - Shows top 50 players sorted by assists descending ✅
+  - Reuses existing PlayerRating data and PlayersCard UI ✅
+- Next action: awaiting Will's review/merge
 - Link: https://github.com/sportnumerics/rankings/pull/71
-- Last update: PR created (2026-03-17 09:15)
+- Last update: all checks passing (2026-03-17 09:21)
 
 2) **#70 — Per-game stat averages (PPG/GPG/APG)**
-- Status: PR (CI running)
+- Status: PR (✅ all checks passing)
 - Owner: assistant
 - Outcome: Add per-game averages to player stats (standard across competitor sites)
 - First increment: Backend + frontend complete
@@ -31,9 +31,9 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Frontend: Per-game columns conditional on data availability ✅
   - Division-by-zero handled gracefully ✅
   - All unit tests passing ✅
-- Next action: awaiting CI + Will's review
+- Next action: awaiting Will's review/merge
 - Link: https://github.com/sportnumerics/rankings/pull/70
-- Last update: PR created (2026-03-17 09:15)
+- Last update: all checks passing (2026-03-17 09:29)
 
 3) **#69 — SQL parameterization validation test**
 - Status: PR (✅ all checks passing)
