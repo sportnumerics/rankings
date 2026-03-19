@@ -101,22 +101,26 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Next action: awaiting Will's merge (docs-only, low priority)
 - Link: https://github.com/sportnumerics/rankings/pull/72
 
-9) **#74 — Vitest infrastructure and SQL security tests**
-- Status: PR (🟡 CI running)
+9) **#74 — Vitest infrastructure + comprehensive parquet tests**
+- Status: PR (🟡 CI running - expanded)
 - Owner: assistant
-- Outcome: Unit testing infrastructure with Vitest + SQL injection pattern detection
-- First increment: establish test foundation with 9 passing tests
+- Outcome: Unit testing infrastructure + comprehensive parquet query coverage
+- Increments shipped:
+  1. Test infrastructure with 9 tests ✅
+  2. getRankedTeams tests (9 additional tests) ✅
 - Acceptance checks:
   - Vitest installed and configured ✅
-  - Test scripts added to package.json (test, test:watch, test:ui) ✅
-  - parquet.test.ts with 6 tests for dataModeFromSearch ✅
-  - sql-security.test.ts detecting SQL injection patterns ✅
-  - All tests passing locally (9/9) ✅
-  - Tests detect current vulnerabilities in teams.ts, players.ts, games.ts ✅
-- Next action: awaiting CI completion + Will's review
+  - Test scripts in package.json (test, test:watch, test:ui) ✅
+  - parquet.test.ts: 6 tests for dataModeFromSearch ✅
+  - sql-security.test.ts: 3 SQL injection pattern detectors ✅
+  - teams.test.ts: 9 comprehensive getRankedTeams tests ✅
+  - Mocked shared module to avoid JSX parsing ✅
+  - All 18 tests passing locally ✅
+  - Tests cover: query construction, fallback, null handling, type conversion, debug metadata ✅
+- Next action: awaiting CI + Will's review/merge
 - Link: https://github.com/sportnumerics/rankings/pull/74
-- Last update: PR created, CI running (2026-03-19 09:05)
-- Note: Addresses backlog item "Unit tests for parquet query code paths"
+- Last update: expanded with getRankedTeams tests (2026-03-19 17:07)
+- Note: Addresses both "Unit tests" backlog items
 
 ### Ready
 1) **WIP/PR velocity automation**
