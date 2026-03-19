@@ -12,5 +12,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './app'),
       'server-only': path.resolve(__dirname, './__mocks__/server-only.ts'),
     },
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
 });
