@@ -3,7 +3,7 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-17)
+## Active Focus (updated 2026-03-19)
 
 ### PR
 1) **#71 — Assists leaders page**
@@ -87,23 +87,22 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Next action: decide if needed post-#58 merge (can archive or keep for docs)
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
-### Ready
-1) **Per-game stat averages (PPG/GPG/APG)**
-- Status: Ready
+7) **#73 — docs: update CI status for PRs #70 and #71**
+- Status: PR (✅ all checks passing)
 - Owner: assistant
-- Outcome: Add per-game averages to player stats (standard across competitor sites)
-- First increment: Backend aggregation + frontend display of PPG, GPG, APG
-- Acceptance checks:
-  - Backend: player stats JSON includes `games_played` field
-  - Frontend: Players table shows PPG, GPG, APG columns
-  - Frontend: Can sort by per-game stats
-  - Division-by-zero handled gracefully
-  - Per-game calculations verified correct
-- Value/Effort: ⭐⭐⭐⭐ value, ⭐⭐ effort, low risk
-- Next action: Implement backend games_played aggregation
-- Context: Feature discovery sprint complete (see FEATURE-DISCOVERY-2026-03.md)
+- Outcome: backlog documentation update
+- Next action: awaiting Will's merge (docs-only, low priority)
+- Link: https://github.com/sportnumerics/rankings/pull/73
 
-2) **Unit tests for parquet query code paths**
+8) **#72 — docs: sync backlog with CI status**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: backlog documentation update
+- Next action: awaiting Will's merge (docs-only, low priority)
+- Link: https://github.com/sportnumerics/rankings/pull/72
+
+### Ready
+1) **Unit tests for parquet query code paths**
 - Status: Ready
 - Owner: assistant
 - Outcome: test coverage for parquet.ts query functions and server data loaders
