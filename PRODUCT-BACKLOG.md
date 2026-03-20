@@ -102,7 +102,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/72
 
 9) **#74 — Vitest infrastructure + comprehensive parquet tests**
-- Status: PR (🟡 CI running - expanded)
+- Status: PR (✅ all checks passing)
 - Owner: assistant
 - Outcome: Unit testing infrastructure + comprehensive parquet query coverage
 - Increments shipped:
@@ -117,9 +117,9 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Mocked shared module to avoid JSX parsing ✅
   - All 18 tests passing locally ✅
   - Tests cover: query construction, fallback, null handling, type conversion, debug metadata ✅
-- Next action: awaiting CI + Will's review/merge
+- Next action: awaiting Will's review/merge
 - Link: https://github.com/sportnumerics/rankings/pull/74
-- Last update: expanded with getRankedTeams tests (2026-03-19 17:07)
+- Last update: CI passed (2026-03-19 22:11), awaiting review (2026-03-20 09:00)
 - Note: Addresses both "Unit tests" backlog items
 
 ### Ready
