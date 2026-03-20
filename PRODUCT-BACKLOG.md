@@ -124,14 +124,17 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 
 ### Ready
 1) **WIP/PR velocity automation**
-- Status: Ready
+- Status: In Progress → first increment shipped ✅
 - Owner: assistant
 - Outcome: fewer stalls, faster PR throughput
-- First increment: daily stale-PR check with concrete unblock actions
+- First increment: daily stale-PR check with concrete unblock actions ✅
 - Acceptance checks:
-  - Daily update includes active PR state + next unblock step
-  - blockers explicitly tagged with owner
-- Next action: add "stale >24h" handling notes to this file and use daily
+  - Script identifies PRs >24h with passing CI ✅
+  - Shows concrete next action per PR ✅
+  - Provides velocity metrics (passing/stale/failing counts) ✅
+  - Runs via `python3 scripts/pr-velocity-check.py [stale-hours]` ✅
+- Next action: use in daily heartbeat checks; consider closing superseded PRs
+- Note: Current check shows 11 stale PRs, 2 failing (suggest closing #61, #62, #66, #69 as superseded by #74)
 
 ### In Progress
 - (none)
