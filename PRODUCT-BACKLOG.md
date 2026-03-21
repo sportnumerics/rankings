@@ -6,7 +6,21 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 ## Active Focus (updated 2026-03-21)
 
 ### PR
-1) **#75 — PR velocity automation**
+1) **#76 — Points leaders page**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: /leaders/points page showing top 50 points leaders per division (completes goals/assists/points trio)
+- First increment: ship MVP points leaders page
+- Acceptance checks:
+  - Page loads at /2026/d1/leaders/points ✅
+  - Shows top 50 players sorted by points (goals + assists) descending ✅
+  - Reuses existing PlayerRating data and PlayersCard UI ✅
+  - All CI checks passing ✅
+- Next action: awaiting Will's review/merge
+- Link: https://github.com/sportnumerics/rankings/pull/76
+- Last update: all checks passing (2026-03-21 09:10)
+
+2) **#75 — PR velocity automation**
 - Status: PR
 - Owner: assistant
 - Outcome: automated daily check for stale PRs (>24h, passing CI, awaiting review)
