@@ -3,7 +3,7 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-17)
+## Active Focus (updated 2026-03-19)
 
 ### PR
 1) **#71 — Assists leaders page**
@@ -87,37 +87,39 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Next action: decide if needed post-#58 merge (can archive or keep for docs)
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
+7) **#73 — docs: update CI status for PRs #70 and #71**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: backlog documentation update
+- Next action: awaiting Will's merge (docs-only, low priority)
+- Link: https://github.com/sportnumerics/rankings/pull/73
+
+8) **#72 — docs: sync backlog with CI status**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: backlog documentation update
+- Next action: awaiting Will's merge (docs-only, low priority)
+- Link: https://github.com/sportnumerics/rankings/pull/72
+
+9) **#74 — Vitest infrastructure and SQL security tests**
+- Status: PR (🟡 CI running)
+- Owner: assistant
+- Outcome: Unit testing infrastructure with Vitest + SQL injection pattern detection
+- First increment: establish test foundation with 9 passing tests
+- Acceptance checks:
+  - Vitest installed and configured ✅
+  - Test scripts added to package.json (test, test:watch, test:ui) ✅
+  - parquet.test.ts with 6 tests for dataModeFromSearch ✅
+  - sql-security.test.ts detecting SQL injection patterns ✅
+  - All tests passing locally (9/9) ✅
+  - Tests detect current vulnerabilities in teams.ts, players.ts, games.ts ✅
+- Next action: awaiting CI completion + Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/74
+- Last update: PR created, CI running (2026-03-19 09:05)
+- Note: Addresses backlog item "Unit tests for parquet query code paths"
+
 ### Ready
-1) **Per-game stat averages (PPG/GPG/APG)**
-- Status: Ready
-- Owner: assistant
-- Outcome: Add per-game averages to player stats (standard across competitor sites)
-- First increment: Backend aggregation + frontend display of PPG, GPG, APG
-- Acceptance checks:
-  - Backend: player stats JSON includes `games_played` field
-  - Frontend: Players table shows PPG, GPG, APG columns
-  - Frontend: Can sort by per-game stats
-  - Division-by-zero handled gracefully
-  - Per-game calculations verified correct
-- Value/Effort: ⭐⭐⭐⭐ value, ⭐⭐ effort, low risk
-- Next action: Implement backend games_played aggregation
-- Context: Feature discovery sprint complete (see FEATURE-DISCOVERY-2026-03.md)
-
-2) **Unit tests for parquet query code paths**
-- Status: Ready
-- Owner: assistant
-- Outcome: test coverage for parquet.ts query functions and server data loaders
-- First increment: add tests for getRankedTeams/getRankedPlayers/getGames parquet mode
-- Acceptance checks:
-  - Tests verify SQL query construction (div filtering, sorting, column selection)
-  - Tests verify fallback behavior when parquet fails
-  - Tests verify debug metadata structure
-  - All tests pass in CI
-- Next action: create test file with fixture data and basic query validation
-- Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - need systematic coverage
-- Note: Work attempted in add-parquet-unit-tests branch but not merged
-
-4) **WIP/PR velocity automation**
+1) **WIP/PR velocity automation**
 - Status: Ready
 - Owner: assistant
 - Outcome: fewer stalls, faster PR throughput
