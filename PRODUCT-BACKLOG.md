@@ -3,10 +3,52 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-19)
+## Active Focus (updated 2026-03-23 09:00)
 
-### PR
-1) **#71 — Assists leaders page**
+### PR (Ready for Review - All Checks Passing)
+1) **#79 — Expand parquet query test coverage (players + games)**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: comprehensive unit tests for players.ts and games.ts parquet queries
+- First increment: increase test coverage for data layer
+- Acceptance checks:
+  - Tests cover dataModeFromSearch edge cases ✅
+  - Tests validate query parameter handling ✅
+  - All 9 tests passing ✅
+- Next action: awaiting Will's review/merge
+- Link: https://github.com/sportnumerics/rankings/pull/79
+- Last update: all checks passing (2026-03-22 09:10)
+
+2) **#76 — Points leaders page**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: /leaders/points page showing top 50 point leaders per division
+- First increment: ship MVP points leaders page
+- Acceptance checks:
+  - Page loads at /2026/d1/leaders/points ✅
+  - Shows top 50 players sorted by points descending ✅
+  - Reuses existing PlayerRating data and PlayersCard UI ✅
+- Next action: awaiting Will's review/merge
+- Link: https://github.com/sportnumerics/rankings/pull/76
+- Last update: all checks passing (2026-03-21 09:09)
+
+3) **#74 — Vitest infrastructure and SQL security tests**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: Unit testing infrastructure with Vitest + SQL injection pattern detection
+- First increment: establish test foundation with 9 passing tests
+- Acceptance checks:
+  - Vitest installed and configured ✅
+  - Test scripts added to package.json (test, test:watch, test:ui) ✅
+  - parquet.test.ts with 6 tests for dataModeFromSearch ✅
+  - sql-security.test.ts detecting SQL injection patterns ✅
+  - All tests passing (9/9) ✅
+  - Tests detect current vulnerabilities in teams.ts, players.ts, games.ts ✅
+- Next action: awaiting Will's review/merge
+- Link: https://github.com/sportnumerics/rankings/pull/74
+- Last update: all checks passing (2026-03-19 22:11)
+
+4) **#71 — Assists leaders page**
 - Status: PR (✅ all checks passing)
 - Owner: assistant
 - Outcome: /leaders/assists page showing top 50 assist leaders per division
@@ -19,7 +61,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/71
 - Last update: all checks passing (2026-03-17 09:21)
 
-2) **#70 — Per-game stat averages (PPG/GPG/APG)**
+5) **#70 — Per-game stat averages (PPG/GPG/APG)**
 - Status: PR (✅ all checks passing)
 - Owner: assistant
 - Outcome: Add per-game averages to player stats (standard across competitor sites)
@@ -35,21 +77,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/70
 - Last update: all checks passing (2026-03-17 09:29)
 
-3) **#69 — SQL parameterization validation test**
-- Status: PR (✅ all checks passing)
-- Owner: assistant
-- Outcome: npm test script that validates parquet queries use ? placeholders (prevents SQL injection)
-- First increment: ship regression guard for SQL parameterization
-- Acceptance checks:
-  - Test detects vulnerable patterns (template literals in WHERE clauses) ✅
-  - Test confirms safe patterns (parquetQuery with params array) ✅
-  - Runs in CI via 'npm test --if-present' ✅
-  - Currently passing with 1 warning (parquet.ts has no SQL queries) ✅
-- Next action: awaiting Will's review/merge (low risk, high value security guard)
-- Link: https://github.com/sportnumerics/rankings/pull/69
-- Last update: test passing, depends on #68 (2026-03-15 09:00)
-
-4) **#68 — Parameterize parquet SQL inputs**
+6) **#68 — Parameterize parquet SQL inputs**
 - Status: PR (✅ all checks passing)
 - Owner: assistant
 - Outcome: replace string interpolation with bound parameters in all parquet queries
@@ -63,7 +91,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/68
 - Last update: all checks passing, awaiting review (2026-03-15 09:00)
 
-5) **#59 — Goals leaders page**
+7) **#59 — Goals leaders page**
 - Status: PR
 - Owner: assistant
 - Outcome: /leaders/goals page showing top 50 scorers per division
@@ -76,58 +104,29 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/59
 - Last update: review requested, all checks passing (2026-03-09 09:15)
 
-6) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
-- Status: PR
-- Owner: assistant
-- Outcome: reproducible baseline for cold/warm local+S3 query performance
-- First increment: keep as reference benchmark suite
-- Acceptance checks:
-  - Includes local page-shaped timings
-  - Includes JSON vs parquet S3 timings
-- Next action: decide if needed post-#58 merge (can archive or keep for docs)
-- Link: https://github.com/sportnumerics/rankings/pull/57
+### PR Velocity Status
+**Current bottleneck:** 7 PRs awaiting review with all checks passing
+- **High priority (features):** #76 (points leaders), #71 (assists leaders), #70 (per-game stats)
+- **Medium priority (tests):** #79 (parquet tests), #74 (Vitest infrastructure)
+- **Low priority (security):** #68 (SQL parameterization)
+- **Low priority (features):** #59 (goals leaders)
 
-7) **#73 — docs: update CI status for PRs #70 and #71**
-- Status: PR (✅ all checks passing)
-- Owner: assistant
-- Outcome: backlog documentation update
-- Next action: awaiting Will's merge (docs-only, low priority)
-- Link: https://github.com/sportnumerics/rankings/pull/73
+**Stale >24h:** All feature PRs above are >24h old with passing checks
+**Unblock action:** Will review + merge decision on top 3 feature PRs
 
-8) **#72 — docs: sync backlog with CI status**
-- Status: PR (✅ all checks passing)
-- Owner: assistant
-- Outcome: backlog documentation update
-- Next action: awaiting Will's merge (docs-only, low priority)
-- Link: https://github.com/sportnumerics/rankings/pull/72
-
-9) **#74 — Vitest infrastructure and SQL security tests**
-- Status: PR (🟡 CI running)
-- Owner: assistant
-- Outcome: Unit testing infrastructure with Vitest + SQL injection pattern detection
-- First increment: establish test foundation with 9 passing tests
-- Acceptance checks:
-  - Vitest installed and configured ✅
-  - Test scripts added to package.json (test, test:watch, test:ui) ✅
-  - parquet.test.ts with 6 tests for dataModeFromSearch ✅
-  - sql-security.test.ts detecting SQL injection patterns ✅
-  - All tests passing locally (9/9) ✅
-  - Tests detect current vulnerabilities in teams.ts, players.ts, games.ts ✅
-- Next action: awaiting CI completion + Will's review
-- Link: https://github.com/sportnumerics/rankings/pull/74
-- Last update: PR created, CI running (2026-03-19 09:05)
-- Note: Addresses backlog item "Unit tests for parquet query code paths"
+**Note:** New docs PRs (#77, #78) and automation PR (#75) not included to avoid further queue buildup
 
 ### Ready
 1) **WIP/PR velocity automation**
-- Status: Ready
+- Status: Ready → In Progress (PR #75 open)
 - Owner: assistant
 - Outcome: fewer stalls, faster PR throughput
 - First increment: daily stale-PR check with concrete unblock actions
 - Acceptance checks:
   - Daily update includes active PR state + next unblock step
   - blockers explicitly tagged with owner
-- Next action: add "stale >24h" handling notes to this file and use daily
+- Next action: PR #75 awaiting review
+- Link: https://github.com/sportnumerics/rankings/pull/75
 
 ### In Progress
 - (none)
