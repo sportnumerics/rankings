@@ -34,15 +34,17 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Last update: PR created with 13 passing tests (2026-03-29 09:05)
 
 ### Ready
-3) **Feature discovery sprint: highest-value near-term product improvement**
+3) **Assists Leaders Page**
 - Status: Ready
 - Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
+- Outcome: /leaders/assists page showing top 50 assist leaders per division
+- First increment: copy PR #59 structure, change sort to assists descending
 - Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
+  - Page loads at /2026/d1/leaders/assists
+  - Shows top 50 players sorted by assists descending
+  - Reuses PlayersCard UI from goals leaders
+- Next action: wait for PR #59 merge, then copy + adapt in <3 hours
+- Context: Completes "big 3" offensive stats (goals ✅, assists, points). See feature-discovery-2026-03-29.md for full analysis.
 
 4) **WIP/PR velocity automation**
 - Status: Ready
@@ -61,6 +63,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - (none)
 
 ## Done
+- ✅ Feature discovery sprint (completed 2026-03-29) — top-5 analysis in feature-discovery-2026-03-29.md, #1 promoted to Ready
 - ✅ #58 DuckDB parquet materialized views (merged 2026-03-13)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
