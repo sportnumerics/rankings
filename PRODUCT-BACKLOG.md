@@ -6,8 +6,8 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 ## Active Focus (updated 2026-03-29)
 
 ### PR
-1) **#59 — Goals leaders page**
-- Status: PR (✅ rebased on main, CI green)
+1) **#59 — Goals leaders page** ⚠️ STALE (>24h)
+- Status: PR (✅ CI green, **stale 32h**)
 - Owner: assistant
 - Outcome: /leaders/goals page showing top 50 scorers per division
 - First increment: ship MVP goals leaders page
@@ -15,12 +15,12 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Page loads at /2026/d1/leaders/goals
   - Shows top 50 players sorted by goals descending
   - Reuses existing PlayerRating data and PlayersCard UI
-- Next action: awaiting Will's review
+- Next action: awaiting Will's review (approaching 48h critical threshold)
 - Link: https://github.com/sportnumerics/rankings/pull/59
 - Last update: CI green (2026-03-28 09:07)
 
 2) **#82 — Unit tests for parquet query code paths**
-- Status: PR (✅ CI running)
+- Status: PR (✅ CI green)
 - Owner: assistant
 - Outcome: test coverage for parquet.ts query functions to catch bugs reactively
 - First increment: add vitest + 13 tests for SQL construction, fallback, debug metadata
@@ -29,38 +29,41 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - ✅ Tests verify fallback behavior when parquet fails
   - ✅ Tests verify debug metadata structure
   - ✅ All tests pass in CI
-- Next action: awaiting CI completion and Will's review
+- Next action: awaiting Will's review
 - Link: https://github.com/sportnumerics/rankings/pull/82
-- Last update: PR created with 13 passing tests (2026-03-29 09:05)
+- Last update: CI green (2026-03-29 09:10)
 
-### Ready
-3) **Feature discovery sprint: highest-value near-term product improvement**
-- Status: Ready
-- Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
-- Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
-
-4) **WIP/PR velocity automation**
-- Status: Ready
+### In Progress
+3) **WIP/PR velocity automation**
+- Status: In Progress
 - Owner: assistant
 - Outcome: fewer stalls, faster PR throughput
 - First increment: daily stale-PR check with concrete unblock actions
 - Acceptance checks:
-  - Daily update includes active PR state + next unblock step
-  - blockers explicitly tagged with owner
-- Next action: add "stale >24h" handling notes to this file and use daily
+  - ✅ Daily update includes active PR state + next unblock step
+  - ✅ Blockers explicitly tagged with owner
+  - ✅ Created .github/PR-VELOCITY.md tracking file
+- Next action: commit tracking file, integrate into daily heartbeat flow
+- Last update: created PR-VELOCITY.md with stale-PR tracking (2026-03-29 17:09)
 
-### In Progress
-- (none)
+### Ready
+4) **Assists Leaders Page** (blocked on PR #59 merge)
+- Status: Ready (blocked)
+- Owner: assistant
+- Outcome: /leaders/assists page showing top 50 assist leaders per division
+- First increment: copy PR #59 structure, change sort to assists descending
+- Acceptance checks:
+  - Page loads at /2026/d1/leaders/assists
+  - Shows top 50 players sorted by assists descending
+  - Reuses PlayersCard UI from goals leaders
+- Next action: wait for PR #59 merge, then copy + adapt in <3 hours
+- Context: Completes "big 3" offensive stats. See feature-discovery-2026-03-29.md for full analysis.
 
 ### Blocked
 - (none)
 
 ## Done
+- ✅ Feature discovery sprint (completed 2026-03-29) — top-5 analysis, promoted Assists Leaders to Ready
 - ✅ #58 DuckDB parquet materialized views (merged 2026-03-13)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
