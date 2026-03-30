@@ -33,16 +33,24 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/82
 - Last update: PR created with 13 passing tests (2026-03-29 09:05)
 
-### Ready
-3) **Feature discovery sprint: highest-value near-term product improvement**
-- Status: Ready
+### PR
+3) **#86 — Assists leaders page**
+- Status: PR (✅ CI pending)
 - Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
+- Outcome: /leaders/assists page showing top 50 playmakers per division
+- First increment: ship MVP assists leaders page
 - Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
+  - ✅ Page builds successfully
+  - ✅ Route structure matches goals leaders pattern (#59)
+  - Page loads at /2026/d1/leaders/assists
+  - Shows top 50 players sorted by assists descending
+  - Reuses existing PlayerRating data and PlayersCard UI
+- Next action: awaiting CI completion and Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/86
+- Last update: PR created (2026-03-30 13:02 CDT)
+- Context: Feature discovery doc in `docs/feature-discovery-2026-03-30.md`
+
+### Ready
 
 4) **WIP/PR velocity automation**
 - Status: Ready
@@ -61,6 +69,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - (none)
 
 ## Done
+- ✅ Feature discovery sprint (2026-03-30) → recommended assists leaders → implemented as #86
 - ✅ #58 DuckDB parquet materialized views (merged 2026-03-13)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
