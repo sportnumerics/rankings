@@ -76,15 +76,15 @@ class NcaaDotCom(Scraper):
         """
         soup = BeautifulSoup(html, 'html.parser')
         
-        # Find the stats table - it's inside block-stats div
-        stats_block = soup.find('div', class_='block-stats')
-        if not stats_block:
-            logger.warning(f"No stats block found for {sport} {division} {stat_name}")
+        # Find the stats table - it's inside stats-wrap div
+        stats_wrap = soup.find('div', class_='stats-wrap')
+        if not stats_wrap:
+            logger.warning(f"No stats wrap found for {sport} {division} {stat_name}")
             return []
         
-        table = stats_block.find('table')
+        table = stats_wrap.find('table')
         if not table or not table.tbody:
-            logger.warning(f"No table found in stats block for {sport} {division} {stat_name}")
+            logger.warning(f"No table found in stats wrap for {sport} {division} {stat_name}")
             return []
         
         rows = table.tbody.find_all('tr')
@@ -134,14 +134,14 @@ class NcaaDotCom(Scraper):
         """
         soup = BeautifulSoup(html, 'html.parser')
         
-        stats_block = soup.find('div', class_='block-stats')
-        if not stats_block:
-            logger.warning(f"No stats block found for {sport} {division} {stat_name}")
+        stats_wrap = soup.find('div', class_='stats-wrap')
+        if not stats_wrap:
+            logger.warning(f"No stats wrap found for {sport} {division} {stat_name}")
             return []
         
-        table = stats_block.find('table')
+        table = stats_wrap.find('table')
         if not table or not table.tbody:
-            logger.warning(f"No table found in stats block for {sport} {division} {stat_name}")
+            logger.warning(f"No table found in stats wrap for {sport} {division} {stat_name}")
             return []
         
         rows = table.tbody.find_all('tr')

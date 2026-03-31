@@ -23,11 +23,19 @@ class InterstitialBypassSession:
         """
         self.session = base_session
     
+    @property
+    def headers(self):
+        """Expose base session headers for modification."""
+        return self.session.headers
+    
     def get(self, url: str, **kwargs) -> Any:
         """
         Fetch a URL, automatically solving Akamai challenges if encountered.
         Invalidates cache on 403 to ensure fresh interstitial challenges.
         """
+        # Log headers for debugging
+        logger.info(f"Request headers: {dict(self.session.headers)}")
+        
         # Make initial request through the base session
         resp = self.session.get(url, **kwargs)
         

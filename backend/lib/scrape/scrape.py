@@ -17,7 +17,22 @@ import traceback
 
 from .interstitial_bypass import InterstitialBypassSession
 
-USER_AGENT = 'sportnumerics-scraper/1.0 (https://sportnumerics.com)'
+# Use realistic browser headers to avoid bot detection
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+DEFAULT_HEADERS = {
+    'User-Agent': USER_AGENT,
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'DNT': '1',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-User': '?1',
+    'Cache-Control': 'max-age=0'
+}
 
 
 def scrape_team_list(args: ScrapeArgs):
@@ -83,6 +98,9 @@ class ScrapeRunner():
         session = Session(cache_name=cache_name,
                          expire_after=timedelta(days=1),
                          **session_args)
+        
+        # Set realistic browser headers to avoid bot detection
+        session.headers.update(DEFAULT_HEADERS)
         
         # Wrap with interstitial bypass for NCAA
         if source == 'ncaa':
@@ -277,8 +295,8 @@ class ScrapeRunner():
             self._dump_html(f'game-details-{game_id}.html', html)
 
     def fetch(self, location):
-        response = self.cache.get(location.url,
-                                  headers={'user-agent': USER_AGENT})
+        # Headers are already set on session, no need to pass again
+        response = self.cache.get(location.url)
         if response.status_code != 200:
             self.log.warning(
                 f'Issue fetching {location.url}, status code: {response.status_code}'
