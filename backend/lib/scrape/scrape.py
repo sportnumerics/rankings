@@ -16,6 +16,7 @@ import logging
 import traceback
 
 from .interstitial_bypass import InterstitialBypassSession
+from .playwright_fetcher import PlaywrightFetcher
 
 USER_AGENT = 'sportnumerics-scraper/1.0 (https://sportnumerics.com)'
 
@@ -277,6 +278,16 @@ class ScrapeRunner():
             self._dump_html(f'game-details-{game_id}.html', html)
 
     def fetch(self, location):
+        # Use Playwright with Firefox for NCAA source (bypasses Akamai blocking)
+        if self.source == 'ncaa':
+            try:
+                with PlaywrightFetcher() as fetcher:
+                    return fetcher.fetch(location.url)
+            except Exception as e:
+                self.log.error(f'Playwright fetch failed for {location.url}: {e}')
+                return None
+        
+        # Use regular HTTP session for other sources (MCLA, etc.)
         response = self.cache.get(location.url,
                                   headers={'user-agent': USER_AGENT})
         if response.status_code != 200:
