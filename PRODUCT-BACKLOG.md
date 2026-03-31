@@ -3,10 +3,24 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-29)
+## Active Focus (updated 2026-03-31)
 
 ### PR
-1) **#59 — Goals leaders page**
+1) **#88 — NCAA.com scraper hotfix (stats.ncaa.org blocked)**
+- Status: PR (✅ tests passing)
+- Owner: assistant
+- Outcome: restore NCAA data collection via NCAA.com fallback scraper
+- First increment: fix HTML parser and add realistic browser headers
+- Acceptance checks:
+  - ✅ NCAA.com scraper correctly parses stats (stats-wrap class fix)
+  - ✅ Realistic browser headers added to avoid bot detection
+  - ✅ All live integration tests pass (goals/assists/saves/team stats: 5/5)
+- Next action: awaiting Will's review and merge
+- Link: https://github.com/sportnumerics/rankings/pull/88
+- Last update: Parser fixed, all tests passing (2026-03-31 09:00)
+- Priority: CRITICAL (production data collection blocked)
+
+2) **#59 — Goals leaders page**
 - Status: PR (✅ rebased on main, CI green)
 - Owner: assistant
 - Outcome: /leaders/goals page showing top 50 scorers per division
@@ -19,7 +33,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/59
 - Last update: CI green (2026-03-28 09:07)
 
-2) **#82 — Unit tests for parquet query code paths**
+3) **#82 — Unit tests for parquet query code paths**
 - Status: PR (✅ CI running)
 - Owner: assistant
 - Outcome: test coverage for parquet.ts query functions to catch bugs reactively
@@ -33,8 +47,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/82
 - Last update: PR created with 13 passing tests (2026-03-29 09:05)
 
-### PR
-3) **#86 — Assists leaders page**
+4) **#86 — Assists leaders page**
 - Status: PR (✅ CI pending)
 - Owner: assistant
 - Outcome: /leaders/assists page showing top 50 playmakers per division
@@ -52,7 +65,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 
 ### Ready
 
-4) **WIP/PR velocity automation**
+5) **WIP/PR velocity automation**
 - Status: Ready
 - Owner: assistant
 - Outcome: fewer stalls, faster PR throughput
