@@ -10,6 +10,7 @@ from collections.abc import Iterator
 from requests_cache import CacheMixin, CachedSession
 from requests_ratelimiter import LimiterSession
 from datetime import UTC, timedelta, tzinfo
+from typing import Optional
 import os
 import pathlib
 import logging
@@ -26,8 +27,10 @@ def scrape_team_list(args: ScrapeArgs):
         runner = ScrapeRunner(source=args.source,
                               year=year,
                               out_dir=args.out_dir)
-
-        runner.scrape_and_write_team_lists()
+        try:
+            runner.scrape_and_write_team_lists()
+        finally:
+            runner.cleanup()
 
 
 def scrape_schedules(args: ScrapeArgs):
@@ -38,14 +41,16 @@ def scrape_schedules(args: ScrapeArgs):
                               team=args.team,
                               div=args.div,
                               limit=args.limit)
+        try:
+            if hasattr(args, 'team_list_file') and args.team_list_file:
+                team_list_json_file = args.team_list_file
+            else:
+                runner.scrape_and_write_team_lists()
+                team_list_json_file = None
 
-        if hasattr(args, 'team_list_file') and args.team_list_file:
-            team_list_json_file = args.team_list_file
-        else:
-            runner.scrape_and_write_team_lists()
-            team_list_json_file = None
-
-        runner.scrape_and_write_schedules(team_list_json_file)
+            runner.scrape_and_write_schedules(team_list_json_file)
+        finally:
+            runner.cleanup()
 
 
 class LimitedCachedSession(CacheMixin, LimiterSession):
@@ -54,6 +59,7 @@ class LimitedCachedSession(CacheMixin, LimiterSession):
 
 class ScrapeRunner():
     scraper: Scraper
+    playwright_fetcher: Optional[PlaywrightFetcher] = None
 
     def __init__(self,
                  source: str,
@@ -281,8 +287,12 @@ class ScrapeRunner():
         # Use Playwright with Firefox for NCAA source (bypasses Akamai blocking)
         if self.source == 'ncaa':
             try:
-                with PlaywrightFetcher() as fetcher:
-                    return fetcher.fetch(location.url)
+                # Reuse existing browser if available, create new one if not
+                if not self.playwright_fetcher:
+                    self.playwright_fetcher = PlaywrightFetcher()
+                    self.playwright_fetcher.__enter__()
+                
+                return self.playwright_fetcher.fetch(location.url)
             except Exception as e:
                 self.log.error(f'Playwright fetch failed for {location.url}: {e}')
                 return None
@@ -296,3 +306,9 @@ class ScrapeRunner():
             )
             return None
         return response.text
+    
+    def cleanup(self):
+        """Clean up resources (call after scraping complete)"""
+        if self.playwright_fetcher:
+            self.playwright_fetcher.__exit__(None, None, None)
+            self.playwright_fetcher = None
