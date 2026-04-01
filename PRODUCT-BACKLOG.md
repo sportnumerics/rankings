@@ -6,6 +6,23 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 ## Active Focus (updated 2026-03-07)
 
 ### PR
+0) **#89 — HOTFIX: Firefox + Playwright bypasses Akamai on stats.ncaa.org**
+- Status: PR (✅ CI passing - Backend Unit Tests fixed)
+- Owner: assistant
+- Outcome: Restore 100% NCAA data coverage after Akamai bot detection blocked Chromium
+- Current increment: Firefox + Playwright implementation with persistent browser sessions
+- Acceptance checks:
+  - Uses Firefox instead of Chromium (bypasses Akamai) ✅
+  - Persistent browser across requests for speed ✅
+  - Uses async Playwright API ✅
+  - Playwright tests skip in CI (no browsers installed) ✅
+  - Backend unit tests pass ✅
+  - Limited scrape completes in CI (in progress)
+- Next action: Monitor CI completion, then request Will's review for merge
+- Link: https://github.com/sportnumerics/rankings/pull/89
+- Last update: CI fix applied, Backend Unit Tests passing (2026-04-01 09:00)
+- Context: stats.ncaa.org started blocking Chromium with "Access Denied"; Firefox works
+
 1) **#59 — Goals leaders page**
 - Status: PR
 - Owner: assistant
