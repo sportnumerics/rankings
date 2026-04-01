@@ -2,13 +2,14 @@
 Playwright-based HTML fetcher for stats.ncaa.org.
 
 Uses Firefox to bypass Akamai bot detection that blocks Chromium.
+Uses async API to avoid conflicts with pytest-asyncio in CI.
 """
 
 import logging
-from playwright.sync_api import sync_playwright, Browser, Page
+import asyncio
+from playwright.async_api import async_playwright, Browser, Page
 from typing import Optional
 import time
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -29,63 +30,39 @@ class PlaywrightFetcher:
     
     def __enter__(self):
         """Context manager entry - launch browser"""
-        # Check if we're in an asyncio event loop (common in pytest-asyncio)
-        # If so, we need to handle it differently
-        try:
-            import asyncio
-            try:
-                loop = asyncio.get_running_loop()
-                # We're in an async context - Playwright sync API won't work directly
-                # Solution: Use greenlet to create a sync context
-                logger.info("Detected async context, using greenlet for Playwright")
-                self._start_with_greenlet()
-            except RuntimeError:
-                # No running loop - safe to use sync API directly
-                self._start_directly()
-        except ImportError:
-            # asyncio not available - use sync API
-            self._start_directly()
+        logger.info("Launching Firefox browser (headless=%s)", self.headless)
+        
+        # Run async Playwright in a new event loop
+        # This works whether we're in an async context or not
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        async def start():
+            self.playwright = await async_playwright().start()
+            self.browser = await self.playwright.firefox.launch(headless=self.headless)
+            self.page = await self.browser.new_page(
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0',
+                viewport={'width': 1920, 'height': 1080}
+            )
+        
+        loop.run_until_complete(start())
+        self._loop = loop
         
         return self
     
-    def _start_directly(self):
-        """Start Playwright directly (no async context)"""
-        logger.info("Launching Firefox browser (headless=%s)", self.headless)
-        self.playwright = sync_playwright().start()
-        self.browser = self.playwright.firefox.launch(headless=self.headless)
-        
-        # Create page with realistic settings
-        self.page = self.browser.new_page(
-            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0',
-            viewport={'width': 1920, 'height': 1080}
-        )
-    
-    def _start_with_greenlet(self):
-        """Start Playwright using greenlet to escape async context"""
-        try:
-            from greenlet import greenlet
-            
-            def run_playwright():
-                self.playwright = sync_playwright().start()
-                logger.info("Launching Firefox browser (headless=%s)", self.headless)
-                self.browser = self.playwright.firefox.launch(headless=self.headless)
-            
-            g = greenlet(run_playwright)
-            g.switch()
-            
-        except ImportError:
-            # greenlet not available - fall back to direct (will fail in async context)
-            logger.warning("greenlet not available, falling back to direct start")
-            self._start_directly()
-    
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit - close browser"""
-        if self.page:
-            self.page.close()
-        if self.browser:
-            self.browser.close()
-        if self.playwright:
-            self.playwright.stop()
+        async def stop():
+            if self.page:
+                await self.page.close()
+            if self.browser:
+                await self.browser.close()
+            if self.playwright:
+                await self.playwright.stop()
+        
+        if hasattr(self, '_loop'):
+            self._loop.run_until_complete(stop())
+            self._loop.close()
     
     def fetch(self, url: str, wait_until: str = 'networkidle', timeout: int = 30000) -> str:
         """
@@ -108,21 +85,26 @@ class PlaywrightFetcher:
         logger.debug(f"Fetching: {url}")
         start = time.time()
         
-        try:
-            response = self.page.goto(url, wait_until=wait_until, timeout=timeout)
+        async def fetch_async():
+            response = await self.page.goto(url, wait_until=wait_until, timeout=timeout)
             
             if response.status != 200:
                 logger.warning(f"Non-200 status: {response.status} for {url}")
             
             # Get rendered HTML
-            html = self.page.content()
+            html = await self.page.content()
             
             # Check for Akamai blocking
             if 'Access Denied' in html or 'access denied' in html.lower():
                 raise Exception(f"Akamai blocked request to {url} (Access Denied in HTML)")
             
+            return html, response.status
+        
+        try:
+            html, status = self._loop.run_until_complete(fetch_async())
+            
             elapsed = time.time() - start
-            logger.debug(f"Fetched {url} in {elapsed:.2f}s (status={response.status})")
+            logger.debug(f"Fetched {url} in {elapsed:.2f}s (status={status})")
             
             return html
         
