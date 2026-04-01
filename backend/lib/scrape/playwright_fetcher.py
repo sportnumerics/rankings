@@ -32,8 +32,18 @@ class PlaywrightFetcher:
         """Context manager entry - launch browser"""
         logger.info("Launching Firefox browser (headless=%s)", self.headless)
         
-        # Run async Playwright in a new event loop
-        # This works whether we're in an async context or not
+        # Get or create event loop
+        try:
+            # Check if there's a running loop
+            asyncio.get_running_loop()
+            # If we get here, we're in an async context - create a new loop in a thread
+            raise RuntimeError("Cannot use PlaywrightFetcher in async context")
+        except RuntimeError as e:
+            if "no running event loop" not in str(e).lower() and "cannot" not in str(e).lower():
+                # There is a running loop, can't proceed
+                raise
+            # No running loop - safe to create one
+        
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         
