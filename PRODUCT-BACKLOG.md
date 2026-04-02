@@ -3,11 +3,39 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-07)
+## Active Focus (updated 2026-04-02 09:00)
 
 ### PR
-1) **#59 — Goals leaders page**
-- Status: PR
+1) **#86 — Assists leaders page** ⭐ HIGH-VALUE
+- Status: PR (✅ all checks passing, awaiting review)
+- Owner: assistant
+- Outcome: /leaders/assists page showing top 50 assist leaders per division
+- First increment: MVP assists leaders page (recommended from feature discovery sprint)
+- Acceptance checks:
+  - ✅ Page loads at /2026/d1/leaders/assists
+  - ✅ Shows top 50 players sorted by assists descending
+  - ✅ Reuses existing PlayerRating data and PlayersCard UI
+  - ✅ All CI checks passing
+- Next action: awaiting Will's code review for merge
+- Link: https://github.com/sportnumerics/rankings/pull/86
+- Last update: CI green, ready for review (2026-03-30 18:10)
+- **Value**: Fills current gap (assists are fundamental stat, NCAA.com has prominent assists leaders)
+
+2) **#76 — Points leaders page**
+- Status: PR (✅ all checks passing)
+- Owner: assistant
+- Outcome: /leaders/points page showing top 50 points leaders per division
+- First increment: MVP points leaders page
+- Acceptance checks:
+  - ✅ Page loads at /2026/d1/leaders/points
+  - ✅ Shows top 50 players sorted by points (goals + assists) descending
+  - ✅ Reuses existing PlayerRating data and PlayersCard UI
+- Next action: awaiting Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/76
+- Last update: CI green
+
+3) **#59 — Goals leaders page**
+- Status: PR (✅ all checks passing)
 - Owner: assistant
 - Outcome: /leaders/goals page showing top 50 scorers per division
 - First increment: ship MVP goals leaders page
@@ -17,64 +45,38 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Reuses existing PlayerRating data and PlayersCard UI
 - Next action: awaiting Will's review
 - Link: https://github.com/sportnumerics/rankings/pull/59
-- Last update: review requested, all checks passing (2026-03-09 09:15)
+- Last update: CI green
 
-2) **#58 — DuckDB parquet materialized views (12-file schema)**
-- Status: PR (✅ all checks passing - ready to merge)
+4) **#82 — Unit tests for parquet query code paths**
+- Status: PR (✅ CI passing, INCOMPLETE)
 - Owner: assistant
-- Outcome: 12 optimized parquet files (one per page component) with frontend DuckDB queries
-- Current increment: Phase 1 + Phase 2 COMPLETE + all schema/query/perf fixes
+- Outcome: test coverage for parquet.ts query functions to catch bugs reactively
+- First increment: add vitest + 13 tests for utility functions
 - Acceptance checks:
-  - Backend: `python main.py export-parquet` generates all 12 files ✅
-  - Backend: integrated into `all` workflow ✅
-  - Frontend: all pages query correct file with optimal filters ✅
-  - Footer displays query ms + file read stats ✅
-  - Teams with 0 games appear in parquet mode ✅
-  - Unrated teams rank below negative-rated teams (nulls last) ✅
-  - Team rosters include team metadata columns ✅
-  - Game details page uses parquet mode ✅
-  - game-metadata sorted by game_id for efficient lookups ✅
-  - Fresh parquet files deployed to dev with correct schema ✅
-- Next action: Ready for Will's review/merge
-- Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: All fixes complete, CI passing, dev deployed (2026-03-12 09:05)
-
-2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
-- Status: PR
-- Owner: assistant
-- Outcome: reproducible baseline for cold/warm local+S3 query performance
-- First increment: keep as reference benchmark suite
-- Acceptance checks:
-  - Includes local page-shaped timings
-  - Includes JSON vs parquet S3 timings
-- Next action: decide merge order with #58 (can keep #57 for benchmarking docs)
-- Link: https://github.com/sportnumerics/rankings/pull/57
+  - ✅ All tests pass in CI
+  - ⚠️ INCOMPLETE: Only covers utility functions (dataModeFromSearch, QueryDebug type)
+  - ❌ Missing: SQL query construction tests (getRankedTeams, getRankedPlayers, getGames)
+  - ❌ Missing: Fallback behavior tests when parquet fails
+- Next action: Expand tests to cover actual query paths OR close PR and revisit when needed
+- Link: https://github.com/sportnumerics/rankings/pull/82
+- Last update: PR created with 13 passing tests (2026-03-29 09:05)
+- **Note**: Current tests provide minimal value; recommend closing until more comprehensive coverage is scoped
 
 ### Ready
-2) **Unit tests for parquet query code paths**
+5) **Saves leaders page** (next high-value feature)
 - Status: Ready
 - Owner: assistant
-- Outcome: test coverage for parquet.ts query functions and server data loaders
-- First increment: add tests for getRankedTeams/getRankedPlayers/getGames parquet mode
+- Outcome: /leaders/saves page showing top 50 goalie save leaders per division
+- First increment: implement saves leaders using existing pattern from #86/#76/#59
 - Acceptance checks:
-  - Tests verify SQL query construction (div filtering, sorting, column selection)
-  - Tests verify fallback behavior when parquet fails
-  - Tests verify debug metadata structure
-  - All tests pass in CI
-- Next action: create test file with fixture data and basic query validation
-- Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - need systematic coverage
+  - Page loads at /2026/d1/leaders/saves
+  - Shows top 50 players sorted by saves descending
+  - Reuses existing PlayerRating data and PlayersCard UI
+- Next action: Create PR after reviewing #86 merge
+- Estimated effort: 1-2 hours (identical pattern)
+- **Context**: From feature discovery sprint - goalies are underrepresented, saves are already collected
 
-3) **Feature discovery sprint: highest-value near-term product improvement**
-- Status: Ready
-- Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
-- Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
-
-4) **WIP/PR velocity automation**
+6) **WIP/PR velocity automation**
 - Status: Ready
 - Owner: assistant
 - Outcome: fewer stalls, faster PR throughput
@@ -90,10 +92,14 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 ### Blocked
 - (none)
 
-## Done
+## Done (recent)
+- ✅ #89 HOTFIX: Firefox + Playwright bypasses Akamai on stats.ncaa.org (merged 2026-04-01)
+- ✅ #58 DuckDB parquet materialized views (merged 2026-03-13)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
 ## Backlog Notes (assistant-facing)
 - Prefer tasks that improve user-visible value or reduce prediction-quality risk.
 - Keep PRs small and reviewable.
 - Every status change must update `Next action`.
+- Feature discovery sprint completed 2026-03-30 (see docs/feature-discovery-2026-03-30.md)
+- Current focus: ship leader pages (#86, #76, #59) then goalie stats
