@@ -23,8 +23,16 @@ export default async function Page({ params, searchParams }: { params: Params, s
 
     try {
         // First get player with JSON to learn division, then re-fetch with parquet if needed
-        const jsonPlayer = mode === 'parquet' ? await getPlayerStats({ ...params, mode: 'json' }) : null;
-        const div = jsonPlayer?.body.team.div;
+        let div: string | undefined;
+        if (mode === 'parquet') {
+            try {
+                const jsonPlayer = await getPlayerStats({ ...params, mode: 'json' });
+                div = jsonPlayer.body.team.div;
+            } catch (jsonErr) {
+                // If JSON fetch fails, parquet will also fail without division
+                throw jsonErr;
+            }
+        }
         ({ body: player, lastModified, debug: playerDebug } = await getPlayerStats({ ...params, div, mode }));
     } catch (err) {
         if (err instanceof NotFoundError) {
