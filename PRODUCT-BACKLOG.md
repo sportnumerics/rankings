@@ -51,8 +51,22 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/57
 
 ### Ready
-2) **Unit tests for parquet query code paths**
+2) **Position-Specific Leader Boards** 🏆
 - Status: Ready
+- Owner: assistant
+- Outcome: 5 leader pages (attack/midfield/defense/goalie/faceoff) showing top players by position
+- First increment: Attack leaders page at /[year]/[div]/leaders/attack
+- Acceptance checks:
+  - Attack leaders page shows top 50 attackers sorted by rating
+  - Position filter applied in parquet query
+  - Reuses PlayersCard component
+  - Navigation added to leaders section
+  - All 5 position pages (attack/midfield/defense/goalie/faceoff) implemented
+- Next action: verify position data in current parquet files, then build attack leaders page
+- Context: Position data already exists in scraper + parquet schema. High-value differentiator vs NCAA.com. See docs/feature-discovery-2026-04-04.md for full analysis.
+
+3) **Unit tests for parquet query code paths** [PR #82 exists, awaiting review]
+- Status: Ready (blocked on Will's review)
 - Owner: assistant
 - Outcome: test coverage for parquet.ts query functions and server data loaders
 - First increment: add tests for getRankedTeams/getRankedPlayers/getGames parquet mode
@@ -61,18 +75,8 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Tests verify fallback behavior when parquet fails
   - Tests verify debug metadata structure
   - All tests pass in CI
-- Next action: create test file with fixture data and basic query validation
+- Next action: PR #82 ready for review, all checks passing
 - Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - need systematic coverage
-
-3) **Feature discovery sprint: highest-value near-term product improvement**
-- Status: Ready
-- Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
-- Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
 
 4) **WIP/PR velocity automation**
 - Status: Ready
