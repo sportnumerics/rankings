@@ -3,7 +3,7 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-04-06 09:00)
+## Active Focus (updated 2026-04-07 09:00)
 
 ### PR
 1) **#91 — Fix player page division error in parquet mode** ⭐ PROD BUG FIX
@@ -102,6 +102,13 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/93
 - Last update: created with recommendation (2026-04-04 11:13)
 
+9) **Open PR review queue snapshot (2026-04-07 09:00 CT)**
+- Status: PR hygiene update
+- Open PRs still awaiting review: #91, #90, #93, #92, #86, #82, #76, #74, #70, #68, #59, #57
+- Review decision state: all currently show `REVIEW_REQUIRED`
+- Checks: no failing checks surfaced in the current open PR list snapshot
+- Next action: review/merge #91 first, then #82 or #86 to reopen build capacity
+
 ### Ready
 1) **Position-specific leader boards** ⭐ next build after review queue moves
 - Status: Ready
@@ -132,6 +139,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - **New feature work is intentionally blocked on review bandwidth.**
 - Current unblock owner: Will
 - Unblock condition: review/merge highest-priority ready PRs (#91 first, then #82/#86)
+- 2026-04-07 check: queue still fully review-blocked; no new in-progress feature branch should be opened until at least one ready PR lands
 
 ## Done (recent)
 - ✅ #89 HOTFIX: Firefox + Playwright bypasses Akamai on stats.ncaa.org (merged 2026-04-01)
