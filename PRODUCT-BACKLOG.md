@@ -3,7 +3,7 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-04-08 09:00)
+## Active Focus (updated 2026-04-09 09:00)
 
 ### PR
 1) **#91 — Fix player page division error in parquet mode** ⭐ PROD BUG FIX
@@ -89,7 +89,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Next actions are explicit
 - Next action: keep current while review queue is open
 - Link: https://github.com/sportnumerics/rankings/pull/90
-- Last update: refreshed for 2026-04-06 queue
+- Last update: refreshed for 2026-04-09 queue
 
 8) **#93 — Feature discovery: position leaders recommendation**
 - Status: PR (docs only)
@@ -102,9 +102,9 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/93
 - Last update: created with recommendation (2026-04-04 11:13)
 
-9) **Open PR review queue snapshot (2026-04-08 09:00 CT)**
+9) **Open PR review queue snapshot (2026-04-09 09:00 CT)**
 - Status: PR hygiene update
-- Open PRs still awaiting review: #91, #90, #93, #92, #86, #82, #76, #74, #70, #68, #59, #57
+- Open PRs still awaiting review: #93, #92, #91, #90, #86, #82, #76, #74, #70, #68, #59, #57
 - Review decision state: all currently show `REVIEW_REQUIRED`
 - Checks: no failing checks surfaced in the current open PR list snapshot
 - Queue note: review backlog remains the limiting factor; avoid opening another feature branch until at least one ready PR lands
@@ -140,7 +140,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - **New feature work is intentionally blocked on review bandwidth.**
 - Current unblock owner: Will
 - Unblock condition: review/merge highest-priority ready PRs (#91 first, then #82/#86)
-- 2026-04-08 check: queue still fully review-blocked; no new in-progress feature branch should be opened until at least one ready PR lands
+- 2026-04-09 check: queue still fully review-blocked; no new in-progress feature branch should be opened until at least one ready PR lands
 
 ## Done (recent)
 - ✅ #89 HOTFIX: Firefox + Playwright bypasses Akamai on stats.ncaa.org (merged 2026-04-01)
