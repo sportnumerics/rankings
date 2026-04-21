@@ -4,6 +4,7 @@ Unit tests for Playwright fetcher.
 
 import unittest
 import os
+from unittest.mock import patch
 from .playwright_fetcher import PlaywrightFetcher
 
 
@@ -33,6 +34,18 @@ class TestPlaywrightFetcher(unittest.TestCase):
             self.assertIn('dataTable', html)
             self.assertNotIn('Access Denied', html)
     
+    def test_detects_queue_full_html_as_retryable(self):
+        fetcher = PlaywrightFetcher()
+        self.assertTrue(fetcher._is_blocked_or_busy_html(
+            "<html><body><h2>This website is under heavy load (queue full)</h2></body></html>"
+        ))
+        self.assertTrue(fetcher._is_blocked_or_busy_html(
+            "<html><body>Access Denied</body></html>"
+        ))
+        self.assertFalse(fetcher._is_blocked_or_busy_html(
+            "<html><body><table class='dataTable'></table></body></html>"
+        ))
+
     @unittest.skipIf(os.environ.get('CI') == 'true', "Skip browser tests in CI (no Playwright browsers installed)")
     def test_context_manager(self):
         """Test context manager properly initializes and cleans up"""
