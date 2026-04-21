@@ -20,6 +20,18 @@ class TestPlaywrightFetcher(unittest.TestCase):
             self.assertIsNotNone(html)
             self.assertIn('Air Force', html)  # First team alphabetically
             self.assertNotIn('Access Denied', html)
+
+    @unittest.skipIf(os.environ.get('CI') == 'true', "Skip browser tests in CI (no Playwright browsers installed)")
+    def test_fetch_ncaa_individual_stats_page(self):
+        """Test that live NCAA individual stats pages fetch successfully."""
+        url = 'https://stats.ncaa.org/contests/6520729/individual_stats'
+
+        with PlaywrightFetcher() as fetcher:
+            html = fetcher.fetch(url)
+
+            self.assertIsNotNone(html)
+            self.assertIn('dataTable', html)
+            self.assertNotIn('Access Denied', html)
     
     @unittest.skipIf(os.environ.get('CI') == 'true', "Skip browser tests in CI (no Playwright browsers installed)")
     def test_context_manager(self):
