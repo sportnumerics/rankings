@@ -247,7 +247,7 @@ jobs:
           TASK_ID="${TASK_ARN##*/}"
           LOG_GROUP="/rankings/dev/backend"
           LOG_STREAM_PREFIX="rankings-backend/rankings-backend/${TASK_ID}"
-          MAX_POLLS=60
+          MAX_POLLS=90
           POLL_DELAY=10
           POLL=0
           LAST_TS=$(( $(date +%s) * 1000 ))
