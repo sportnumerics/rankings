@@ -4,6 +4,7 @@ Unit tests for Playwright fetcher.
 
 import unittest
 import os
+from unittest.mock import patch
 from .playwright_fetcher import PlaywrightFetcher
 
 
@@ -20,7 +21,31 @@ class TestPlaywrightFetcher(unittest.TestCase):
             self.assertIsNotNone(html)
             self.assertIn('Air Force', html)  # First team alphabetically
             self.assertNotIn('Access Denied', html)
+
+    @unittest.skipIf(os.environ.get('CI') == 'true', "Skip browser tests in CI (no Playwright browsers installed)")
+    def test_fetch_ncaa_individual_stats_page(self):
+        """Test that live NCAA individual stats pages fetch successfully."""
+        url = 'https://stats.ncaa.org/contests/6520729/individual_stats'
+
+        with PlaywrightFetcher() as fetcher:
+            html = fetcher.fetch(url)
+
+            self.assertIsNotNone(html)
+            self.assertIn('dataTable', html)
+            self.assertNotIn('Access Denied', html)
     
+    def test_detects_queue_full_html_as_retryable(self):
+        fetcher = PlaywrightFetcher()
+        self.assertTrue(fetcher._is_blocked_or_busy_html(
+            "<html><body><h2>This website is under heavy load (queue full)</h2></body></html>"
+        ))
+        self.assertTrue(fetcher._is_blocked_or_busy_html(
+            "<html><body>Access Denied</body></html>"
+        ))
+        self.assertFalse(fetcher._is_blocked_or_busy_html(
+            "<html><body><table class='dataTable'></table></body></html>"
+        ))
+
     @unittest.skipIf(os.environ.get('CI') == 'true', "Skip browser tests in CI (no Playwright browsers installed)")
     def test_context_manager(self):
         """Test context manager properly initializes and cleans up"""
