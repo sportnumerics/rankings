@@ -247,9 +247,6 @@ jobs:
           TASK_ID="${TASK_ARN##*/}"
           LOG_GROUP="/rankings/dev/backend"
           LOG_STREAM_PREFIX="rankings-backend/rankings-backend/${TASK_ID}"
-          MAX_POLLS=90
-          POLL_DELAY=10
-          POLL=0
           LAST_TS=$(( $(date +%s) * 1000 ))
 
           print_new_logs() {
@@ -271,46 +268,40 @@ jobs:
           while true; do
             print_new_logs
 
-            DESCRIBE_JSON=$(aws ecs describe-tasks \
+            STATUS=$(aws ecs describe-tasks \
               --cluster rankings-backend-dev \
               --tasks "$TASK_ARN" \
-              --output json)
-
-            FAILURE_REASON=$(echo "$DESCRIBE_JSON" | python3 -c 'import sys, json; j=json.load(sys.stdin); print((j.get("failures") or [{}])[0].get("reason", ""))')
-            STATUS=$(echo "$DESCRIBE_JSON" | python3 -c 'import sys, json; j=json.load(sys.stdin); tasks=j.get("tasks") or []; print(tasks[0].get("lastStatus", "MISSING") if tasks else "MISSING")')
+              --query 'tasks[0].lastStatus' \
+              --output text 2>/dev/null || echo "UNKNOWN")
 
             echo "Current task status: $STATUS"
 
             if [ "$STATUS" = "STOPPED" ]; then
-              print_new_logs
-              echo "$DESCRIBE_JSON" | python3 -c 'import sys, json; j=json.load(sys.stdin); tasks=j.get("tasks") or [{}]; task=tasks[0]; containers=task.get("containers") or [{}]; print("Stopped reason: {}".format(task.get("stoppedReason", "unknown"))); print("Exit code: {}".format(containers[0].get("exitCode", "unknown")))'
               break
             fi
 
-            if [ "$STATUS" = "MISSING" ] && [ "$FAILURE_REASON" = "MISSING" ]; then
-              print_new_logs
-              echo "Task is no longer returned by ECS describe-tasks; treating as completed after log drain."
+            if aws ecs wait tasks-stopped --cluster rankings-backend-dev --tasks "$TASK_ARN"; then
               break
             fi
 
-            POLL=$((POLL + 1))
-            if [ "$POLL" -ge "$MAX_POLLS" ]; then
-              echo "Timed out waiting for backend task to stop."
-              exit 1
-            fi
-
-            sleep "$POLL_DELAY"
+            echo "ecs wait tasks-stopped did not complete cleanly yet; continuing log drain and status checks"
+            sleep 10
           done
-          
-          EXIT_CODE=$(aws ecs describe-tasks \
+
+          print_new_logs
+
+          DESCRIBE_JSON=$(aws ecs describe-tasks \
             --cluster rankings-backend-dev \
             --tasks "$TASK_ARN" \
-            --query 'tasks[0].containers[0].exitCode' \
-            --output text 2>/dev/null || echo "MISSING")
-          
+            --output json)
+
+          echo "$DESCRIBE_JSON" | python3 -c 'import sys, json; j=json.load(sys.stdin); tasks=j.get("tasks") or []; assert tasks, "No ECS task metadata returned after wait"; task=tasks[0]; containers=task.get("containers") or [{}]; print("Stopped reason: {}".format(task.get("stoppedReason", "unknown"))); print("Exit code: {}".format(containers[0].get("exitCode", "unknown")))'
+
+          EXIT_CODE=$(echo "$DESCRIBE_JSON" | python3 -c 'import sys, json; j=json.load(sys.stdin); tasks=j.get("tasks") or []; containers=(tasks[0].get("containers") if tasks else []) or [{}]; print(containers[0].get("exitCode", ""))')
+
           echo "Task exited with code: $EXIT_CODE"
-          
-          if [ "$EXIT_CODE" != "0" ] && [ "$EXIT_CODE" != "MISSING" ]; then
+
+          if [ "$EXIT_CODE" != "0" ]; then
             echo "Backend task failed!"
             exit 1
           fi
