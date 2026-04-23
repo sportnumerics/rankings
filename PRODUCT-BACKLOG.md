@@ -3,23 +3,10 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-04-22)
+## Active Focus (updated 2026-04-23)
 
 ### PR
-1) **#94 — Fix NCAA player stats scraping**
-- Status: PR
-- Owner: assistant
-- Outcome: keep NCAA player stat ingestion reliable enough for rankings + leaders pages
-- Current increment: regression coverage for live `individual_stats` fetches plus CI timeout hardening for ECS task completion detection
-- Acceptance checks:
-  - `lib.scrape.test_playwright_fetcher` and `lib.scrape.test_ncaa` pass
-  - PR validation passes, including `Run Backend (Limited Scrape)`
-  - Limited NCAA scrape produces game details with player stat payloads
-- Next action: ask Will to review/merge now that all checks are green
-- Link: https://github.com/sportnumerics/rankings/pull/94
-- Last update: CI rerun fully green after ECS-missing handling fix (2026-04-22 08:21 CDT)
-
-2) **#91 — Fix player page division error in parquet mode**
+1) **#91 — Fix player page division error in parquet mode**
 - Status: PR
 - Owner: assistant
 - Outcome: player pages resolve the correct division in parquet mode without runtime errors
@@ -28,9 +15,22 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Player page loads in parquet mode for valid players/divisions
   - Frontend unit tests pass
   - E2E tests pass
-- Next action: review/merge after #94 incident work is cleared
+- Next action: ask Will to review/merge now that #94 is already merged
 - Link: https://github.com/sportnumerics/rankings/pull/91
-- Last update: all checks passing on open PR (2026-04-03 06:15 CDT)
+- Last update: promoted to top merge target after #94 merged (2026-04-22 06:30 PM CDT)
+
+2) **#95 — Sync backlog to current PR queue**
+- Status: PR
+- Owner: assistant
+- Outcome: keep PRODUCT-BACKLOG.md aligned with the actual open/merged queue
+- Current increment: follow-up refresh after #94 merged so this file stops pointing at already-finished work
+- Acceptance checks:
+  - Active PR list matches `gh pr list`
+  - Recently merged work is moved to Done
+  - Merge priorities are explicit
+- Next action: merge after confirming this file reflects the live queue
+- Link: https://github.com/sportnumerics/rankings/pull/95
+- Last update: backlog corrected for #94 merge + current open PR ordering (2026-04-23 09:00 AM CDT)
 
 3) **#86 — Assists leaders page**
 - Status: PR
@@ -41,7 +41,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Page loads at `/2026/d1/leaders/assists`
   - Shows top 50 players sorted by assists descending
   - Reuses existing leader page/UI patterns
-- Next action: review/merge after higher-priority bugfix PRs
+- Next action: review/merge after #91 and backlog cleanup
 - Link: https://github.com/sportnumerics/rankings/pull/86
 - Last update: all checks passing on open PR (2026-03-30 01:10 PM CDT)
 
@@ -76,12 +76,12 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Status: Ready
 - Owner: Will
 - Outcome: reduce WIP and unblock the next feature branch by merging the highest-value green PRs
-- First increment: review `#94`, then `#91`, then `#82/#86` depending on product priority
+- First increment: review `#91`, then `#95`, then `#82/#86` depending on product priority
 - Acceptance checks:
   - At least one green PR merged
   - Merge order is explicit in this file / daily update
   - Next build target is chosen after queue shrinks
-- Next action: merge or comment on the highest-priority green PR
+- Next action: merge or comment on #91 first
 
 2) **Position-specific leaders pages**
 - Status: Ready
@@ -94,16 +94,16 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Backlog includes follow-up slices for remaining positions
 - Next action: start only after current merge queue moves
 
-3) **WIP/PR velocity automation**
+3) **Stale PR cleanup decisions (`#90`, `#93`, `#92`)**
 - Status: Ready
 - Owner: assistant
-- Outcome: fewer stale PRs and faster review throughput
-- First increment: daily stale-PR check with concrete unblock actions
+- Outcome: reduce duplicate docs/workflow noise in the queue so active implementation PRs are obvious
+- First increment: decide whether each PR should merge, supersede, or close based on overlap with #95 and current priorities
 - Acceptance checks:
-  - Daily update includes active PR state + next unblock step
-  - blockers explicitly tagged with owner
-  - stale PRs are summarized in priority order
-- Next action: keep this file synced to actual PR state during backlog-driver runs
+  - each stale PR has an explicit keep/close decision
+  - backlog references only still-actionable PRs as active priorities
+  - next review request is unambiguous
+- Next action: make cleanup recommendations in the daily update; avoid opening new feature work until this is settled
 
 ### In Progress
 - (none — prefer merge queue reduction before opening new implementation work)
@@ -112,6 +112,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - (none)
 
 ## Done
+- ✅ #94 Fix NCAA player stats scraping (merged 2026-04-22)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
 ## Backlog Notes (assistant-facing)
