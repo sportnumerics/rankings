@@ -3,119 +3,124 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-04-23)
+## Active Focus (updated 2026-04-24)
 
 ### PR
-1) **#91 — Fix player page division error in parquet mode**
+1) **#96 — Harden division lookup and incomplete game rendering**
 - Status: PR
 - Owner: assistant
-- Outcome: player pages resolve the correct division in parquet mode without runtime errors
-- Current increment: hotfix shipped to dev and validated in CI
+- Outcome: shared division resolution and game detail pages fail safely instead of crashing on malformed or partial data
+- Current increment: frontend hardening shipped to PR and dev
 - Acceptance checks:
-  - Player page loads in parquet mode for valid players/divisions
-  - Frontend unit tests pass
-  - E2E tests pass
-- Next action: ask Will to review/merge now that #94 is already merged
+  - `/api/[year]/div` returns a stable JSON object shape for success and error paths
+  - client division lookup handles non-OK responses explicitly
+  - incomplete game payloads do not crash the game detail page
+  - `cd frontend && npm run build` passes
+- Next action: Will review/merge incident fix
+- Link: https://github.com/sportnumerics/rankings/pull/96
+- Last update: PR opened, checks green (2026-04-23 10:25 PM CDT)
+
+2) **#91 — Fix player page division error in parquet mode**
+- Status: PR
+- Owner: assistant
+- Outcome: player pages resolve division correctly in parquet mode
+- Current increment: fix complete and validated in CI/dev
+- Acceptance checks:
+  - player page no longer throws division resolution errors in parquet mode
+  - frontend tests pass
+  - deploy + E2E checks pass
+- Next action: merge after reviewing overlap with #96
 - Link: https://github.com/sportnumerics/rankings/pull/91
-- Last update: promoted to top merge target after #94 merged (2026-04-22 06:30 PM CDT)
+- Last update: checks green, review required (2026-04-03)
 
-2) **#95 — Sync backlog to current PR queue**
+3) **#95 — Sync backlog to current PR queue**
 - Status: PR
 - Owner: assistant
-- Outcome: keep PRODUCT-BACKLOG.md aligned with the actual open/merged queue
-- Current increment: follow-up refresh after #94 merged so this file stops pointing at already-finished work
+- Outcome: backlog reflects the live queue and explicit priorities
+- Current increment: refresh to current 2026-04-24 queue and stale-PR decisions
 - Acceptance checks:
-  - Active PR list matches `gh pr list`
-  - Recently merged work is moved to Done
-  - Merge priorities are explicit
-- Next action: merge after confirming this file reflects the live queue
+  - PRODUCT-BACKLOG.md matches current open PR ordering
+  - stale PRs have explicit keep/close recommendations
+  - next implementation target is clear once merge queue moves
+- Next action: review/merge after confirming queue ordering looks right
 - Link: https://github.com/sportnumerics/rankings/pull/95
-- Last update: backlog corrected for #94 merge + current open PR ordering (2026-04-23 09:00 AM CDT)
+- Last update: backlog refreshed for #96 + stale PR cleanup recommendations (2026-04-24 09:00 AM CDT)
 
-3) **#86 — Assists leaders page**
+4) **#86 — Assists leaders page**
 - Status: PR
 - Owner: assistant
-- Outcome: /leaders/assists page showing top assist leaders per division
-- Current increment: MVP page implemented and validated in CI/dev
+- Outcome: `/leaders/assists` page showing top assist leaders per division
+- First increment: ship MVP assists leaders page
 - Acceptance checks:
-  - Page loads at `/2026/d1/leaders/assists`
-  - Shows top 50 players sorted by assists descending
-  - Reuses existing leader page/UI patterns
-- Next action: review/merge after #91 and backlog cleanup
+  - page loads at `/2026/d1/leaders/assists`
+  - shows top 50 players sorted by assists descending
+  - reuses existing leaders page patterns/UI
+- Next action: awaiting Will's review
 - Link: https://github.com/sportnumerics/rankings/pull/86
-- Last update: all checks passing on open PR (2026-03-30 01:10 PM CDT)
+- Last update: checks green, review required (2026-03-30)
 
-4) **#82 — Unit tests for parquet query code paths**
+5) **#82 — Unit tests for parquet query code paths**
 - Status: PR
 - Owner: assistant
-- Outcome: systematic test coverage for parquet.ts query functions and server data loaders
-- Current increment: first coverage slice landed and CI/dev passed
+- Outcome: frontend parquet query paths have regression coverage
+- Current increment: baseline parquet query tests merged into one PR
 - Acceptance checks:
-  - Tests cover parquet query construction + fallback behavior
-  - Frontend unit tests pass
-  - E2E tests pass
-- Next action: review/merge before adding more parquet-mode surface area
+  - tests cover ranked teams / players / games parquet mode
+  - tests verify fallback behavior and debug metadata
+  - CI passes
+- Next action: awaiting Will's review
 - Link: https://github.com/sportnumerics/rankings/pull/82
-- Last update: all checks passing on open PR (2026-03-29 09:10 AM CDT)
+- Last update: checks green, review required (2026-03-29)
 
-5) **#59 — Goals leaders page**
+6) **#59 — Goals leaders page**
 - Status: PR
 - Owner: assistant
-- Outcome: /leaders/goals page showing top 50 scorers per division
-- Current increment: MVP page implemented and validated in CI/dev
+- Outcome: `/leaders/goals` page showing top scorers per division
+- First increment: ship MVP goals leaders page
 - Acceptance checks:
-  - Page loads at `/2026/d1/leaders/goals`
-  - Shows top 50 players sorted by goals descending
-  - Reuses existing `PlayersCard` UI
-- Next action: review/merge after more urgent PRs above
+  - page loads at `/2026/d1/leaders/goals`
+  - shows top 50 players sorted by goals descending
+  - reuses existing PlayerRating data and PlayersCard UI
+- Next action: awaiting Will's review
 - Link: https://github.com/sportnumerics/rankings/pull/59
-- Last update: all checks passing on open PR (2026-03-28 09:07 AM CDT)
+- Last update: checks green, review required (2026-03-28)
+
+### In Progress
+- (none)
 
 ### Ready
-1) **PR review + merge queue cleanup**
+1) **Stale PR cleanup decisions (#90 / #93 / #92)**
 - Status: Ready
-- Owner: Will
-- Outcome: reduce WIP and unblock the next feature branch by merging the highest-value green PRs
-- First increment: review `#91`, then `#95`, then `#82/#86` depending on product priority
+- Owner: assistant
+- Outcome: active queue contains only live work with a clear purpose
+- First increment: close the superseded backlog/docs PRs and decide whether the PR dashboard script still deserves a slot
 - Acceptance checks:
-  - At least one green PR merged
-  - Merge order is explicit in this file / daily update
-  - Next build target is chosen after queue shrinks
-- Next action: merge or comment on #91 first
+  - #90 marked superseded by #95 and closed
+  - #93 marked superseded by shipped/active leaders work and closed
+  - #92 explicitly kept with a concrete adoption plan or closed as unused
+- Next action: make the keep/close calls after Will reviews the current queue
 
 2) **Position-specific leaders pages**
 - Status: Ready
 - Owner: assistant
-- Outcome: attack/midfield/defense/goalie/faceoff leader views using already-exported position data
-- First increment: ship one position-filtered leaders page behind the existing leaders patterns
+- Outcome: leaders filtered for attack, midfield, defense, goalie, and faceoff specialists
+- First increment: ship one position-specific leaderboard using existing player stats/parquet data
 - Acceptance checks:
-  - One leaders page can filter by position using parquet-backed data
-  - Position filter behavior is covered by tests or existing query coverage
-  - Backlog includes follow-up slices for remaining positions
-- Next action: start only after current merge queue moves
-
-3) **Stale PR cleanup decisions (`#90`, `#93`, `#92`)**
-- Status: Ready
-- Owner: assistant
-- Outcome: reduce duplicate docs/workflow noise in the queue so active implementation PRs are obvious
-- First increment: decide whether each PR should merge, supersede, or close based on overlap with #95 and current priorities
-- Acceptance checks:
-  - each stale PR has an explicit keep/close decision
-  - backlog references only still-actionable PRs as active priorities
-  - next review request is unambiguous
-- Next action: make cleanup recommendations in the daily update; avoid opening new feature work until this is settled
-
-### In Progress
-- (none — prefer merge queue reduction before opening new implementation work)
+  - at least one position-specific leaders page loads for 2026/d1
+  - query/filter uses existing position data without ad hoc scraping changes
+  - tests or focused validation cover the position filter path
+- Next action: start after #96 / #91 / #95 merge queue moves
 
 ### Blocked
 - (none)
 
 ## Done
-- ✅ #94 Fix NCAA player stats scraping (merged 2026-04-22)
+- ✅ #94 Fix NCAA player stats scrape regression coverage + CI timeout handling (merged 2026-04-22)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
 ## Backlog Notes (assistant-facing)
-- Prefer tasks that improve user-visible value or reduce prediction-quality risk.
-- Keep PRs small and reviewable.
+- Prioritize reviewable PR throughput before starting new feature work.
+- Incident fixes beat roadmap work.
+- Keep PRs small, user-visible when possible, and test-backed.
 - Every status change must update `Next action`.
+- When backlog docs go stale, refresh them against live `gh pr list`, not memory.
