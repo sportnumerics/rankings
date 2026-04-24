@@ -46,7 +46,11 @@ export default async function Page({ params, searchParams }: { params: Params, s
             {game.external_link && <ExternalLink href={game.external_link} />}
         </div>
         <Card>
-            <H2>{game.away_team.name} <span className="text-xl">{game.result.away_score}</span> - {game.home_team.name} <span className="text-xl">{game.result.home_score}</span></H2>
+            <H2>
+                {game.away_team.name} <span className="text-xl">{game.result?.away_score ?? '—'}</span>
+                {' - '}
+                {game.home_team.name} <span className="text-xl">{game.result?.home_score ?? '—'}</span>
+            </H2>
         </Card>
         <Card title={game.away_team.name}>
             <StatLines stats={game.away_stats} />
