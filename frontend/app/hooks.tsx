@@ -36,7 +36,7 @@ export function useLocation(): Location {
     return location;
 }
 
-function fetchDiv(params: { div?: string, year?: string, team?: string, player?: string }): Promise<string | undefined> {
+function fetchDiv(params: { div?: string, year?: string, team?: string, player?: string, game?: string }): Promise<string | undefined> {
     if (params.div) {
         return Promise.resolve(params.div);
     }
@@ -44,7 +44,14 @@ function fetchDiv(params: { div?: string, year?: string, team?: string, player?:
     if (!url) {
         return Promise.resolve(undefined);
     }
-    return fetch(url).then(response => response.json());
+    return fetch(url)
+        .then(async response => {
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload?.error || `division lookup failed (${response.status})`);
+            }
+            return payload?.div;
+        });
 }
 
 function getUrl({ year, team, player, game }: { year?: string, team?: string, player?: string, game?: string }): string | undefined {
