@@ -171,13 +171,16 @@ def rank_players(args: PredictArgs, schedules: list[TeamDetail]):
     for i in range(0, n_players):
         player_id = player_idx_to_id[i]
         player = players[player_id]
+        # Count games with stats (non-zero goals or assists)
+        games_played = len([stat for stat in player.stats if stat.g > 0 or stat.a > 0])
         player_ratings.append(
             PlayerRating(id=player.id,
                          name=player.name,
                          team=player.team,
                          points=goal_ratings[i] + assist_ratings[i],
                          goals=goal_ratings[i],
-                         assists=assist_ratings[i]))
+                         assists=assist_ratings[i],
+                         games_played=games_played))
 
     teams: list[TeamPlayersRating] = []
     for i in range(0, n_teams):

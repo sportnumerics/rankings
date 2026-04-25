@@ -161,6 +161,7 @@ class PlayerRating(BaseType):
     points: float
     goals: float
     assists: float
+    games_played: int = 0
 
 
 @dataclass
