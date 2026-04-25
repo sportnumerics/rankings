@@ -89,18 +89,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - (none)
 
 ### Ready
-1) **Stale PR cleanup decisions (#90 / #93 / #92)**
-- Status: Ready
-- Owner: assistant
-- Outcome: active queue contains only live work with a clear purpose
-- First increment: close the superseded backlog/docs PRs and decide whether the PR dashboard script still deserves a slot
-- Acceptance checks:
-  - #90 marked superseded by #95 and closed
-  - #93 marked superseded by shipped/active leaders work and closed
-  - #92 explicitly kept with a concrete adoption plan or closed as unused
-- Next action: make the keep/close calls after Will reviews the current queue
-
-2) **Position-specific leaders pages**
+1) **Position-specific leaders pages**
 - Status: Ready
 - Owner: assistant
 - Outcome: leaders filtered for attack, midfield, defense, goalie, and faceoff specialists
@@ -111,10 +100,10 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - tests or focused validation cover the position filter path
 - Next action: start after #96 / #91 / #95 merge queue moves
 
-### Blocked
-- (none)
-
-## Done
+### Done
+- ✅ #90 closed as superseded by newer backlog sync PR #95 (2026-04-25)
+- ✅ #93 closed as superseded by shipped/active leaders work and current backlog ordering (2026-04-25)
+- ✅ #92 closed as unused review surface; backlog driver already gets the same queue signal directly from `gh` (2026-04-25)
 - ✅ #94 Fix NCAA player stats scrape regression coverage + CI timeout handling (merged 2026-04-22)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
