@@ -3,11 +3,11 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-07)
+## Active Focus (updated 2026-03-28)
 
 ### PR
 1) **#59 — Goals leaders page**
-- Status: PR
+- Status: PR (✅ rebased on main, CI running)
 - Owner: assistant
 - Outcome: /leaders/goals page showing top 50 scorers per division
 - First increment: ship MVP goals leaders page
@@ -15,40 +15,9 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - Page loads at /2026/d1/leaders/goals
   - Shows top 50 players sorted by goals descending
   - Reuses existing PlayerRating data and PlayersCard UI
-- Next action: awaiting Will's review
+- Next action: awaiting CI completion and Will's review
 - Link: https://github.com/sportnumerics/rankings/pull/59
-- Last update: review requested, all checks passing (2026-03-09 09:15)
-
-2) **#58 — DuckDB parquet materialized views (12-file schema)**
-- Status: PR (✅ all checks passing - ready to merge)
-- Owner: assistant
-- Outcome: 12 optimized parquet files (one per page component) with frontend DuckDB queries
-- Current increment: Phase 1 + Phase 2 COMPLETE + all schema/query/perf fixes
-- Acceptance checks:
-  - Backend: `python main.py export-parquet` generates all 12 files ✅
-  - Backend: integrated into `all` workflow ✅
-  - Frontend: all pages query correct file with optimal filters ✅
-  - Footer displays query ms + file read stats ✅
-  - Teams with 0 games appear in parquet mode ✅
-  - Unrated teams rank below negative-rated teams (nulls last) ✅
-  - Team rosters include team metadata columns ✅
-  - Game details page uses parquet mode ✅
-  - game-metadata sorted by game_id for efficient lookups ✅
-  - Fresh parquet files deployed to dev with correct schema ✅
-- Next action: Ready for Will's review/merge
-- Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: All fixes complete, CI passing, dev deployed (2026-03-12 09:05)
-
-2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
-- Status: PR
-- Owner: assistant
-- Outcome: reproducible baseline for cold/warm local+S3 query performance
-- First increment: keep as reference benchmark suite
-- Acceptance checks:
-  - Includes local page-shaped timings
-  - Includes JSON vs parquet S3 timings
-- Next action: decide merge order with #58 (can keep #57 for benchmarking docs)
-- Link: https://github.com/sportnumerics/rankings/pull/57
+- Last update: rebased on main, merge conflict resolved (2026-03-28 09:00)
 
 ### Ready
 2) **Unit tests for parquet query code paths**
@@ -91,6 +60,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - (none)
 
 ## Done
+- ✅ #58 DuckDB parquet materialized views (merged 2026-03-13)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
 ## Backlog Notes (assistant-facing)
