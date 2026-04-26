@@ -3,7 +3,7 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-04-24)
+## Active Focus (updated 2026-04-26)
 
 ### PR
 1) **#96 — Harden division lookup and incomplete game rendering**
@@ -72,7 +72,59 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/82
 - Last update: checks green, review required (2026-03-29)
 
-6) **#59 — Goals leaders page**
+6) **#76 — Points leaders page**
+- Status: PR
+- Owner: assistant
+- Outcome: `/leaders/points` page showing top combined scoring leaders per division
+- First increment: ship MVP points leaders page
+- Acceptance checks:
+  - page loads at `/2026/d1/leaders/points`
+  - shows top 50 players sorted by points descending
+  - reuses existing leaders page patterns/UI
+- Next action: awaiting Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/76
+- Last update: checks green, review required (2026-03-21)
+
+7) **#74 — Vitest infrastructure and SQL security tests**
+- Status: PR
+- Owner: assistant
+- Outcome: frontend test harness covers SQL safety and future query regressions
+- Current increment: baseline Vitest wiring plus SQL security coverage shipped in one PR
+- Acceptance checks:
+  - Vitest runs in CI for frontend unit tests
+  - SQL-related tests guard against unsafe query construction regressions
+  - CI passes
+- Next action: awaiting Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/74
+- Last update: checks green, review required (2026-03-19)
+
+8) **#70 — Per-game stat averages**
+- Status: PR
+- Owner: assistant
+- Outcome: player leader views can expose PPG/GPG/APG style averages
+- First increment: ship computed per-game averages end-to-end
+- Acceptance checks:
+  - players/stat views expose per-game average fields
+  - frontend renders the new averages without breaking existing stat pages
+  - CI passes
+- Next action: awaiting Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/70
+- Last update: checks green, review required (2026-03-17)
+
+9) **#68 — Parameterize parquet SQL inputs**
+- Status: PR
+- Owner: assistant
+- Outcome: parquet query entry points avoid unsafe SQL string interpolation
+- Current increment: parameterized query path and validation shipped
+- Acceptance checks:
+  - user-controlled query inputs are parameterized or validated
+  - regression tests cover the protected path
+  - CI passes
+- Next action: awaiting Will's review
+- Link: https://github.com/sportnumerics/rankings/pull/68
+- Last update: checks green, review required (2026-03-14)
+
+10) **#59 — Goals leaders page**
 - Status: PR
 - Owner: assistant
 - Outcome: `/leaders/goals` page showing top scorers per division
@@ -85,11 +137,35 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/59
 - Last update: checks green, review required (2026-03-28)
 
+11) **#57 — DuckDB parquet benchmark harness**
+- Status: PR
+- Owner: assistant
+- Outcome: repeatable page-shaped parquet benchmarks exist for performance work
+- Current increment: benchmark harness shipped but branch is now behind `main`
+- Acceptance checks:
+  - benchmark harness runs against representative parquet queries
+  - results are documented enough to compare layout changes
+  - branch rebases cleanly and CI passes
+- Next action: decide whether to refresh/rebase or close as stale
+- Link: https://github.com/sportnumerics/rankings/pull/57
+- Last update: open but merge state is DIRTY (2026-03-07)
+
 ### In Progress
 - (none)
 
 ### Ready
-1) **Position-specific leaders pages**
+1) **Old PR queue cleanup pass**
+- Status: Ready
+- Owner: assistant
+- Outcome: long-stale PR queue is intentionally reduced so review attention goes to the best work
+- First increment: review #57 / #68 / #70 / #74 / #76 for keep-vs-close decisions and close any clearly superseded work
+- Acceptance checks:
+  - each long-stale PR has an explicit keep/close rationale
+  - obviously superseded or low-value PRs are closed
+  - remaining queue order is easier to understand at a glance
+- Next action: start if Will wants queue cleanup before new feature work
+
+2) **Position-specific leaders pages**
 - Status: Ready
 - Owner: assistant
 - Outcome: leaders filtered for attack, midfield, defense, goalie, and faceoff specialists
