@@ -37,14 +37,14 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Status: PR
 - Owner: assistant
 - Outcome: backlog reflects the live queue and explicit priorities
-- Current increment: refresh to current 2026-04-24 queue and stale-PR decisions
+- Current increment: refreshed for the full 2026-04-27 open PR queue and stale PR cleanup decisions
 - Acceptance checks:
   - PRODUCT-BACKLOG.md matches current open PR ordering
   - stale PRs have explicit keep/close recommendations
   - next implementation target is clear once merge queue moves
 - Next action: review/merge after confirming queue ordering looks right
 - Link: https://github.com/sportnumerics/rankings/pull/95
-- Last update: backlog refreshed for #96 + stale PR cleanup recommendations (2026-04-24 09:00 AM CDT)
+- Last update: backlog refreshed and PR #57 marked for closure after benchmark findings were preserved in-thread (2026-04-27 09:00 AM CDT)
 
 4) **#86 — Assists leaders page**
 - Status: PR
@@ -137,19 +137,6 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/59
 - Last update: checks green, review required (2026-03-28)
 
-11) **#57 — DuckDB parquet benchmark harness**
-- Status: PR
-- Owner: assistant
-- Outcome: repeatable page-shaped parquet benchmarks exist for performance work
-- Current increment: benchmark harness shipped but branch is now behind `main`
-- Acceptance checks:
-  - benchmark harness runs against representative parquet queries
-  - results are documented enough to compare layout changes
-  - branch rebases cleanly and CI passes
-- Next action: decide whether to refresh/rebase or close as stale
-- Link: https://github.com/sportnumerics/rankings/pull/57
-- Last update: open but merge state is DIRTY (2026-03-07)
-
 ### In Progress
 - (none)
 
@@ -158,12 +145,12 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Status: Ready
 - Owner: assistant
 - Outcome: long-stale PR queue is intentionally reduced so review attention goes to the best work
-- First increment: review #57 / #68 / #70 / #74 / #76 for keep-vs-close decisions and close any clearly superseded work
+- First increment: review #68 / #70 / #74 / #76 for keep-vs-close decisions and close any clearly superseded work
 - Acceptance checks:
   - each long-stale PR has an explicit keep/close rationale
   - obviously superseded or low-value PRs are closed
   - remaining queue order is easier to understand at a glance
-- Next action: start if Will wants queue cleanup before new feature work
+- Next action: continue after closing stale benchmark PR #57
 
 2) **Position-specific leaders pages**
 - Status: Ready
@@ -180,6 +167,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - ✅ #90 closed as superseded by newer backlog sync PR #95 (2026-04-25)
 - ✅ #93 closed as superseded by shipped/active leaders work and current backlog ordering (2026-04-25)
 - ✅ #92 closed as unused review surface; backlog driver already gets the same queue signal directly from `gh` (2026-04-25)
+- ✅ #57 closed as stale research review surface; key benchmark findings preserved in the PR thread and can be revived later if needed (2026-04-27)
 - ✅ #94 Fix NCAA player stats scrape regression coverage + CI timeout handling (merged 2026-04-22)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
 
