@@ -145,12 +145,16 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Status: Ready
 - Owner: assistant
 - Outcome: long-stale PR queue is intentionally reduced so review attention goes to the best work
-- First increment: review #68 / #70 / #74 / #76 for keep-vs-close decisions and close any clearly superseded work
+- Current assessment after review:
+  - **#68 keep** — still the only branch that hardens parquet query parameter handling across `teams.ts`, `players.ts`, `games.ts`, and `parquet.ts`; not superseded on `main`
+  - **#70 keep** — still the only branch that adds `games_played` plus PPG/GPG/APG display; noisy docs can be trimmed later, but the product change remains unique
+  - **#74 keep** — still the only branch that adds Vitest + parquet regression tests; especially useful because it can turn the SQL-hardening work in #68 into enforceable coverage
+  - **#76 keep for now** — still the only points leaders implementation; lower priority than incident/security/test work, but not superseded by current open PRs
 - Acceptance checks:
   - each long-stale PR has an explicit keep/close rationale
   - obviously superseded or low-value PRs are closed
   - remaining queue order is easier to understand at a glance
-- Next action: continue after closing stale benchmark PR #57
+- Next action: ask Will to review/merge #68 first, then refresh/rebase #74 against it before revisiting #70 and #76
 
 2) **Position-specific leaders pages**
 - Status: Ready
