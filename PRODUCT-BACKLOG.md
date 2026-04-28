@@ -3,24 +3,10 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-04-26)
+## Active Focus (updated 2026-04-28)
 
 ### PR
-1) **#96 — Harden division lookup and incomplete game rendering**
-- Status: PR
-- Owner: assistant
-- Outcome: shared division resolution and game detail pages fail safely instead of crashing on malformed or partial data
-- Current increment: frontend hardening shipped to PR and dev
-- Acceptance checks:
-  - `/api/[year]/div` returns a stable JSON object shape for success and error paths
-  - client division lookup handles non-OK responses explicitly
-  - incomplete game payloads do not crash the game detail page
-  - `cd frontend && npm run build` passes
-- Next action: Will review/merge incident fix
-- Link: https://github.com/sportnumerics/rankings/pull/96
-- Last update: PR opened, checks green (2026-04-23 10:25 PM CDT)
-
-2) **#91 — Fix player page division error in parquet mode**
+1) **#91 — Fix player page division error in parquet mode**
 - Status: PR
 - Owner: assistant
 - Outcome: player pages resolve division correctly in parquet mode
@@ -33,20 +19,20 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/91
 - Last update: checks green, review required (2026-04-03)
 
-3) **#95 — Sync backlog to current PR queue**
+2) **#95 — Sync backlog to current PR queue**
 - Status: PR
 - Owner: assistant
 - Outcome: backlog reflects the live queue and explicit priorities
-- Current increment: refreshed for the full 2026-04-27 open PR queue and stale PR cleanup decisions
+- Current increment: refreshed for the live queue after #96 merged and stale PR keep decisions were recorded
 - Acceptance checks:
   - PRODUCT-BACKLOG.md matches current open PR ordering
   - stale PRs have explicit keep/close recommendations
   - next implementation target is clear once merge queue moves
 - Next action: review/merge after confirming queue ordering looks right
 - Link: https://github.com/sportnumerics/rankings/pull/95
-- Last update: backlog refreshed and PR #57 marked for closure after benchmark findings were preserved in-thread (2026-04-27 09:00 AM CDT)
+- Last update: backlog refreshed after #96 merged and the remaining stale March PRs were marked keep-for-now with explicit rationale (2026-04-28 09:00 AM CDT)
 
-4) **#86 — Assists leaders page**
+3) **#86 — Assists leaders page**
 - Status: PR
 - Owner: assistant
 - Outcome: `/leaders/assists` page showing top assist leaders per division
@@ -59,7 +45,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/86
 - Last update: checks green, review required (2026-03-30)
 
-5) **#82 — Unit tests for parquet query code paths**
+4) **#82 — Unit tests for parquet query code paths**
 - Status: PR
 - Owner: assistant
 - Outcome: frontend parquet query paths have regression coverage
@@ -72,7 +58,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/82
 - Last update: checks green, review required (2026-03-29)
 
-6) **#76 — Points leaders page**
+5) **#76 — Points leaders page**
 - Status: PR
 - Owner: assistant
 - Outcome: `/leaders/points` page showing top combined scoring leaders per division
@@ -85,7 +71,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/76
 - Last update: checks green, review required (2026-03-21)
 
-7) **#74 — Vitest infrastructure and SQL security tests**
+6) **#74 — Vitest infrastructure and SQL security tests**
 - Status: PR
 - Owner: assistant
 - Outcome: frontend test harness covers SQL safety and future query regressions
@@ -98,7 +84,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/74
 - Last update: checks green, review required (2026-03-19)
 
-8) **#70 — Per-game stat averages**
+7) **#70 — Per-game stat averages**
 - Status: PR
 - Owner: assistant
 - Outcome: player leader views can expose PPG/GPG/APG style averages
@@ -111,7 +97,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/70
 - Last update: checks green, review required (2026-03-17)
 
-9) **#68 — Parameterize parquet SQL inputs**
+8) **#68 — Parameterize parquet SQL inputs**
 - Status: PR
 - Owner: assistant
 - Outcome: parquet query entry points avoid unsafe SQL string interpolation
@@ -124,7 +110,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Link: https://github.com/sportnumerics/rankings/pull/68
 - Last update: checks green, review required (2026-03-14)
 
-10) **#59 — Goals leaders page**
+9) **#59 — Goals leaders page**
 - Status: PR
 - Owner: assistant
 - Outcome: `/leaders/goals` page showing top scorers per division
@@ -165,9 +151,10 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - at least one position-specific leaders page loads for 2026/d1
   - query/filter uses existing position data without ad hoc scraping changes
   - tests or focused validation cover the position filter path
-- Next action: start after #96 / #91 / #95 merge queue moves
+- Next action: start after #91 / #95 merge queue moves
 
 ### Done
+- ✅ #96 fix: harden division lookup and incomplete game rendering (merged 2026-04-24)
 - ✅ #90 closed as superseded by newer backlog sync PR #95 (2026-04-25)
 - ✅ #93 closed as superseded by shipped/active leaders work and current backlog ordering (2026-04-25)
 - ✅ #92 closed as unused review surface; backlog driver already gets the same queue signal directly from `gh` (2026-04-25)
