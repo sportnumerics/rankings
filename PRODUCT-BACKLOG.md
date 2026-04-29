@@ -15,7 +15,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - player page no longer throws division resolution errors in parquet mode
   - frontend tests pass
   - deploy + E2E checks pass
-- Next action: merge after reviewing overlap with #96
+- Next action: review/merge; #96 is already merged so this is now the clear top code PR in the queue
 - Link: https://github.com/sportnumerics/rankings/pull/91
 - Last update: checks green, review required (2026-04-03)
 
