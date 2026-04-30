@@ -3,7 +3,7 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-04-28)
+## Active Focus (updated 2026-04-30)
 
 ### PR
 1) **#91 — Fix player page division error in parquet mode**
@@ -15,22 +15,22 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - player page no longer throws division resolution errors in parquet mode
   - frontend tests pass
   - deploy + E2E checks pass
-- Next action: review/merge; #96 is already merged so this is now the clear top code PR in the queue
+- Next action: review/merge; this remains the clear top code PR in the queue
 - Link: https://github.com/sportnumerics/rankings/pull/91
-- Last update: checks green, review required (2026-04-03)
+- Last update: checks green, review required (reconfirmed 2026-04-30)
 
 2) **#95 — Sync backlog to current PR queue**
 - Status: PR
 - Owner: assistant
 - Outcome: backlog reflects the live queue and explicit priorities
-- Current increment: refreshed for the live queue after #96 merged and stale PR keep decisions were recorded
+- Current increment: refreshed for the live queue and reconfirmed the review-blocked order is still unchanged
 - Acceptance checks:
   - PRODUCT-BACKLOG.md matches current open PR ordering
   - stale PRs have explicit keep/close recommendations
   - next implementation target is clear once merge queue moves
 - Next action: review/merge after confirming queue ordering looks right
 - Link: https://github.com/sportnumerics/rankings/pull/95
-- Last update: backlog refreshed after #96 merged and the remaining stale March PRs were marked keep-for-now with explicit rationale (2026-04-28 09:00 AM CDT)
+- Last update: backlog refreshed after rechecking the live queue; ordering still #95, #91, #86, #82, #76, #74, #70, #68, #59 and all remain review-blocked with green checks (2026-04-30 09:00 AM CDT)
 
 3) **#86 — Assists leaders page**
 - Status: PR
@@ -140,7 +140,7 @@ Consistent weekly shipping velocity with small, high-confidence increments.
   - each long-stale PR has an explicit keep/close rationale
   - obviously superseded or low-value PRs are closed
   - remaining queue order is easier to understand at a glance
-- Next action: ask Will to review/merge #68 first, then refresh/rebase #74 against it before revisiting #70 and #76
+- Next action: once review time is available, push merges in this order: #91 first, then #95, then #68 before refreshing/rebasing #74 and revisiting #70 / #76
 
 2) **Position-specific leaders pages**
 - Status: Ready
