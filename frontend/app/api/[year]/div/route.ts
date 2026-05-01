@@ -18,13 +18,13 @@ export async function GET(request: NextRequest, { params: { year } }: { params: 
 
     try {
         if (team) {
-            const { body: schedule } = await getTeam({ year, team });
+            const { body: schedule } = await getTeam({ year, team, mode: 'json' });
             if (!schedule.team?.div) {
                 return bad('team division unavailable', 404);
             }
             return ok(schedule.team.div);
         } else if (player) {
-            const { body: stats } = await getPlayerStats({ year, player });
+            const { body: stats } = await getPlayerStats({ year, player, mode: 'json' });
             const div = stats.team?.div;
             if (div) {
                 return ok(div);
@@ -35,13 +35,13 @@ export async function GET(request: NextRequest, { params: { year } }: { params: 
                 return bad('player team unavailable', 404);
             }
 
-            const { body: schedule } = await getTeam({ year, team: teamId });
+            const { body: schedule } = await getTeam({ year, team: teamId, mode: 'json' });
             if (!schedule.team?.div) {
                 return bad('player division unavailable', 404);
             }
             return ok(schedule.team.div);
         } else if (game) {
-            const { body } = await getGame({ year, game });
+            const { body } = await getGame({ year, game, mode: 'json' });
             const div = body.home_team?.div ?? body.away_team?.div;
             if (!div) {
                 return bad('game division unavailable', 404);
