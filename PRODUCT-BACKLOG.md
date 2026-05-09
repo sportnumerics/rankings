@@ -3,22 +3,20 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-05-07)
+## Active Focus (updated 2026-05-09)
 
 ### PR
 1) **#97 — Restore prod division lookup and harden NCAA scraping**
-- Status: PR (✅ all checks passing; review required)
+- Status: PR (✅ all GitHub checks passing; review required; locally reverified 2026-05-09)
 - Owner: assistant
 - Outcome: prod-safe `/api/[year]/div` lookup plus NCAA scraper recovery when Playwright browser/page/context closes mid-run
 - Acceptance checks:
-  - Backend unit tests pass ✅
-  - Frontend unit tests pass ✅
-  - Limited scrape passes in CI ✅
-  - E2E tests pass in CI ✅
-  - Frontend deploy to dev passes ✅
+  - Backend unit tests pass ✅ (`lib.scrape.test_playwright_fetcher`, `lib.scrape.test_ncaa` re-run locally 2026-05-09)
+  - Frontend lint passes ✅ (re-run locally 2026-05-09)
+  - GitHub PR Validation checks pass ✅ (backend/frontend, limited scrape, E2E, dev deploy)
 - Next action: Will review/merge #97
 - Link: https://github.com/sportnumerics/rankings/pull/97
-- Last update: all checks passing after JSON-default + `dataMode=parquet` opt-in fix (2026-05-07 09:00 CT)
+- Last update: rechecked open PR status and local smoke gates; #97 remains mergeable with review as the only blocker (2026-05-09 09:00 CT)
 
 2) **#95 — Backlog sync to current PR queue**
 - Status: PR (stale; review required)
