@@ -3,33 +3,33 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-05-14)
+## Active Focus (updated 2026-05-15)
 
 ### PR
 1) **#97 — Restore prod division lookup and harden NCAA scraping**
-- Status: PR (✅ all GitHub checks passing; review required; reverified 2026-05-14)
+- Status: PR (✅ all GitHub checks passing; review required; reverified 2026-05-15)
 - Owner: assistant
 - Outcome: prod-safe `/api/[year]/div` lookup plus NCAA scraper recovery when Playwright browser/page/context closes mid-run
 - Acceptance checks:
   - Backend unit tests pass ✅ (`lib.scrape.test_playwright_fetcher`, `lib.scrape.test_ncaa` re-run locally 2026-05-09)
   - Frontend lint passes ✅ (re-run locally 2026-05-09)
   - GitHub PR Validation checks pass ✅ (backend/frontend, limited scrape, E2E, dev deploy)
-- Next action: Will review/merge #97
+- Next action: Will review/merge #97; then run the post-merge prod verification checklist below
 - Link: https://github.com/sportnumerics/rankings/pull/97
-- Last update: rechecked open PR status and GitHub checks; #97 remains mergeable with review as the only blocker (2026-05-14 09:00 CT)
+- Last update: rechecked open PR status and GitHub checks; #97 remains mergeable with review as the only blocker (2026-05-15 09:00 CT)
 
 2) **#95 — Backlog sync to current PR queue**
 - Status: PR (stale; review required)
 - Owner: assistant
 - Outcome: backlog reflects current PR queue and merge order
-- Next action: supersede or close if this file's #97 update is preferred
+- Next action: close as superseded after #97 merges, or keep closed if Will prefers the #97 backlog update
 - Link: https://github.com/sportnumerics/rankings/pull/95
 
 3) **#91 — Fix player page division error in parquet mode**
 - Status: PR (stale; review required)
 - Owner: assistant
 - Outcome: player pages work in parquet mode without division lookup errors
-- Next action: revisit after #97 merges; close if #97/main now covers the failure
+- Next action: after #97 merges, verify the player page division path on main and close if covered
 - Link: https://github.com/sportnumerics/rankings/pull/91
 
 4) **Feature PR queue**
@@ -61,7 +61,8 @@ Consistent weekly shipping velocity with small, high-confidence increments.
 - Outcome: shrink the open PR queue to fewer, reviewable branches
 - Acceptance checks:
   - identify PRs made obsolete by #97/main
-  - close or rebase at least one stale PR with clear rationale
+  - close #95 if superseded by #97's backlog update
+  - verify #91 against main and close if #97 covers the player division failure
   - keep feature PRs ordered by user-visible value
 - Next action: start with #91 and #95 after #97 merge
 
