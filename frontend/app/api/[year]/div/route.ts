@@ -1,4 +1,5 @@
 import { getGame } from "@/app/server/games";
+import { dataModeFromSearch } from "@/app/server/parquet";
 import { getPlayerStats } from "@/app/server/players";
 import { getTeam } from "@/app/server/teams";
 import { NextRequest } from "next/server";
@@ -15,16 +16,17 @@ export async function GET(request: NextRequest, { params: { year } }: { params: 
     const team = request.nextUrl.searchParams.get('team');
     const player = request.nextUrl.searchParams.get('player');
     const game = request.nextUrl.searchParams.get('game');
+    const mode = dataModeFromSearch({ dataMode: request.nextUrl.searchParams.get('dataMode') ?? undefined });
 
     try {
         if (team) {
-            const { body: schedule } = await getTeam({ year, team });
+            const { body: schedule } = await getTeam({ year, team, mode });
             if (!schedule.team?.div) {
                 return bad('team division unavailable', 404);
             }
             return ok(schedule.team.div);
         } else if (player) {
-            const { body: stats } = await getPlayerStats({ year, player });
+            const { body: stats } = await getPlayerStats({ year, player, mode: 'json' });
             const div = stats.team?.div;
             if (div) {
                 return ok(div);
@@ -35,13 +37,13 @@ export async function GET(request: NextRequest, { params: { year } }: { params: 
                 return bad('player team unavailable', 404);
             }
 
-            const { body: schedule } = await getTeam({ year, team: teamId });
+            const { body: schedule } = await getTeam({ year, team: teamId, mode });
             if (!schedule.team?.div) {
                 return bad('player division unavailable', 404);
             }
             return ok(schedule.team.div);
         } else if (game) {
-            const { body } = await getGame({ year, game });
+            const { body } = await getGame({ year, game, mode });
             const div = body.home_team?.div ?? body.away_team?.div;
             if (!div) {
                 return bad('game division unavailable', 404);
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest, { params: { year } }: { params: 
 
         return bad('Must supply either a `team`, `player`, or `game` search parameter.');
     } catch (error) {
-        console.error('division lookup failed', { year, team, player, game, error });
+        console.error('division lookup failed', { year, team, player, game, mode, error });
         return bad('division lookup failed', 500);
     }
 }

@@ -3,97 +3,92 @@
 ## North Star
 Consistent weekly shipping velocity with small, high-confidence increments.
 
-## Active Focus (updated 2026-03-07)
+## Active Focus (updated 2026-05-15)
 
 ### PR
-1) **#59 — Goals leaders page**
-- Status: PR
+1) **#97 — Restore prod division lookup and harden NCAA scraping**
+- Status: PR (✅ all GitHub checks passing; review required; reverified 2026-05-15)
 - Owner: assistant
-- Outcome: /leaders/goals page showing top 50 scorers per division
-- First increment: ship MVP goals leaders page
+- Outcome: prod-safe `/api/[year]/div` lookup plus NCAA scraper recovery when Playwright browser/page/context closes mid-run
 - Acceptance checks:
-  - Page loads at /2026/d1/leaders/goals
-  - Shows top 50 players sorted by goals descending
-  - Reuses existing PlayerRating data and PlayersCard UI
-- Next action: awaiting Will's review
-- Link: https://github.com/sportnumerics/rankings/pull/59
-- Last update: review requested, all checks passing (2026-03-09 09:15)
+  - Backend unit tests pass ✅ (`lib.scrape.test_playwright_fetcher`, `lib.scrape.test_ncaa` re-run locally 2026-05-09)
+  - Frontend lint passes ✅ (re-run locally 2026-05-09)
+  - GitHub PR Validation checks pass ✅ (backend/frontend, limited scrape, E2E, dev deploy)
+- Next action: Will review/merge #97; then run the post-merge prod verification checklist below
+- Link: https://github.com/sportnumerics/rankings/pull/97
+- Last update: rechecked open PR status and GitHub checks; #97 remains mergeable with review as the only blocker (2026-05-15 09:00 CT)
 
-2) **#58 — DuckDB parquet materialized views (12-file schema)**
-- Status: PR (✅ all checks passing - ready to merge)
+2) **#95 — Backlog sync to current PR queue**
+- Status: PR (stale; review required)
 - Owner: assistant
-- Outcome: 12 optimized parquet files (one per page component) with frontend DuckDB queries
-- Current increment: Phase 1 + Phase 2 COMPLETE + all schema/query/perf fixes
-- Acceptance checks:
-  - Backend: `python main.py export-parquet` generates all 12 files ✅
-  - Backend: integrated into `all` workflow ✅
-  - Frontend: all pages query correct file with optimal filters ✅
-  - Footer displays query ms + file read stats ✅
-  - Teams with 0 games appear in parquet mode ✅
-  - Unrated teams rank below negative-rated teams (nulls last) ✅
-  - Team rosters include team metadata columns ✅
-  - Game details page uses parquet mode ✅
-  - game-metadata sorted by game_id for efficient lookups ✅
-  - Fresh parquet files deployed to dev with correct schema ✅
-- Next action: Ready for Will's review/merge
-- Link: https://github.com/sportnumerics/rankings/pull/58
-- Last update: All fixes complete, CI passing, dev deployed (2026-03-12 09:05)
+- Outcome: backlog reflects current PR queue and merge order
+- Next action: close as superseded after #97 merges, or keep closed if Will prefers the #97 backlog update
+- Link: https://github.com/sportnumerics/rankings/pull/95
 
-2) **#57 — DuckDB parquet benchmark harness + JSON vs parquet S3 comparison**
-- Status: PR
+3) **#91 — Fix player page division error in parquet mode**
+- Status: PR (stale; review required)
 - Owner: assistant
-- Outcome: reproducible baseline for cold/warm local+S3 query performance
-- First increment: keep as reference benchmark suite
-- Acceptance checks:
-  - Includes local page-shaped timings
-  - Includes JSON vs parquet S3 timings
-- Next action: decide merge order with #58 (can keep #57 for benchmarking docs)
-- Link: https://github.com/sportnumerics/rankings/pull/57
+- Outcome: player pages work in parquet mode without division lookup errors
+- Next action: after #97 merges, verify the player page division path on main and close if covered
+- Link: https://github.com/sportnumerics/rankings/pull/91
+
+4) **Feature PR queue**
+- Status: PR (review required)
+- Owner: assistant
+- Items: #59 goals leaders, #76 points leaders, #86 assists leaders, #70 per-game stat averages
+- Next action: merge/rebase in dependency order after prod fix #97 is resolved
+
+5) **Parquet safety/test PR queue**
+- Status: PR (review required)
+- Owner: assistant
+- Items: #68 parameterize parquet SQL inputs, #74 Vitest infrastructure + SQL security tests, #82 parquet query coverage
+- Next action: prioritize #68/#74 before more parquet feature expansion
 
 ### Ready
-2) **Unit tests for parquet query code paths**
+1) **Post-#97 prod verification**
 - Status: Ready
 - Owner: assistant
-- Outcome: test coverage for parquet.ts query functions and server data loaders
-- First increment: add tests for getRankedTeams/getRankedPlayers/getGames parquet mode
+- Outcome: confirm prod division lookup and NCAA scrape health after #97 merge/deploy
 - Acceptance checks:
-  - Tests verify SQL query construction (div filtering, sorting, column selection)
-  - Tests verify fallback behavior when parquet fails
-  - Tests verify debug metadata structure
-  - All tests pass in CI
-- Next action: create test file with fixture data and basic query validation
-- Context: Multiple parquet bugs found reactively (div mapping, Promise.all pattern, etc.) - need systematic coverage
+  - `/api/2026/div` returns JSON-backed division for representative team/player/game paths
+  - prod backend logs show no repeated NCAA Playwright closed-browser failures
+  - next limited scrape/export completes successfully
+- Next action: run after Will merges #97
 
-3) **Feature discovery sprint: highest-value near-term product improvement**
+2) **Stale PR reduction pass**
 - Status: Ready
 - Owner: assistant
-- Outcome: one evidence-backed feature promoted to build
-- First increment: produce top-5 candidate list with value/effort/risk and choose #1
+- Outcome: shrink the open PR queue to fewer, reviewable branches
 - Acceptance checks:
-  - Top-5 list captured in backlog notes
-  - One candidate converted into implementation-ready task
-- Next action: research 5 candidates from competitor + current site gaps
+  - identify PRs made obsolete by #97/main
+  - close #95 if superseded by #97's backlog update
+  - verify #91 against main and close if #97 covers the player division failure
+  - keep feature PRs ordered by user-visible value
+- Next action: start with #91 and #95 after #97 merge
 
-4) **WIP/PR velocity automation**
+3) **Unit tests for parquet query code paths**
 - Status: Ready
 - Owner: assistant
-- Outcome: fewer stalls, faster PR throughput
-- First increment: daily stale-PR check with concrete unblock actions
+- Outcome: systematic coverage for parquet query functions and server data loaders
 - Acceptance checks:
-  - Daily update includes active PR state + next unblock step
-  - blockers explicitly tagged with owner
-- Next action: add "stale >24h" handling notes to this file and use daily
+  - tests verify SQL query construction (div filtering, sorting, column selection)
+  - tests verify fallback behavior when parquet fails
+  - tests verify debug metadata structure
+  - all tests pass in CI
+- Next action: reconcile with #74/#82 and rebase once #97 is merged
 
 ### In Progress
 - (none)
 
 ### Blocked
-- (none)
+- #97, #95, #91, #59, #68, #70, #74, #76, #82, #86: blocked on review/merge decision from Will
 
 ## Done
+- ✅ #58 DuckDB parquet read mode merged (2026-03-13)
 - ✅ #56 Fix NCAA upcoming games date labeling off-by-one (merged 2026-03-07)
+- 🗄️ #57 DuckDB parquet benchmark harness closed as reference work
 
 ## Backlog Notes (assistant-facing)
-- Prefer tasks that improve user-visible value or reduce prediction-quality risk.
+- Prefer prod stability and PR-queue reduction before net-new feature branches.
 - Keep PRs small and reviewable.
 - Every status change must update `Next action`.

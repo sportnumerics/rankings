@@ -30,6 +30,12 @@ class PlaywrightFetcher:
         'under heavy load',
         'too many people are accessing this website',
     )
+    CLOSED_TARGET_INDICATORS = (
+        'target page, context or browser has been closed',
+        'browser has been closed',
+        'context has been closed',
+        'page has been closed',
+    )
     
     def __init__(self, headless: bool = True, max_attempts: int = 4):
         self.headless = headless
@@ -44,22 +50,18 @@ class PlaywrightFetcher:
         
         # Get or create event loop
         try:
-            # Check if there's a running loop
             asyncio.get_running_loop()
-            # If we get here, we're in an async context - create a new loop in a thread
             raise RuntimeError("Cannot use PlaywrightFetcher in async context")
         except RuntimeError as e:
             if "no running event loop" not in str(e).lower() and "cannot" not in str(e).lower():
-                # There is a running loop, can't proceed
                 raise
-            # No running loop - safe to create one
         
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         
         async def start():
             self.playwright = await async_playwright().start()
-            self.browser = await self.playwright.firefox.launch(headless=self.headless)
+            await self._launch_browser()
             self.page = await self._new_page()
         
         loop.run_until_complete(start())
@@ -70,16 +72,42 @@ class PlaywrightFetcher:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit - close browser"""
         async def stop():
-            if self.page:
-                await self.page.close()
-            if self.browser:
-                await self.browser.close()
+            await self._close_page()
+            await self._close_browser()
             if self.playwright:
                 await self.playwright.stop()
+                self.playwright = None
         
         if hasattr(self, '_loop'):
             self._loop.run_until_complete(stop())
             self._loop.close()
+
+    async def _launch_browser(self):
+        if not self.playwright:
+            raise RuntimeError("Playwright not initialized")
+        self.browser = await self.playwright.firefox.launch(headless=self.headless)
+
+    async def _close_page(self):
+        if self.page:
+            try:
+                await self.page.close()
+            except Exception:
+                pass
+            self.page = None
+
+    async def _close_browser(self):
+        if self.browser:
+            try:
+                await self.browser.close()
+            except Exception:
+                pass
+            self.browser = None
+
+    async def _relaunch_browser(self):
+        await self._close_page()
+        await self._close_browser()
+        await self._launch_browser()
+        self.page = await self._new_page()
 
     async def _new_page(self) -> Page:
         if not self.browser:
@@ -98,20 +126,13 @@ class PlaywrightFetcher:
         lowered = html.lower()
         return any(indicator.lower() in lowered for indicator in self.BLOCK_INDICATORS)
 
+    def _is_closed_target_error(self, error: Exception) -> bool:
+        text = str(error).lower()
+        return any(indicator in text for indicator in self.CLOSED_TARGET_INDICATORS)
+
     def fetch(self, url: str, wait_until: str = 'networkidle', timeout: int = 30000) -> str:
         """
         Fetch HTML from URL using Playwright.
-        
-        Args:
-            url: URL to fetch
-            wait_until: Load state to wait for ('load', 'domcontentloaded', 'networkidle')
-            timeout: Timeout in milliseconds
-        
-        Returns:
-            Rendered HTML content
-        
-        Raises:
-            Exception if page fails to load or returns Access Denied
         """
         if not self.page:
             raise RuntimeError("Fetcher not initialized. Use 'with' context manager.")
@@ -121,10 +142,14 @@ class PlaywrightFetcher:
         
         async def fetch_async():
             last_error = None
-            current_page = self.page
 
             for attempt in range(1, self.max_attempts + 1):
+                current_page = self.page
                 try:
+                    if not current_page:
+                        await self._relaunch_browser()
+                        current_page = self.page
+
                     response = await current_page.goto(url, wait_until=wait_until, timeout=timeout)
                     status = response.status if response else None
 
@@ -134,10 +159,6 @@ class PlaywrightFetcher:
                     html = await current_page.content()
 
                     if status == 200 and not self._is_blocked_or_busy_html(html):
-                        if current_page is not self.page:
-                            if self.page:
-                                await self.page.close()
-                            self.page = current_page
                         return html, status
 
                     if self._is_blocked_or_busy_html(html):
@@ -157,10 +178,13 @@ class PlaywrightFetcher:
                     if attempt == self.max_attempts:
                         break
 
-                    if current_page:
-                        await current_page.close()
-                    current_page = await self._new_page()
-                    await current_page.wait_for_timeout(int((1.5 * attempt + random.uniform(0, 0.75)) * 1000))
+                    if self._is_closed_target_error(e):
+                        await self._relaunch_browser()
+                    else:
+                        await self._close_page()
+                        self.page = await self._new_page()
+
+                    await self.page.wait_for_timeout(int((1.5 * attempt + random.uniform(0, 0.75)) * 1000))
 
             raise last_error or Exception(f"Failed to fetch {url}")
         
@@ -177,16 +201,6 @@ class PlaywrightFetcher:
             raise
     
     def fetch_multiple(self, urls: list[str], delay: float = 1.0) -> list[str]:
-        """
-        Fetch multiple URLs sequentially with delay between requests.
-        
-        Args:
-            urls: List of URLs to fetch
-            delay: Seconds to wait between requests (default 1.0)
-        
-        Returns:
-            List of HTML content (same order as input URLs)
-        """
         results = []
         
         for i, url in enumerate(urls):
@@ -194,7 +208,6 @@ class PlaywrightFetcher:
                 html = self.fetch(url)
                 results.append(html)
                 
-                # Add delay between requests (except after last one)
                 if i < len(urls) - 1 and delay > 0:
                     time.sleep(delay)
             
