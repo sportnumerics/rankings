@@ -28,7 +28,7 @@ export default async function YearTeams({ params: { year }, searchParams }: { pa
             if (div.teams.length === 0) {
                 return null;
             }
-            const divPlayers = Object.values(rankPlayers(players.filter(p => p.team.div === div.id).slice(0, 5)));
+            const divPlayers = Object.values(rankPlayers(players.filter(p => p.team.div === div.id))).slice(0, 5);
             return <Card key={div.id}>
                 <H2>{div.name}</H2>
                 <div className="flex flex-row">
