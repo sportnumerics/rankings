@@ -1,8 +1,11 @@
 import unittest
+import tempfile
+from pathlib import Path
 
 from ..shared.types import GameResult, GameStatLine, Location, PlayerSummary, ScheduleGame, ScheduleGameResult, Team, TeamSummary, TeamDetail
 from . import ncaa
 from . import fixtures
+from .scrape import ScrapeRunner
 
 
 class TestScrape(unittest.TestCase):
@@ -36,6 +39,21 @@ class TestScrape(unittest.TestCase):
                  div='ml1',
                  sport='ml',
                  source='ncaa'))
+
+    def test_ncaa_team_list_fetch_failure_aborts_without_writing(self):
+        with tempfile.TemporaryDirectory() as out_dir:
+            runner = ScrapeRunner(source='ncaa',
+                                  year='2026',
+                                  out_dir=out_dir)
+            runner.scraper = ncaa.Ncaa(['MLA'], ['1'])
+            runner.fetch = lambda location: None
+
+            with self.assertRaisesRegex(RuntimeError,
+                                        'No team list html returned'):
+                runner.scrape_and_write_team_lists()
+
+            self.assertFalse(
+                Path(out_dir, '2026', 'ncaa-teams.json').exists())
 
     def test_ncaa_team_schedule_html(self):
         html = fixtures.ncaa_game_by_game()

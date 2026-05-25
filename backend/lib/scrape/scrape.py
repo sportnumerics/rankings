@@ -221,17 +221,27 @@ class ScrapeRunner():
         for url in self.scraper.get_team_list_urls(self.year):
             html = self.fetch(url)
             if not html:
-                self.log.warning(
-                    f'No team list html returned from {url}, skipping')
+                message = f'No team list html returned from {url}'
+                if self.source == 'ncaa':
+                    raise RuntimeError(message)
+                self.log.warning(f'{message}, skipping')
                 continue
             try:
-                yield from self.scraper.convert_team_list_html(
-                    html, self.year, url)
+                teams = list(
+                    self.scraper.convert_team_list_html(
+                        html, self.year, url))
+                if self.source == 'ncaa' and not teams:
+                    raise RuntimeError(f'No teams parsed from {url}')
+                yield from teams
             except Exception as e:
                 self.log.error(
                     f'Unable to convert team list html from {url}: {e}')
                 traceback.print_exception(e)
                 self._dump_html('team-list-error.html', html)
+                if self.source == 'ncaa':
+                    raise RuntimeError(
+                        f'Unable to convert NCAA team list html from {url}'
+                    ) from e
 
     def _dump_html(self, filename: str, html: str):
         debug_dir = os.path.join(self.out_dir, 'debug')
