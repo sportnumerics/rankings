@@ -11,6 +11,7 @@ from playwright.async_api import async_playwright, Browser, Page
 from typing import Optional
 import random
 import time
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +38,20 @@ class PlaywrightFetcher:
         'page has been closed',
     )
     
-    def __init__(self, headless: bool = True, max_attempts: int = 4):
+    def __init__(self,
+                 headless: bool = True,
+                 max_attempts: int = 4,
+                 min_delay_seconds: float | None = None):
         self.headless = headless
         self.max_attempts = max_attempts
+        if min_delay_seconds is None:
+            min_delay_seconds = float(
+                os.environ.get('NCAA_FETCH_DELAY_SECONDS', '4.0'))
+        self.min_delay_seconds = min_delay_seconds
         self.playwright = None
         self.browser: Optional[Browser] = None
         self.page: Optional[Page] = None
+        self._last_fetch_at: float | None = None
     
     def __enter__(self):
         """Context manager entry - launch browser"""
@@ -130,6 +139,21 @@ class PlaywrightFetcher:
         text = str(error).lower()
         return any(indicator in text for indicator in self.CLOSED_TARGET_INDICATORS)
 
+    def _wait_before_fetch(self):
+        if self._last_fetch_at is None or self.min_delay_seconds <= 0:
+            return
+
+        elapsed = time.monotonic() - self._last_fetch_at
+        delay = self.min_delay_seconds - elapsed
+        if delay > 0:
+            jitter = random.uniform(0, min(1.0, self.min_delay_seconds / 2))
+            sleep_for = delay + jitter
+            logger.debug("Sleeping %.2fs before next NCAA fetch", sleep_for)
+            time.sleep(sleep_for)
+
+    def _mark_fetch_finished(self):
+        self._last_fetch_at = time.monotonic()
+
     def fetch(self, url: str, wait_until: str = 'networkidle', timeout: int = 30000) -> str:
         """
         Fetch HTML from URL using Playwright.
@@ -139,6 +163,7 @@ class PlaywrightFetcher:
         
         logger.debug(f"Fetching: {url}")
         start = time.time()
+        self._wait_before_fetch()
         
         async def fetch_async():
             last_error = None
@@ -184,7 +209,13 @@ class PlaywrightFetcher:
                         await self._close_page()
                         self.page = await self._new_page()
 
-                    await self.page.wait_for_timeout(int((1.5 * attempt + random.uniform(0, 0.75)) * 1000))
+                    retry_delay = 5 * attempt + random.uniform(0, 2)
+                    if 'blocked or queue-full html' in str(e).lower():
+                        retry_delay = 20 * attempt + random.uniform(0, 5)
+                    logger.info(
+                        "Cooling down %.2fs before retrying NCAA fetch", retry_delay
+                    )
+                    await self.page.wait_for_timeout(int(retry_delay * 1000))
 
             raise last_error or Exception(f"Failed to fetch {url}")
         
@@ -199,6 +230,8 @@ class PlaywrightFetcher:
         except Exception as e:
             logger.error(f"Failed to fetch {url}: {e}")
             raise
+        finally:
+            self._mark_fetch_finished()
     
     def fetch_multiple(self, urls: list[str], delay: float = 1.0) -> list[str]:
         results = []

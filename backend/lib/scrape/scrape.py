@@ -99,6 +99,7 @@ class ScrapeRunner():
         self.team = team
         self.div = div
         self.limit = int(limit) if limit else None
+        self.schedule_fetch_failures: list[str] = []
 
     def scrape_and_write_team_lists(self):
         self.log.info(
@@ -160,6 +161,22 @@ class ScrapeRunner():
                 continue
             roster = self.scrape_roster(team)
             schedules.append(TeamDetail(team=team, games=games, roster=roster))
+
+        if self.source == 'ncaa':
+            if self.schedule_fetch_failures:
+                failed_urls = ', '.join(self.schedule_fetch_failures[:5])
+                extra = '' if len(self.schedule_fetch_failures) <= 5 else (
+                    f', and {len(self.schedule_fetch_failures) - 5} more')
+                message = (
+                    f'NCAA schedule scrape had {len(self.schedule_fetch_failures)} fetch failures '
+                    f'({failed_urls}{extra})')
+                raise RuntimeError(
+                    f'{message}; refusing to publish partial schedules'
+                )
+            if teams and not schedules:
+                raise RuntimeError(
+                    'NCAA schedule scrape produced no schedules; refusing to publish empty schedule data'
+                )
 
         self.cross_link_schedules(schedules)
 
@@ -253,6 +270,8 @@ class ScrapeRunner():
         schedule_location = team.schedule
         html = self.fetch(schedule_location)
         if not html:
+            if self.source == 'ncaa':
+                self.schedule_fetch_failures.append(schedule_location.url)
             return
         try:
             return self.scraper.convert_schedule_html(html, team)

@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 
 from ..shared.types import GameResult, GameStatLine, Location, PlayerSummary, ScheduleGame, ScheduleGameResult, Team, TeamSummary, TeamDetail
+from ..shared import shared
 from . import ncaa
 from . import fixtures
 from .scrape import ScrapeRunner
@@ -54,6 +55,33 @@ class TestScrape(unittest.TestCase):
 
             self.assertFalse(
                 Path(out_dir, '2026', 'ncaa-teams.json').exists())
+
+    def test_ncaa_schedule_fetch_failure_aborts_without_writing(self):
+        with tempfile.TemporaryDirectory() as out_dir:
+            team = Team(name='Air Force',
+                        schedule=Location(
+                            url='https://stats.ncaa.org/teams/594020'),
+                        year='2026',
+                        id='ml-ncaa-air-force',
+                        div='ml1',
+                        sport='ml',
+                        source='ncaa')
+            team_list_path = Path(out_dir, 'teams.json')
+            with team_list_path.open('w') as f:
+                shared.dump([team], f, many=True)
+
+            runner = ScrapeRunner(source='ncaa',
+                                  year='2026',
+                                  out_dir=out_dir)
+            runner.fetch = lambda location: None
+
+            with self.assertRaisesRegex(RuntimeError,
+                                        'refusing to publish partial schedules'):
+                runner.scrape_and_write_schedules(str(team_list_path))
+
+            self.assertFalse(
+                Path(out_dir, '2026', 'schedules',
+                     'ml-ncaa-air-force.json').exists())
 
     def test_ncaa_team_schedule_html(self):
         html = fixtures.ncaa_game_by_game()

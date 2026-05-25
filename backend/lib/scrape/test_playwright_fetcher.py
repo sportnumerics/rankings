@@ -46,6 +46,24 @@ class TestPlaywrightFetcher(unittest.TestCase):
             "<html><body><table class='dataTable'></table></body></html>"
         ))
 
+    @patch('lib.scrape.playwright_fetcher.random.uniform', return_value=0.25)
+    @patch('lib.scrape.playwright_fetcher.time.sleep')
+    @patch('lib.scrape.playwright_fetcher.time.monotonic')
+    def test_wait_before_fetch_respects_min_delay(self, monotonic, sleep,
+                                                  _uniform):
+        fetcher = PlaywrightFetcher(min_delay_seconds=4.0)
+        fetcher._last_fetch_at = 10.0
+        monotonic.return_value = 12.5
+
+        fetcher._wait_before_fetch()
+
+        sleep.assert_called_once_with(1.75)
+
+    @patch.dict(os.environ, {'NCAA_FETCH_DELAY_SECONDS': '7.5'})
+    def test_default_delay_comes_from_environment(self):
+        fetcher = PlaywrightFetcher()
+        self.assertEqual(fetcher.min_delay_seconds, 7.5)
+
     @unittest.skipIf(os.environ.get('CI') == 'true', "Skip browser tests in CI (no Playwright browsers installed)")
     def test_context_manager(self):
         """Test context manager properly initializes and cleans up"""
