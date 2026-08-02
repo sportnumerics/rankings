@@ -16,6 +16,10 @@ import os
 logger = logging.getLogger(__name__)
 
 
+class NcaaRateLimitCircuitOpen(RuntimeError):
+    """Raised after repeated NCAA block pages to stop an abusive scrape."""
+
+
 class PlaywrightFetcher:
     """
     Fetches HTML using Playwright with Firefox.
@@ -41,17 +45,24 @@ class PlaywrightFetcher:
     def __init__(self,
                  headless: bool = True,
                  max_attempts: int = 4,
-                 min_delay_seconds: float | None = None):
+                 min_delay_seconds: float | None = None,
+                 max_consecutive_blocked_fetches: int | None = None):
         self.headless = headless
         self.max_attempts = max_attempts
         if min_delay_seconds is None:
             min_delay_seconds = float(
                 os.environ.get('NCAA_FETCH_DELAY_SECONDS', '4.0'))
         self.min_delay_seconds = min_delay_seconds
+        if max_consecutive_blocked_fetches is None:
+            max_consecutive_blocked_fetches = int(
+                os.environ.get('NCAA_MAX_CONSECUTIVE_BLOCKS', '2'))
+        self.max_consecutive_blocked_fetches = max_consecutive_blocked_fetches
         self.playwright = None
         self.browser: Optional[Browser] = None
         self.page: Optional[Page] = None
         self._last_fetch_at: float | None = None
+        self._blocked_until: float | None = None
+        self._consecutive_blocked_fetches = 0
     
     def __enter__(self):
         """Context manager entry - launch browser"""
@@ -140,11 +151,16 @@ class PlaywrightFetcher:
         return any(indicator in text for indicator in self.CLOSED_TARGET_INDICATORS)
 
     def _wait_before_fetch(self):
-        if self._last_fetch_at is None or self.min_delay_seconds <= 0:
+        now = time.monotonic()
+        earliest_fetch_at = self._blocked_until
+        if self._last_fetch_at is not None and self.min_delay_seconds > 0:
+            earliest_fetch_at = max(
+                earliest_fetch_at or 0,
+                self._last_fetch_at + self.min_delay_seconds)
+        if earliest_fetch_at is None:
             return
 
-        elapsed = time.monotonic() - self._last_fetch_at
-        delay = self.min_delay_seconds - elapsed
+        delay = earliest_fetch_at - now
         if delay > 0:
             jitter = random.uniform(0, min(1.0, self.min_delay_seconds / 2))
             sleep_for = delay + jitter
@@ -153,6 +169,19 @@ class PlaywrightFetcher:
 
     def _mark_fetch_finished(self):
         self._last_fetch_at = time.monotonic()
+
+    def _record_blocked_fetch_failure(self):
+        self._consecutive_blocked_fetches += 1
+        cooldown = 20 * self._consecutive_blocked_fetches
+        self._blocked_until = time.monotonic() + cooldown
+        if self._consecutive_blocked_fetches >= self.max_consecutive_blocked_fetches:
+            raise NcaaRateLimitCircuitOpen(
+                'NCAA rate-limit circuit opened after '
+                f'{self._consecutive_blocked_fetches} consecutive blocked responses')
+
+    def _record_successful_fetch(self):
+        self._consecutive_blocked_fetches = 0
+        self._blocked_until = None
 
     def fetch(self, url: str, wait_until: str = 'networkidle', timeout: int = 30000) -> str:
         """
@@ -183,11 +212,14 @@ class PlaywrightFetcher:
 
                     html = await current_page.content()
 
-                    if status == 200 and not self._is_blocked_or_busy_html(html):
+                    blocked_or_busy = self._is_blocked_or_busy_html(html)
+                    if status == 200 and not blocked_or_busy:
+                        self._record_successful_fetch()
                         return html, status
 
-                    if self._is_blocked_or_busy_html(html):
+                    if blocked_or_busy:
                         reason = 'blocked or queue-full html'
+                        self._record_blocked_fetch_failure()
                     else:
                         reason = f'unexpected status {status}'
                     raise Exception(f"Transient NCAA fetch failure for {url}: {reason}")
@@ -201,6 +233,12 @@ class PlaywrightFetcher:
                         e,
                     )
                     if attempt == self.max_attempts:
+                        break
+
+                    # Retrying the same blocked page makes rate limiting worse.
+                    # The next request observes the shared cooldown instead.
+                    if ('blocked or queue-full html' in str(e).lower()
+                            or isinstance(e, NcaaRateLimitCircuitOpen)):
                         break
 
                     if self._is_closed_target_error(e):

@@ -76,12 +76,32 @@ class TestScrape(unittest.TestCase):
             runner.fetch = lambda location: None
 
             with self.assertRaisesRegex(RuntimeError,
-                                        'refusing to publish partial schedules'):
+                                        'refusing to publish partial data'):
                 runner.scrape_and_write_schedules(str(team_list_path))
 
             self.assertFalse(
                 Path(out_dir, '2026', 'schedules',
                      'ml-ncaa-air-force.json').exists())
+
+    def test_ncaa_roster_and_game_fetch_failures_abort_publishing(self):
+        runner = ScrapeRunner(source='ncaa', year='2026', out_dir='out')
+        team = Team(name='Air Force',
+                    schedule=Location(url='https://stats.ncaa.org/teams/594020'),
+                    roster=Location(url='https://stats.ncaa.org/teams/594020/roster'),
+                    year='2026', id='ml-ncaa-air-force', div='ml1',
+                    sport='ml', source='ncaa')
+        game_location = Location(
+            url='https://stats.ncaa.org/contests/6310104/individual_stats')
+        runner.fetch = lambda location: None
+
+        self.assertIsNone(runner.scrape_roster(team))
+        self.assertIsNone(
+            runner.scrape_game_details(game_location, 'ml-ncaa-6310104',
+                                       'ml', 'ncaa', team, team))
+
+        with self.assertRaisesRegex(RuntimeError,
+                                    'refusing to publish partial data'):
+            runner._raise_for_ncaa_detail_failures()
 
     def test_ncaa_team_schedule_html(self):
         html = fixtures.ncaa_game_by_game()

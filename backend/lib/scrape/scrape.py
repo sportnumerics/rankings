@@ -99,7 +99,21 @@ class ScrapeRunner():
         self.team = team
         self.div = div
         self.limit = int(limit) if limit else None
-        self.schedule_fetch_failures: list[str] = []
+        self.ncaa_detail_failures: list[str] = []
+
+    def _record_ncaa_detail_failure(self, kind: str, location: Location):
+        if self.source == 'ncaa':
+            self.ncaa_detail_failures.append(f'{kind}: {location.url}')
+
+    def _raise_for_ncaa_detail_failures(self):
+        if not self.ncaa_detail_failures:
+            return
+        failures = ', '.join(self.ncaa_detail_failures[:5])
+        extra = '' if len(self.ncaa_detail_failures) <= 5 else (
+            f', and {len(self.ncaa_detail_failures) - 5} more')
+        raise RuntimeError(
+            f'NCAA scrape had {len(self.ncaa_detail_failures)} detail fetch or parse failures '
+            f'({failures}{extra}); refusing to publish partial data')
 
     def scrape_and_write_team_lists(self):
         self.log.info(
@@ -163,16 +177,7 @@ class ScrapeRunner():
             schedules.append(TeamDetail(team=team, games=games, roster=roster))
 
         if self.source == 'ncaa':
-            if self.schedule_fetch_failures:
-                failed_urls = ', '.join(self.schedule_fetch_failures[:5])
-                extra = '' if len(self.schedule_fetch_failures) <= 5 else (
-                    f', and {len(self.schedule_fetch_failures) - 5} more')
-                message = (
-                    f'NCAA schedule scrape had {len(self.schedule_fetch_failures)} fetch failures '
-                    f'({failed_urls}{extra})')
-                raise RuntimeError(
-                    f'{message}; refusing to publish partial schedules'
-                )
+            self._raise_for_ncaa_detail_failures()
             if teams and not schedules:
                 raise RuntimeError(
                     'NCAA schedule scrape produced no schedules; refusing to publish empty schedule data'
@@ -228,6 +233,9 @@ class ScrapeRunner():
                           'w') as f:
                     shared.dump(game_details, f)
 
+        if self.source == 'ncaa':
+            self._raise_for_ncaa_detail_failures()
+
         shared.dump_parquet(sorted(all_games.values(), key=lambda g: g.id),
                             shared.parquet_path(self.out_dir, self.year,
                                                 'games',
@@ -270,8 +278,7 @@ class ScrapeRunner():
         schedule_location = team.schedule
         html = self.fetch(schedule_location)
         if not html:
-            if self.source == 'ncaa':
-                self.schedule_fetch_failures.append(schedule_location.url)
+            self._record_ncaa_detail_failure('schedule', schedule_location)
             return
         try:
             return self.scraper.convert_schedule_html(html, team)
@@ -281,12 +288,16 @@ class ScrapeRunner():
             )
             traceback.print_exception(e)
             self._dump_html(f'schedule-{team.id}.html', html)
+            self._record_ncaa_detail_failure('schedule', schedule_location)
 
     def scrape_roster(self, team: Team):
         if not team.roster:
             return None
         roster_location = team.roster
         html = self.fetch(roster_location)
+        if not html:
+            self._record_ncaa_detail_failure('roster', roster_location)
+            return None
         try:
             return self.scraper.convert_roster(html, team)
         except Exception as e:
@@ -294,6 +305,7 @@ class ScrapeRunner():
                 f'Unable to convert roster html from {roster_location}: {e}')
             traceback.print_exception(e)
             self._dump_html(f'roster-{team.id}.html', html)
+            self._record_ncaa_detail_failure('roster', roster_location)
 
     def cross_link_schedules(self, schedules: list[TeamDetail]):
         self.scraper.cross_link_schedules(schedules)
@@ -302,6 +314,7 @@ class ScrapeRunner():
                             source: str, home_team: Team, away_team: Team):
         html = self.fetch(location)
         if not html:
+            self._record_ncaa_detail_failure('game', location)
             return None
         try:
             return self.scraper.convert_game_details_html(
@@ -311,6 +324,7 @@ class ScrapeRunner():
                 f'Unable to convert game details html from {location}:')
             traceback.print_exception(e)
             self._dump_html(f'game-details-{game_id}.html', html)
+            self._record_ncaa_detail_failure('game', location)
 
     def fetch(self, location):
         # Use Playwright with Firefox for NCAA source (bypasses Akamai blocking)

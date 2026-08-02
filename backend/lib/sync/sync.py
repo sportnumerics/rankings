@@ -15,5 +15,5 @@ def sync(args):
         subprocess.run([
             'aws', 's3', 'sync', input_path, output_path, '--delete',
             '--quiet', *dry_run
-        ])
+        ], check=True)
         LOGGER.info('Completed sync successfully.')

@@ -5,7 +5,7 @@ Unit tests for Playwright fetcher.
 import unittest
 import os
 from unittest.mock import patch
-from .playwright_fetcher import PlaywrightFetcher
+from .playwright_fetcher import NcaaRateLimitCircuitOpen, PlaywrightFetcher
 
 
 class TestPlaywrightFetcher(unittest.TestCase):
@@ -63,6 +63,18 @@ class TestPlaywrightFetcher(unittest.TestCase):
     def test_default_delay_comes_from_environment(self):
         fetcher = PlaywrightFetcher()
         self.assertEqual(fetcher.min_delay_seconds, 7.5)
+
+    @patch('lib.scrape.playwright_fetcher.time.monotonic', return_value=10.0)
+    def test_repeated_blocks_open_circuit_and_extend_cooldown(self, _monotonic):
+        fetcher = PlaywrightFetcher(max_consecutive_blocked_fetches=2)
+
+        fetcher._record_blocked_fetch_failure()
+        self.assertEqual(fetcher._blocked_until, 30.0)
+
+        with self.assertRaises(NcaaRateLimitCircuitOpen):
+            fetcher._record_blocked_fetch_failure()
+
+        self.assertEqual(fetcher._blocked_until, 50.0)
 
     @unittest.skipIf(os.environ.get('CI') == 'true', "Skip browser tests in CI (no Playwright browsers installed)")
     def test_context_manager(self):
