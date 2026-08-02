@@ -404,6 +404,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const marker = '<!-- pr-validation-summary -->';
             const backendChanged = '${{ needs.detect-changes.outputs.backend }}' === 'true';
             const frontendChanged = '${{ needs.detect-changes.outputs.frontend }}' === 'true';
             const backtestChanged = '${{ needs.detect-changes.outputs.backtest }}' === 'true';
@@ -423,7 +424,7 @@ jobs:
               return '⚠️';
             };
             
-            let body = '## PR Validation Results\n\n';
+            let body = `${marker}\n## PR Validation Results\n\n`;
             
             if (backendChanged) {
               body += '### Backend\n';
@@ -464,9 +465,39 @@ jobs:
               body += '\n🚀 **All checks passed!** Preview deployed to https://dev.sportnumerics.com\n\nMerge to deploy to production.';
             }
             
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
             });
+            const summaries = comments.filter(comment =>
+              comment.user?.type === 'Bot' &&
+              (comment.body?.includes(marker) ||
+                comment.body?.startsWith('## PR Validation Results'))
+            );
+
+            if (summaries.length) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: summaries[0].id,
+                body,
+              });
+              for (const comment of summaries.slice(1)) {
+                await github.rest.issues.deleteComment({
+                  owner,
+                  repo,
+                  comment_id: comment.id,
+                });
+              }
+            } else {
+              await github.rest.issues.createComment({
+                issue_number,
+                owner,
+                repo,
+                body,
+              });
+            }
