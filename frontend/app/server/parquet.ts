@@ -35,7 +35,13 @@ function run(db: any, sql: string): Promise<void> {
 
 function all<T = any>(db: any, sql: string, params: any[] = []): Promise<T[]> {
     return new Promise((resolve, reject) => {
-        db.all(sql, params, (err: Error | null, rows: T[]) => err ? reject(err) : resolve(rows));
+        const callback = (err: Error | null, rows: T[]) =>
+            err ? reject(err) : resolve(rows);
+        if (params.length > 0) {
+            db.all(sql, params, callback);
+        } else {
+            db.all(sql, callback);
+        }
     });
 }
 
