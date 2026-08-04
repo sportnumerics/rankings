@@ -1,10 +1,13 @@
 import unittest
 import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock
 
 from ..shared.types import GameResult, GameStatLine, Location, PlayerSummary, ScheduleGame, ScheduleGameResult, Team, TeamSummary, TeamDetail
+from ..shared import shared
 from . import ncaa
 from . import fixtures
+from .playwright_fetcher import NcaaRateLimitCircuitOpen
 from .scrape import ScrapeRunner
 
 
@@ -54,6 +57,97 @@ class TestScrape(unittest.TestCase):
 
             self.assertFalse(
                 Path(out_dir, '2026', 'ncaa-teams.json').exists())
+
+    def test_ncaa_schedule_fetch_failure_aborts_without_writing(self):
+        with tempfile.TemporaryDirectory() as out_dir:
+            team = Team(name='Air Force',
+                        schedule=Location(
+                            url='https://stats.ncaa.org/teams/594020'),
+                        year='2026',
+                        id='ml-ncaa-air-force',
+                        div='ml1',
+                        sport='ml',
+                        source='ncaa')
+            team_list_path = Path(out_dir, 'teams.json')
+            with team_list_path.open('w') as f:
+                shared.dump([team], f, many=True)
+
+            runner = ScrapeRunner(source='ncaa',
+                                  year='2026',
+                                  out_dir=out_dir)
+            runner.fetch = lambda location: None
+
+            with self.assertRaisesRegex(RuntimeError,
+                                        'refusing to publish partial data'):
+                runner.scrape_and_write_schedules(str(team_list_path))
+
+            self.assertFalse(
+                Path(out_dir, '2026', 'schedules',
+                     'ml-ncaa-air-force.json').exists())
+
+    def test_ncaa_game_fetch_failure_leaves_no_schedule_artifacts(self):
+        with tempfile.TemporaryDirectory() as out_dir:
+            team = Team(name='Air Force',
+                        schedule=Location(
+                            url='https://stats.ncaa.org/teams/594020'),
+                        year='2026',
+                        id='ml-ncaa-air-force',
+                        div='ml1',
+                        sport='ml',
+                        source='ncaa')
+            team_list_path = Path(out_dir, 'teams.json')
+            with team_list_path.open('w') as f:
+                shared.dump([team], f, many=True)
+
+            runner = ScrapeRunner(source='ncaa',
+                                  year='2026',
+                                  out_dir=out_dir)
+            runner.fetch = lambda location: (
+                fixtures.ncaa_game_by_game()
+                if location.url == team.schedule.url else None)
+
+            with self.assertRaisesRegex(RuntimeError,
+                                        'refusing to publish partial data'):
+                runner.scrape_and_write_schedules(str(team_list_path))
+
+            self.assertFalse(
+                Path(out_dir, '2026', 'schedules',
+                     'ml-ncaa-air-force.json').exists())
+            self.assertFalse(
+                Path(out_dir, '2026', 'v2', 'schedules',
+                     'ncaa.parquet').exists())
+
+    def test_ncaa_roster_and_game_fetch_failures_abort_publishing(self):
+        with tempfile.TemporaryDirectory() as out_dir:
+            runner = ScrapeRunner(source='ncaa', year='2026', out_dir=out_dir)
+            team = Team(
+                name='Air Force',
+                schedule=Location(url='https://stats.ncaa.org/teams/594020'),
+                roster=Location(url='https://stats.ncaa.org/teams/594020/roster'),
+                year='2026', id='ml-ncaa-air-force', div='ml1', sport='ml',
+                source='ncaa')
+            game_location = Location(
+                url='https://stats.ncaa.org/contests/6310104/individual_stats')
+            runner.fetch = lambda location: None
+
+            self.assertIsNone(runner.scrape_roster(team))
+            self.assertIsNone(
+                runner.scrape_game_details(game_location, 'ml-ncaa-6310104',
+                                           'ml', 'ncaa', team, team))
+
+            with self.assertRaisesRegex(RuntimeError,
+                                        'refusing to publish partial data'):
+                runner._raise_for_ncaa_detail_failures()
+
+    def test_ncaa_circuit_open_aborts_the_scrape(self):
+        with tempfile.TemporaryDirectory() as out_dir:
+            runner = ScrapeRunner(source='ncaa', year='2026', out_dir=out_dir)
+            runner.playwright_fetcher = MagicMock()
+            runner.playwright_fetcher.fetch.side_effect = NcaaRateLimitCircuitOpen(
+                'NCAA rate-limit circuit opened after 2 consecutive blocked responses')
+
+            with self.assertRaises(NcaaRateLimitCircuitOpen):
+                runner.fetch(Location(url='https://stats.ncaa.org/teams/594020'))
 
     def test_ncaa_team_schedule_html(self):
         html = fixtures.ncaa_game_by_game()

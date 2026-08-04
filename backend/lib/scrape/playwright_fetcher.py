@@ -5,14 +5,21 @@ Uses Firefox to bypass Akamai bot detection that blocks Chromium.
 Uses async API to avoid conflicts with pytest-asyncio in CI.
 """
 
-import logging
 import asyncio
-from playwright.async_api import async_playwright, Browser, Page
-from typing import Optional
+import logging
+import math
+import os
 import random
 import time
+from typing import Optional
+
+from playwright.async_api import Browser, Page, async_playwright
 
 logger = logging.getLogger(__name__)
+
+
+class NcaaRateLimitCircuitOpen(RuntimeError):
+    """Raised after repeated NCAA block pages to stop an abusive scrape."""
 
 
 class PlaywrightFetcher:
@@ -37,12 +44,33 @@ class PlaywrightFetcher:
         'page has been closed',
     )
     
-    def __init__(self, headless: bool = True, max_attempts: int = 4):
+    def __init__(self,
+                 headless: bool = True,
+                 max_attempts: int = 4,
+                 min_delay_seconds: float | None = None,
+                 max_consecutive_blocked_fetches: int | None = None):
         self.headless = headless
         self.max_attempts = max_attempts
+        if min_delay_seconds is None:
+            min_delay_seconds = float(
+                os.environ.get('NCAA_FETCH_DELAY_SECONDS', '4.0'))
+        if not math.isfinite(min_delay_seconds):
+            raise ValueError('NCAA_FETCH_DELAY_SECONDS must be finite')
+        if min_delay_seconds < 0:
+            raise ValueError('NCAA_FETCH_DELAY_SECONDS must be non-negative')
+        self.min_delay_seconds = min_delay_seconds
+        if max_consecutive_blocked_fetches is None:
+            max_consecutive_blocked_fetches = int(
+                os.environ.get('NCAA_MAX_CONSECUTIVE_BLOCKS', '2'))
+        if max_consecutive_blocked_fetches < 1:
+            raise ValueError('NCAA_MAX_CONSECUTIVE_BLOCKS must be positive')
+        self.max_consecutive_blocked_fetches = max_consecutive_blocked_fetches
         self.playwright = None
         self.browser: Optional[Browser] = None
         self.page: Optional[Page] = None
+        self._last_fetch_at: float | None = None
+        self._blocked_until: float | None = None
+        self._consecutive_blocked_fetches = 0
     
     def __enter__(self):
         """Context manager entry - launch browser"""
@@ -130,6 +158,42 @@ class PlaywrightFetcher:
         text = str(error).lower()
         return any(indicator in text for indicator in self.CLOSED_TARGET_INDICATORS)
 
+    def _wait_before_fetch(self):
+        now = time.monotonic()
+        earliest_fetch_at = self._blocked_until
+        if self._last_fetch_at is not None and self.min_delay_seconds > 0:
+            earliest_fetch_at = max(
+                earliest_fetch_at or 0,
+                self._last_fetch_at + self.min_delay_seconds)
+        if earliest_fetch_at is None:
+            return
+
+        delay = earliest_fetch_at - now
+        if delay > 0:
+            jitter = random.uniform(0, min(1.0, self.min_delay_seconds / 2))
+            sleep_for = delay + jitter
+            logger.debug("Sleeping %.2fs before next NCAA fetch", sleep_for)
+            time.sleep(sleep_for)
+
+    def _mark_fetch_finished(self):
+        self._last_fetch_at = time.monotonic()
+
+    def _record_blocked_fetch_failure(self):
+        self._consecutive_blocked_fetches += 1
+        cooldown = 20 * self._consecutive_blocked_fetches
+        self._blocked_until = time.monotonic() + cooldown
+        if self._consecutive_blocked_fetches >= self.max_consecutive_blocked_fetches:
+            raise NcaaRateLimitCircuitOpen(
+                'NCAA rate-limit circuit opened after '
+                f'{self._consecutive_blocked_fetches} consecutive blocked responses')
+
+    def _record_non_blocked_fetch_failure(self):
+        self._consecutive_blocked_fetches = 0
+        self._blocked_until = None
+
+    def _record_successful_fetch(self):
+        self._record_non_blocked_fetch_failure()
+
     def fetch(self, url: str, wait_until: str = 'networkidle', timeout: int = 30000) -> str:
         """
         Fetch HTML from URL using Playwright.
@@ -139,6 +203,7 @@ class PlaywrightFetcher:
         
         logger.debug(f"Fetching: {url}")
         start = time.time()
+        self._wait_before_fetch()
         
         async def fetch_async():
             last_error = None
@@ -158,15 +223,24 @@ class PlaywrightFetcher:
 
                     html = await current_page.content()
 
-                    if status == 200 and not self._is_blocked_or_busy_html(html):
+                    blocked_or_busy = self._is_blocked_or_busy_html(html)
+                    if status == 200 and not blocked_or_busy:
+                        self._record_successful_fetch()
                         return html, status
 
-                    if self._is_blocked_or_busy_html(html):
+                    if blocked_or_busy:
                         reason = 'blocked or queue-full html'
+                        self._record_blocked_fetch_failure()
                     else:
+                        self._record_non_blocked_fetch_failure()
                         reason = f'unexpected status {status}'
                     raise Exception(f"Transient NCAA fetch failure for {url}: {reason}")
+                except NcaaRateLimitCircuitOpen:
+                    raise
                 except Exception as e:
+                    is_blocked_response = 'blocked or queue-full html' in str(e).lower()
+                    if not is_blocked_response:
+                        self._record_non_blocked_fetch_failure()
                     last_error = e
                     logger.warning(
                         "Fetch attempt %s/%s failed for %s: %s",
@@ -178,13 +252,22 @@ class PlaywrightFetcher:
                     if attempt == self.max_attempts:
                         break
 
+                    # Retrying the same blocked page makes rate limiting worse.
+                    # The next request observes the shared cooldown instead.
+                    if is_blocked_response:
+                        break
+
                     if self._is_closed_target_error(e):
                         await self._relaunch_browser()
                     else:
                         await self._close_page()
                         self.page = await self._new_page()
 
-                    await self.page.wait_for_timeout(int((1.5 * attempt + random.uniform(0, 0.75)) * 1000))
+                    retry_delay = 5 * attempt + random.uniform(0, 2)
+                    logger.info(
+                        "Cooling down %.2fs before retrying NCAA fetch", retry_delay
+                    )
+                    await self.page.wait_for_timeout(int(retry_delay * 1000))
 
             raise last_error or Exception(f"Failed to fetch {url}")
         
@@ -199,6 +282,8 @@ class PlaywrightFetcher:
         except Exception as e:
             logger.error(f"Failed to fetch {url}: {e}")
             raise
+        finally:
+            self._mark_fetch_finished()
     
     def fetch_multiple(self, urls: list[str], delay: float = 1.0) -> list[str]:
         results = []
@@ -211,6 +296,8 @@ class PlaywrightFetcher:
                 if i < len(urls) - 1 and delay > 0:
                     time.sleep(delay)
             
+            except NcaaRateLimitCircuitOpen:
+                raise
             except Exception as e:
                 logger.warning(f"Skipping {url} due to error: {e}")
                 results.append(None)
