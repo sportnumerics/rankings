@@ -2,9 +2,10 @@
 Unit tests for Playwright fetcher.
 """
 
+import asyncio
 import unittest
 import os
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from .playwright_fetcher import NcaaRateLimitCircuitOpen, PlaywrightFetcher
 
 
@@ -64,6 +65,31 @@ class TestPlaywrightFetcher(unittest.TestCase):
         fetcher = PlaywrightFetcher()
         self.assertEqual(fetcher.min_delay_seconds, 7.5)
 
+    @patch.dict(os.environ, {'NCAA_FETCH_DELAY_SECONDS': '-1'})
+    def test_negative_default_delay_is_rejected(self):
+        with self.assertRaisesRegex(ValueError,
+                                    'NCAA_FETCH_DELAY_SECONDS must be non-negative'):
+            PlaywrightFetcher()
+
+    @patch.dict(os.environ, {'NCAA_FETCH_DELAY_SECONDS': 'nan'})
+    def test_non_finite_default_delay_is_rejected(self):
+        with self.assertRaisesRegex(ValueError,
+                                    'NCAA_FETCH_DELAY_SECONDS must be finite'):
+            PlaywrightFetcher()
+
+    def test_non_finite_direct_delay_is_rejected(self):
+        for delay in (float('nan'), float('inf')):
+            with self.subTest(delay=delay):
+                with self.assertRaisesRegex(ValueError,
+                                            'NCAA_FETCH_DELAY_SECONDS must be finite'):
+                    PlaywrightFetcher(min_delay_seconds=delay)
+
+    @patch.dict(os.environ, {'NCAA_MAX_CONSECUTIVE_BLOCKS': '0'})
+    def test_non_positive_block_limit_is_rejected(self):
+        with self.assertRaisesRegex(ValueError,
+                                    'NCAA_MAX_CONSECUTIVE_BLOCKS must be positive'):
+            PlaywrightFetcher()
+
     @patch('lib.scrape.playwright_fetcher.time.monotonic', return_value=10.0)
     def test_repeated_blocks_open_circuit_and_extend_cooldown(self, _monotonic):
         fetcher = PlaywrightFetcher(max_consecutive_blocked_fetches=2)
@@ -75,6 +101,62 @@ class TestPlaywrightFetcher(unittest.TestCase):
             fetcher._record_blocked_fetch_failure()
 
         self.assertEqual(fetcher._blocked_until, 50.0)
+
+    @patch('lib.scrape.playwright_fetcher.time.monotonic', return_value=10.0)
+    def test_non_blocked_failure_resets_block_streak(self, _monotonic):
+        fetcher = PlaywrightFetcher(max_consecutive_blocked_fetches=2)
+
+        fetcher._record_blocked_fetch_failure()
+        fetcher._record_non_blocked_fetch_failure()
+        fetcher._record_blocked_fetch_failure()
+
+        self.assertEqual(fetcher._consecutive_blocked_fetches, 1)
+        self.assertEqual(fetcher._blocked_until, 30.0)
+
+    def test_fetch_multiple_propagates_circuit_open(self):
+        fetcher = PlaywrightFetcher()
+        fetcher.fetch = MagicMock(side_effect=NcaaRateLimitCircuitOpen(
+            'NCAA rate-limit circuit opened'))
+
+        with self.assertRaises(NcaaRateLimitCircuitOpen):
+            fetcher.fetch_multiple(['https://stats.ncaa.org/teams/594020'])
+
+    def test_navigation_timeout_resets_block_streak(self):
+        class FakePage:
+            def __init__(self):
+                self.outcomes = [
+                    (200, '<html>Access Denied</html>'),
+                    TimeoutError('navigation timed out'),
+                    (200, '<html>Access Denied</html>'),
+                ]
+
+            async def goto(self, *_args, **_kwargs):
+                outcome = self.outcomes.pop(0)
+                if isinstance(outcome, Exception):
+                    raise outcome
+                self.html = outcome[1]
+                return type('Response', (), {'status': outcome[0]})()
+
+            async def content(self):
+                return self.html
+
+        fetcher = PlaywrightFetcher(min_delay_seconds=0,
+                                    max_attempts=1,
+                                    max_consecutive_blocked_fetches=2)
+        fetcher.page = FakePage()
+        fetcher._loop = asyncio.new_event_loop()
+        fetcher._wait_before_fetch = MagicMock()
+        try:
+            with self.assertRaisesRegex(Exception, 'blocked or queue-full html'):
+                fetcher.fetch('https://stats.ncaa.org/first')
+            with self.assertRaises(TimeoutError):
+                fetcher.fetch('https://stats.ncaa.org/second')
+            with self.assertRaisesRegex(Exception, 'blocked or queue-full html'):
+                fetcher.fetch('https://stats.ncaa.org/third')
+        finally:
+            fetcher._loop.close()
+
+        self.assertEqual(fetcher._consecutive_blocked_fetches, 1)
 
     @unittest.skipIf(os.environ.get('CI') == 'true', "Skip browser tests in CI (no Playwright browsers installed)")
     def test_context_manager(self):

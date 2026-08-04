@@ -5,13 +5,15 @@ Uses Firefox to bypass Akamai bot detection that blocks Chromium.
 Uses async API to avoid conflicts with pytest-asyncio in CI.
 """
 
-import logging
 import asyncio
-from playwright.async_api import async_playwright, Browser, Page
-from typing import Optional
+import logging
+import math
+import os
 import random
 import time
-import os
+from typing import Optional
+
+from playwright.async_api import Browser, Page, async_playwright
 
 logger = logging.getLogger(__name__)
 
@@ -52,10 +54,16 @@ class PlaywrightFetcher:
         if min_delay_seconds is None:
             min_delay_seconds = float(
                 os.environ.get('NCAA_FETCH_DELAY_SECONDS', '4.0'))
+        if not math.isfinite(min_delay_seconds):
+            raise ValueError('NCAA_FETCH_DELAY_SECONDS must be finite')
+        if min_delay_seconds < 0:
+            raise ValueError('NCAA_FETCH_DELAY_SECONDS must be non-negative')
         self.min_delay_seconds = min_delay_seconds
         if max_consecutive_blocked_fetches is None:
             max_consecutive_blocked_fetches = int(
                 os.environ.get('NCAA_MAX_CONSECUTIVE_BLOCKS', '2'))
+        if max_consecutive_blocked_fetches < 1:
+            raise ValueError('NCAA_MAX_CONSECUTIVE_BLOCKS must be positive')
         self.max_consecutive_blocked_fetches = max_consecutive_blocked_fetches
         self.playwright = None
         self.browser: Optional[Browser] = None
@@ -179,9 +187,12 @@ class PlaywrightFetcher:
                 'NCAA rate-limit circuit opened after '
                 f'{self._consecutive_blocked_fetches} consecutive blocked responses')
 
-    def _record_successful_fetch(self):
+    def _record_non_blocked_fetch_failure(self):
         self._consecutive_blocked_fetches = 0
         self._blocked_until = None
+
+    def _record_successful_fetch(self):
+        self._record_non_blocked_fetch_failure()
 
     def fetch(self, url: str, wait_until: str = 'networkidle', timeout: int = 30000) -> str:
         """
@@ -221,9 +232,15 @@ class PlaywrightFetcher:
                         reason = 'blocked or queue-full html'
                         self._record_blocked_fetch_failure()
                     else:
+                        self._record_non_blocked_fetch_failure()
                         reason = f'unexpected status {status}'
                     raise Exception(f"Transient NCAA fetch failure for {url}: {reason}")
+                except NcaaRateLimitCircuitOpen:
+                    raise
                 except Exception as e:
+                    is_blocked_response = 'blocked or queue-full html' in str(e).lower()
+                    if not is_blocked_response:
+                        self._record_non_blocked_fetch_failure()
                     last_error = e
                     logger.warning(
                         "Fetch attempt %s/%s failed for %s: %s",
@@ -237,8 +254,7 @@ class PlaywrightFetcher:
 
                     # Retrying the same blocked page makes rate limiting worse.
                     # The next request observes the shared cooldown instead.
-                    if ('blocked or queue-full html' in str(e).lower()
-                            or isinstance(e, NcaaRateLimitCircuitOpen)):
+                    if is_blocked_response:
                         break
 
                     if self._is_closed_target_error(e):
@@ -248,8 +264,6 @@ class PlaywrightFetcher:
                         self.page = await self._new_page()
 
                     retry_delay = 5 * attempt + random.uniform(0, 2)
-                    if 'blocked or queue-full html' in str(e).lower():
-                        retry_delay = 20 * attempt + random.uniform(0, 5)
                     logger.info(
                         "Cooling down %.2fs before retrying NCAA fetch", retry_delay
                     )
@@ -282,6 +296,8 @@ class PlaywrightFetcher:
                 if i < len(urls) - 1 and delay > 0:
                     time.sleep(delay)
             
+            except NcaaRateLimitCircuitOpen:
+                raise
             except Exception as e:
                 logger.warning(f"Skipping {url} due to error: {e}")
                 results.append(None)

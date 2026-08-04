@@ -2,14 +2,13 @@ import datetime
 
 import dateutil
 import dateutil.parser
-from lib.scrape import mcla
 from . import ncaa, mcla
 from ..shared import shared
-from ..shared.types import Game, ScrapeArgs, Scraper, Team, TeamDetail, Location
+from ..shared.types import ScrapeArgs, Scraper, Team, TeamDetail, Location
 from collections.abc import Iterator
 from requests_cache import CacheMixin, CachedSession
 from requests_ratelimiter import LimiterSession
-from datetime import UTC, timedelta, tzinfo
+from datetime import timedelta
 from typing import Optional
 import os
 import pathlib
@@ -17,7 +16,7 @@ import logging
 import traceback
 
 from .interstitial_bypass import InterstitialBypassSession
-from .playwright_fetcher import PlaywrightFetcher
+from .playwright_fetcher import NcaaRateLimitCircuitOpen, PlaywrightFetcher
 
 USER_AGENT = 'sportnumerics-scraper/1.0 (https://sportnumerics.com)'
 
@@ -185,17 +184,6 @@ class ScrapeRunner():
 
         self.cross_link_schedules(schedules)
 
-        for schedule in schedules:
-            file_name = os.path.join(schedule_dir, schedule.team.id + '.json')
-            with open(file_name, 'w') as f:
-                shared.dump(schedule, f)
-
-        shared.dump_parquet(sorted(schedules, key=lambda s: s.team.id),
-                            shared.parquet_path(self.out_dir, self.year,
-                                                'schedules',
-                                                f'{self.source}.parquet'),
-                            sort_order=[('team.id', 'ascending')])
-
         all_games = {}
         for schedule in schedules:
             team = schedule.team
@@ -229,12 +217,25 @@ class ScrapeRunner():
                     )
                     continue
                 all_games[game_details.id] = game_details
-                with open(os.path.join(games_dir, game_details.id + '.json'),
-                          'w') as f:
-                    shared.dump(game_details, f)
 
         if self.source == 'ncaa':
             self._raise_for_ncaa_detail_failures()
+
+        for schedule in schedules:
+            file_name = os.path.join(schedule_dir, schedule.team.id + '.json')
+            with open(file_name, 'w') as f:
+                shared.dump(schedule, f)
+
+        shared.dump_parquet(sorted(schedules, key=lambda s: s.team.id),
+                            shared.parquet_path(self.out_dir, self.year,
+                                                'schedules',
+                                                f'{self.source}.parquet'),
+                            sort_order=[('team.id', 'ascending')])
+
+        for game_details in all_games.values():
+            with open(os.path.join(games_dir, game_details.id + '.json'),
+                      'w') as f:
+                shared.dump(game_details, f)
 
         shared.dump_parquet(sorted(all_games.values(), key=lambda g: g.id),
                             shared.parquet_path(self.out_dir, self.year,
@@ -336,6 +337,10 @@ class ScrapeRunner():
                     self.playwright_fetcher.__enter__()
                 
                 return self.playwright_fetcher.fetch(location.url)
+            except NcaaRateLimitCircuitOpen:
+                # A circuit-open signal is terminal for this scrape; swallowing it
+                # would keep issuing requests and defeat the circuit breaker.
+                raise
             except Exception as e:
                 self.log.error(f'Playwright fetch failed for {location.url}: {e}')
                 return None
