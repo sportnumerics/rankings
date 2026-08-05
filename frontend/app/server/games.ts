@@ -54,8 +54,8 @@ export async function getGame({ year, game, div, mode = 'json' }: { year: string
             away_team_id, away_team_name, away_team_div,
             away_team_schedule_url, away_team_sport, away_team_source,
             home_score, away_score
-        FROM read_parquet('s3://${bucket}/${prefix}/${year}/game-metadata.parquet')
-        WHERE game_id = '${game}'
+        FROM read_parquet(?)
+        WHERE game_id = ?
         LIMIT 1
     `;
 
@@ -63,15 +63,23 @@ export async function getGame({ year, game, div, mode = 'json' }: { year: string
         SELECT 
             team_id, player_id, player_name, number, position,
             g, a, gb, face_offs_won, face_offs_lost
-        FROM read_parquet('s3://${bucket}/${prefix}/${year}/game-boxscores.parquet')
-        WHERE game_id = '${game}'
+        FROM read_parquet(?)
+        WHERE game_id = ?
         ORDER BY team_id ASC, points_desc ASC
     `;
 
     try {
         const [metaResult, statsResult] = await Promise.all([
-            parquetQuery<any>(metaSql, 'game_page_metadata'),
-            parquetQuery<any>(statsSql, 'game_page_boxscore')
+            parquetQuery<any>(
+                metaSql,
+                'game_page_metadata',
+                [`s3://${bucket}/${prefix}/${year}/game-metadata.parquet`, game]
+            ),
+            parquetQuery<any>(
+                statsSql,
+                'game_page_boxscore',
+                [`s3://${bucket}/${prefix}/${year}/game-boxscores.parquet`, game]
+            )
         ]);
 
         if (!metaResult.rows.length) {
@@ -175,14 +183,18 @@ export async function getGames({ year, div, mode = 'json' }: { year: string, div
             home_team_id, home_team_name, home_team_div, home_team_sport,
             away_team_id, away_team_name, away_team_div, away_team_sport,
             home_score, away_score
-        FROM read_parquet('s3://${bucket}/${prefix}/${year}/games-list.parquet')
-        WHERE home_team_div = '${div}' OR away_team_div = '${div}'
+        FROM read_parquet(?)
+        WHERE home_team_div = ? OR away_team_div = ?
         ORDER BY date DESC
         LIMIT 100
     `;
 
     try {
-        const { rows, debug } = await parquetQuery<any>(sql, 'games_list');
+        const { rows, debug } = await parquetQuery<any>(
+            sql,
+            'games_list',
+            [`s3://${bucket}/${prefix}/${year}/games-list.parquet`, div, div]
+        );
         
         // Deduplicate games (each appears twice for cross-division games)
         const uniqueGames = new Map<string, any>();
